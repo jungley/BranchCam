@@ -370,26 +370,6 @@ namespace RydenCam.BranchCamEditor.Nodes
             ConnectionManager.Instance.Remove(connection);
         }
 
-
-        public void AssociateConnections(Saveable savenode)
-        {
-            EditorBaseNode node = this;
-            //Check out Connection
-            if (savenode.OUT_connTo.Count != 0)
-            {
-                for (int i = 0; i < savenode.OUT_connTo.Count; i++)
-                {
-                    EditorBaseNode node_OUT = NodeManager.Instance.FindNode(savenode.OUT_connTo[i]);
-                    if (node_OUT != null)
-                    {
-                        node.PointOut[i].connectedTo = node_OUT.PointIn;
-                        node_OUT.PointIn.connectedTo = node.PointOut[i];
-                        ConnectionManager.Instance.AddConnection(node.PointOut[i], node_OUT.PointIn, OnClickRemoveConnection); 
-                    }
-                }
-            }
-        }
-
         public virtual EditorBaseNode GetNextNode()
         {
             return PointOut[0]?.connectedTo?.node;

@@ -98,7 +98,7 @@ namespace RydenCam.DialogueGameUI
             if (LoadFile.IsValidDialogueTriggerPath(DialogueFolder))
             {
                 EditorController.Instance.ResetEverything();
-                NodeManager.Instance.ConvertSaveables(LoadFile.LoadSaveables());
+                LoadFile.LoadSaveables();
             }
             else
             {
