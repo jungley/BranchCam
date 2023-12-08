@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
+using RydenCam.BranchCamEditor.Managers;
 
 namespace RydenCam.BranchCamEditor.BranchFile
 {
@@ -51,10 +52,9 @@ namespace RydenCam.BranchCamEditor.BranchFile
             return reordered.ToArray();
         }
 
-        public static List<Saveable> LoadSaveables()
+        //Load Saveables into NodeManager
+        public static void LoadSaveables()
         {
-            List<Saveable> saveableList = new List<Saveable>();
-
             // Get all JSON files in the folder
             string path = BranchCamEditorPreferences.GetLastFilePath();
             DirectoryInfo directory = null;
@@ -65,7 +65,7 @@ namespace RydenCam.BranchCamEditor.BranchFile
             if (directory != null && !directory.Exists)
             {
                 Debug.LogError("Trying to read files but path does not exist! Resave the dialogue file and reassign it to the Collider");
-                return saveableList;
+                return;
             }
 
             FileInfo[] info = directory.GetFiles("*.json");
@@ -73,6 +73,7 @@ namespace RydenCam.BranchCamEditor.BranchFile
             // Reorder files to have the start node file first
             info = ReorderStartFirst(info);
 
+            List<Saveable> saveableList = new List<Saveable>();
             // Load each file based on its name prefix
             foreach (FileInfo file in info)
             {
@@ -107,7 +108,36 @@ namespace RydenCam.BranchCamEditor.BranchFile
                 }
             }
 
-            return saveableList;
+            //Convert Saveables to Nodes
+            NodeManager.Instance.Clear();
+
+            foreach (Saveable saveNode in saveableList)
+            {
+                EditorBaseNode node = saveNode.ConvertToUnity();
+                NodeManager.Instance.AddNode(node);
+            }
+
+            for (int i = 0; i < saveableList.Count; i++)
+            {
+                //Associate Connections
+                EditorBaseNode node = NodeManager.Instance.GetNode(i);
+                Saveable savenode = saveableList[i];
+                //Check out Connection
+                if (savenode.OUT_connTo.Count != 0)
+                {
+                    for (int y = 0; y < savenode.OUT_connTo.Count; y++)
+                    {
+                        EditorBaseNode node_OUT = NodeManager.Instance.FindNode(savenode.OUT_connTo[y]);
+                        if (node_OUT != null)
+                        {
+                            node.PointOut[y].connectedTo = node_OUT.PointIn;
+                            node_OUT.PointIn.connectedTo = node.PointOut[y];
+                            ConnectionManager.Instance.AddConnection(node.PointOut[y], node_OUT.PointIn, EditorBaseNode.OnClickRemoveConnection);
+                        }
+                    }
+                }
+            }
         }
+        
     }
 }

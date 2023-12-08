@@ -110,7 +110,10 @@ namespace RydenCam.BranchCamEditor
             if (lastFilePath != string.Empty)
             {
                 EditorController.Instance.ResetEverything();
-                NodeManager.Instance.ConvertSaveables(LoadFile.LoadSaveables());
+
+                JsonNodeConverter converter = new JsonNodeConverter();
+
+                LoadFile.LoadSaveables();
             }
 
         }
@@ -441,7 +444,7 @@ namespace RydenCam.BranchCamEditor
                     if (LoadFile.IsValidEditorPath())
                     {
                         EditorController.Instance.ResetEverything();
-                        NodeManager.Instance.ConvertSaveables(LoadFile.LoadSaveables());
+                        LoadFile.LoadSaveables();
                     }
                 }
 
