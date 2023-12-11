@@ -43,13 +43,7 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
-*.meta
 
-# Unity3D generated meta files
-*.pidb.meta
-*.pdb.meta
-*.mdb.meta
-*.meta  # Ignore Unity .meta files
 
 # Unity3D generated file on crash reports
 sysinfo.txt
