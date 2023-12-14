@@ -10,13 +10,6 @@ public class ScrollBarEnabler : MonoBehaviour
 
     private void OnEnable()
     {
-        if(contentContainer.childCount >= 4)
-        {
-            scrollRect.vertical = true;
-        }
-        else
-        {
-            scrollRect.vertical = false;
-        }
+        scrollRect.vertical = (contentContainer.childCount >= 4) ? true : false;
     }
 }

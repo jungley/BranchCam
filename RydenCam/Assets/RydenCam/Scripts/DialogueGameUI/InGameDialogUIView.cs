@@ -102,13 +102,18 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             ClearPanels();
 
             EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode; 
-           
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {
-                var buttonRef = new ButtonCreator("Button_" + i)
-                    .AddUIImage(650, 45)
-                    .AddHoverImage(650, 45)
+                var widthRatio = 0.35f;
+                var heightRatio = 0.0725f;
+
+                var buttonWidth = Screen.width * widthRatio;
+                var buttonHeight = Screen.height * heightRatio;
+
+                new ButtonCreator("Button_" + i)
+                    .AddUIImage(buttonWidth, buttonHeight)
+                    .AddHoverImage(buttonWidth, buttonHeight)
                     .AddText(node.DecisionOptions[i])
                     .SetParent(DecisionViewContainer.transform)
                     .AddButtonScript(i);
@@ -116,15 +121,6 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
 
             //Keep DecisionPanel.SetActive(true) after nodes are created.
             DecisionPanel.SetActive(true);
-
-            if(node.DecisionOptions.Count >= 4)
-            {
-                //Display bar
-            }
-            else
-            {
-                //do not display bar
-            }
 
             if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
             {

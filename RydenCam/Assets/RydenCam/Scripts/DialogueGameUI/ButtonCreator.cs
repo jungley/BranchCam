@@ -49,7 +49,7 @@ public class ButtonCreator
 
     public ButtonCreator AddText(string dialogueText)
     {
-        var textHolder = new GameObject();
+        var textHolder = new GameObject("Button Text");
 
         textHolder.transform.SetParent(buttonObject.transform);
 
@@ -61,7 +61,10 @@ public class ButtonCreator
 
         textComponent.font = font;
         textComponent.alignment = TextAlignmentOptions.Center;
-        textComponent.fontSize = 25;
+
+        float scaleFactor = Screen.width / 1920f; 
+        float fontSize = 50 * scaleFactor;
+        textComponent.fontSize = Mathf.RoundToInt(fontSize);
 
         return this;
     }
