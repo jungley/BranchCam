@@ -66,6 +66,9 @@ public class ButtonCreator
         float fontSize = 50 * scaleFactor;
         textComponent.fontSize = Mathf.RoundToInt(fontSize);
 
+        textComponent.enableAutoSizing = true;
+        textComponent.fontSizeMin = 1;
+
         return this;
     }
 
