@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 
-public class ClickableImage : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler
+public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler
 {
     private Action onClickEvent;
     private Image hoverImage;

@@ -111,12 +111,13 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
                 var buttonWidth = Screen.width * widthRatio;
                 var buttonHeight = Screen.height * heightRatio;
 
-                new ButtonCreator("Button_" + i)
-                    .AddUIImage(buttonWidth, buttonHeight)
-                    .AddHoverImage(buttonWidth, buttonHeight)
+                new ButtonCreator("Button_" + i, buttonWidth, buttonHeight)
+                    .AddUIImage()
+                    .AddHoverImage()
                     .AddText(node.DecisionOptions[i])
                     .SetParent(DecisionViewContainer.transform)
-                    .AddButtonScript(i);
+                    .AddButtonScript(i)
+                    .ResizeElementsByTextSize();
             }
 
             //Keep DecisionPanel.SetActive(true) after nodes are created.
