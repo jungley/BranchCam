@@ -100,18 +100,28 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         public void DisplayDecisionNode()
         {
             ClearPanels();
+
             EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode; 
-           
-            DecisionPanel.SetActive(true);
+
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {
-                GameObject buttonRef = MonoUtility.Instantiate(DecOptionButton) as GameObject;
-                buttonRef.name = "Button_" + i;
-                buttonRef.transform.Find("DecisionText").gameObject.GetComponent<TextMeshProUGUI>().text = node.DecisionOptions[i];
-                buttonRef.transform.SetParent(DecisionViewContainer.transform);
-                buttonRef.transform.GetComponent<Button>().onClick.AddListener(buttonRef.transform.GetComponent<ButtonScript>().ChooseDecisionClick);
-                buttonRef.transform.GetComponent<ButtonScript>().AssociatedOption = i;
+                var widthRatio = 0.35f;
+                var heightRatio = 0.0725f;
+
+                var buttonWidth = Screen.width * widthRatio;
+                var buttonHeight = Screen.height * heightRatio;
+
+                new ButtonCreator("Button_" + i, buttonWidth, buttonHeight)
+                    .AddUIImage()
+                    .AddHoverImage()
+                    .AddText(node.DecisionOptions[i])
+                    .SetParent(DecisionViewContainer.transform)
+                    .AddButtonScript(i)
+                    .ResizeElementsByTextSize();
             }
+
+            //Keep DecisionPanel.SetActive(true) after nodes are created.
+            DecisionPanel.SetActive(true);
 
             if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
             {
