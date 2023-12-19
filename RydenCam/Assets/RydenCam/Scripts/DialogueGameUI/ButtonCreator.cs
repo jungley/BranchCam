@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using RydenCam.DialogueGameUI;
 using System;
 /// <summary>
-/// Simple Button creator using the builder pattern. 
+/// Creates the Visual button for the user to interact with.
 /// </summary>
 public class ButtonCreator
 {
@@ -21,13 +21,11 @@ public class ButtonCreator
         var heightPadding = Screen.height * heightRatio;
 
         var buttonObject = new GameObject(buttonName);
-
         var buttonImage = AddImage(buttonObject);
 
         selectableImage = buttonObject.AddComponent<SelectableImage>();
 
         var hoverImage = AddHoverImage(buttonObject);
-
         var textComponent = AddText(dialogueText);
 
         AddButtonScript(optionIndex, hoverImage);
@@ -62,7 +60,6 @@ public class ButtonCreator
         var hoverImage = hoverImageHolder.AddComponent<Image>();
 
         hoverImage.color = new Color(0, 0, 0, .8f);
-
         hoverImage.gameObject.SetActive(false);
 
         return hoverImage;
@@ -71,7 +68,6 @@ public class ButtonCreator
     public TextMeshProUGUI AddText(string dialogueText)
     {
         var textHolder = new GameObject("Button Text");
-
         var buttonText = textHolder.AddComponent<TextMeshProUGUI>();
         
         buttonText.text = dialogueText;
@@ -79,11 +75,8 @@ public class ButtonCreator
         var fontSize = GlobalSettings.Settings.defaultFontSize;
 
         buttonText.fontSize = Mathf.RoundToInt(fontSize * Mathf.Min(Screen.width, Screen.height) / 1300);
-
         buttonText.font = GlobalSettings.Settings.defaultFont;
-
         buttonText.alignment = TextAlignmentOptions.Center;
-
         buttonText.raycastTarget = false;
 
         return buttonText;
@@ -103,12 +96,11 @@ public class ButtonCreator
 
         Action onClick = () =>
         {
-            buttonManager.MakeDecision(optionIndex);
+            buttonManager.DialoguePlayer.SequenceControls.MakeDecision(optionIndex);
             buttonManager.OnButtonSelectedCallBack.Invoke();
         };
 
         Action onHover = () => { buttonManager.HoverOverButton(selectableImage);};
-
         Action unHover = () => { }; // TODO : Make the current keyboard hovered unhover when using mouse.
 
         selectableImage.Initialize(hoverImage, onClick, onHover, unHover);

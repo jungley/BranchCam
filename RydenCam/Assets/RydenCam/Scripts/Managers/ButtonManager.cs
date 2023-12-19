@@ -7,6 +7,9 @@ using System;
 
 namespace RydenCam.DialogueGameUI
 {
+    /// <summary>
+    /// Handles the navigation and selection of decision options when presented.
+    /// </summary>
     public class ButtonManager : MonoBehaviour
     {
         public static ButtonManager Instance;
@@ -52,9 +55,7 @@ namespace RydenCam.DialogueGameUI
         private void Update()
         {
             if (ButtonList.Count <= 0) return;
-
             if (!GlobalSettings.Settings.isKeyboardAllowed) return;
-
             if (isLockedOut) return;
 
             if (Input.GetKeyDown(KeyCode.UpArrow))
@@ -62,7 +63,6 @@ namespace RydenCam.DialogueGameUI
                 if (scrollIndex - 1 < 0) return;
 
                 var scrollUp = -1;
-
                 Scroll(scrollUp);
             }
 
@@ -71,7 +71,6 @@ namespace RydenCam.DialogueGameUI
                 if (scrollIndex + 1 >= ButtonList.Count) return;
 
                 var scrollDown = 1;
-
                 Scroll(scrollDown);
             }
 
@@ -111,11 +110,5 @@ namespace RydenCam.DialogueGameUI
         {
             currentHoveredImage = selectableImage;
         }
-
-        public void MakeDecision(int optionIndex)
-        {
-            DialoguePlayer.SequenceControls.MakeDecision(optionIndex);
-        }
-
     }
 }

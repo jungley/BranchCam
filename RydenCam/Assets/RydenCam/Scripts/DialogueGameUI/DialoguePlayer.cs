@@ -77,6 +77,7 @@ namespace RydenCam.DialogueGameUI
 
         public void Update()
         {
+            //This was included because SequenceControls.TraverseNodeNetwork(); was being called and causing issues when decisions were being presented.
             if (ButtonManager.Instance.ButtonList.Count > 0) return;
 
             if (GlobalSettings.Settings.isKeyboardAllowed) 

@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
-using RydenCam.DialogueGameUI;
 
 public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler
 {

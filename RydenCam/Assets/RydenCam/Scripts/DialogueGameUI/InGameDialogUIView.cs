@@ -94,20 +94,17 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         {
             ClearPanels();
             DialoguePanel.SetActive(true);
-
             var textComponent = DialoguePanel.GetComponentInChildren<TextMeshProUGUI>();
-
             SetText(textComponent, dialogue);
         }
 
         public void DisplayDecisionNode()
         {
             ClearPanels();
-
             EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode;
-
             CreateButtons(node);
 
+            //Not ideal this is being called here. Will look into it later.
             ButtonManager.Instance.StartLockOut();
 
             //Make sure this is called AFTER CreateButtons();
@@ -117,9 +114,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
             {
                 DecisionDialoguePanel.SetActive(true);
-
                 var textComponent = DecisionDialoguePanel.GetComponentInChildren<TextMeshProUGUI>();
-
                 SetText(textComponent, Controller.PreviousDialogue.Peek());
             }
         }
@@ -137,13 +132,13 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {
-
                 var decisionButton = new ButtonCreator("Button_" + i, DecisionViewContainer.transform, node.DecisionOptions[i], i);
 
                 buttonManager.ButtonList.Add(decisionButton.selectableImage);
-
-                if (i == 0) decisionButton.selectableImage.Hover();
             }
+
+            //Hovers over the first option when decision panel appears.
+            buttonManager.ButtonList[0].Hover();
 
         }
 

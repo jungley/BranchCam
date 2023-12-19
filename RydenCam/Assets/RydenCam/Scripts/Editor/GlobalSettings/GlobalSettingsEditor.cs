@@ -7,6 +7,10 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using System.Linq;
 
+/// <summary>
+/// Overrides the GlobalSettingsData inspector and draws a new custom one. 
+/// </summary>
+
 [CustomEditor(typeof(GlobalSettingsData))]
 public class GlobalSettingsEditor : Editor
 {
@@ -19,7 +23,6 @@ public class GlobalSettingsEditor : Editor
 
     private void OnEnable()
     {
-
         isMouseAllowed = serializedObject.FindProperty("isMouseAllowed");
         isKeyboardAllowed = serializedObject.FindProperty("isKeyboardAllowed");
 
@@ -30,8 +33,6 @@ public class GlobalSettingsEditor : Editor
 
     public override VisualElement CreateInspectorGUI()
     {
-        serializedObject.Update();
-
         var root = new VisualElement();
 
         root.Add(new VisualElement()
@@ -39,7 +40,6 @@ public class GlobalSettingsEditor : Editor
             .SetLabelStyle(LabelStyle.Header));
 
         CreateFontSettingsField(root);
-
         CreateUIProgressionSettingsField(root);
 
         EditorUtility.SetDirty(target);
@@ -163,7 +163,7 @@ public class GlobalSettingsEditor : Editor
         keyMenuContainer.Add(keyMenu);
         keyMenuContainer.Add(deleteInputButton);
 
-        // Add KeyCode values to the menu
+        // Adds ALL keycodes to the menu. Could be redone to only include desired keycodes.
         foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
         {
             keyMenu.menu.AppendAction(keyCode.ToString(), x => globalSettingsHelper.OnKeyValueChange(keyCode, keyMenu, (KeyCode)Enum.Parse(typeof(KeyCode), keyMenu.text)));
