@@ -77,9 +77,27 @@ namespace RydenCam.DialogueGameUI
 
         public void Update()
         {
-            if(Input.GetMouseButtonDown(1))
+            if (ButtonManager.Instance.ButtonList.Count > 0) return;
+
+            if (GlobalSettings.Settings.isKeyboardAllowed) 
             {
-                SequenceControls.TraverseNodeNetwork();
+                if (!Input.anyKey) return;
+
+                foreach(var key in GlobalSettings.Settings.progressionKeyInputs)
+                {
+                    if (Input.GetKeyDown(key))
+                    {
+                        SequenceControls.TraverseNodeNetwork();
+                    }
+                }
+            }
+
+            if (GlobalSettings.Settings.isMouseAllowed)
+            {
+                if(Input.GetMouseButtonDown(1))
+                {
+                    SequenceControls.TraverseNodeNetwork();
+                }
             }
         }
 

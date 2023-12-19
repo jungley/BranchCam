@@ -4,34 +4,53 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using RydenCam.DialogueGameUI;
 
 public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler
 {
-    private Action onClickEvent;
+    private Action onSelectEvent;
     private Image hoverImage;
 
-    public void SetOnClickEvent(Action onClickEvent)
-    {
-        this.onClickEvent = onClickEvent;
-    }
+    private Action onHoverEvent;
+    private Action onUnhoverEvent;
 
-    public void SetHoverImage(Image hoverImage)
+    public void Initialize(Image hoverImage, Action onClickEvent, Action onHoverEvent, Action onUnhoverEvent)
     {
         this.hoverImage = hoverImage;
+        this.onSelectEvent = onClickEvent;
+        this.onHoverEvent = onHoverEvent;
+        this.onUnhoverEvent = onUnhoverEvent;
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        onClickEvent.Invoke();
+        Select();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        hoverImage.gameObject.SetActive(true);
+        Hover();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        UnHover();
+    }
+
+    public void Select()
+    {
+        onSelectEvent?.Invoke();
+    }
+
+    public void Hover()
+    {
+        onHoverEvent?.Invoke();
+        hoverImage.gameObject.SetActive(true);
+    }
+
+    public void UnHover()
+    {
+        onUnhoverEvent?.Invoke();
         hoverImage.gameObject.SetActive(false);
     }
 }

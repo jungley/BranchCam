@@ -10,121 +10,109 @@ using System;
 /// </summary>
 public class ButtonCreator
 {
-    private GameObject buttonObject;
-    private Image hoverImage;
-    private SelectableImage selectableImage;
-    private float width, height;
-    private TextMeshProUGUI buttonText;
-    private Image buttonImage;
+    public SelectableImage selectableImage;
 
-    public ButtonCreator(string buttonName, float width, float height)
+    public ButtonCreator(string buttonName, Transform parent, string dialogueText, int optionIndex)
     {
-        buttonObject = new GameObject(buttonName);
-        //Because this is a button we always want to be able to click on it.
+        var widthRatio = 0.35f;
+        var buttonWidth = Screen.width * widthRatio;
+
+        var heightRatio = 0.02f;
+        var heightPadding = Screen.height * heightRatio;
+
+        var buttonObject = new GameObject(buttonName);
+
+        var buttonImage = AddImage(buttonObject);
+
         selectableImage = buttonObject.AddComponent<SelectableImage>();
 
-        this.width = width;
-        this.height = height;
+        var hoverImage = AddHoverImage(buttonObject);
+
+        var textComponent = AddText(dialogueText);
+
+        AddButtonScript(optionIndex, hoverImage);
+
+        buttonObject.transform.SetParent(parent);
+        textComponent.transform.SetParent(buttonObject.transform);
+        hoverImage.transform.SetParent(buttonObject.transform);
+
+        var UISize = new Vector2(buttonWidth, textComponent.preferredHeight + heightPadding);
+
+        ResizeElementsByTextSize(hoverImage, buttonObject, buttonImage, textComponent, UISize);
     }
 
-    private Vector2 GetTextBoxSize
-    {
-        get
-        {
-            return new Vector2(width, buttonText.preferredHeight * 1.1f);
-        }
-    }
 
-    //This acts as the "HitBox" for the object.
-    public ButtonCreator AddUIImage()
+    //This acts as the parent for other objects and is the "HitBox".
+    public Image AddImage(GameObject parentObject)
     {
-        buttonImage = buttonObject.AddComponent<Image>();
-
-        buttonImage.rectTransform.sizeDelta = new Vector2(width, height);
+        var buttonImage = parentObject.gameObject.AddComponent<Image>();
 
         buttonImage.color = new Color(0, 0, 0, 0);
 
-        return this;
+        return buttonImage;
     }
 
-    public ButtonCreator AddHoverImage()
+
+    public Image AddHoverImage(GameObject parentObject)
     {
         var hoverImageHolder = new GameObject("HoverImage");
-        hoverImageHolder.transform.SetParent(buttonObject.transform);
 
-        hoverImage = hoverImageHolder.AddComponent<Image>();
+        hoverImageHolder.transform.SetParent(parentObject.transform);
 
-        hoverImage.rectTransform.sizeDelta = new Vector2(width, height);
+        var hoverImage = hoverImageHolder.AddComponent<Image>();
 
         hoverImage.color = new Color(0, 0, 0, .8f);
 
         hoverImage.gameObject.SetActive(false);
 
-        return this;
+        return hoverImage;
     }
 
-    public ButtonCreator AddText(string dialogueText)
+    public TextMeshProUGUI AddText(string dialogueText)
     {
         var textHolder = new GameObject("Button Text");
-        buttonText = textHolder.AddComponent<TextMeshProUGUI>();
-        
-        textHolder.transform.SetParent(buttonObject.transform);
 
+        var buttonText = textHolder.AddComponent<TextMeshProUGUI>();
+        
         buttonText.text = dialogueText;
 
-        buttonText.fontSize = Mathf.RoundToInt(25 * Mathf.Min(Screen.width, Screen.height) / 800);
+        var fontSize = GlobalSettings.Settings.defaultFontSize;
 
-        TMP_FontAsset font = Resources.Load("Afacad-Regular SDF") as TMP_FontAsset;
+        buttonText.fontSize = Mathf.RoundToInt(fontSize * Mathf.Min(Screen.width, Screen.height) / 1300);
 
-        buttonText.font = font;
+        buttonText.font = GlobalSettings.Settings.defaultFont;
 
         buttonText.alignment = TextAlignmentOptions.Center;
 
-        buttonText.rectTransform.sizeDelta = GetTextBoxSize - new Vector2(5, 0);
-
         buttonText.raycastTarget = false;
 
-        return this;
+        return buttonText;
     }
 
-    //This method has to be called AFTER AddText method.
-    public ButtonCreator ResizeElementsByTextSize()
+    public void ResizeElementsByTextSize(Image hoverImage, GameObject parentObject, Image buttonImage, TextMeshProUGUI textComponent, Vector2 UISize)
     {
-        if (buttonObject == null)
+        hoverImage.rectTransform.sizeDelta = UISize;
+        parentObject.GetComponent<RectTransform>().sizeDelta = UISize;
+        buttonImage.rectTransform.sizeDelta = UISize;
+        textComponent.rectTransform.sizeDelta = UISize - new Vector2(5, 0);
+    }
+
+    public void AddButtonScript(int optionIndex, Image hoverImage)
+    {
+        var buttonManager = ButtonManager.Instance;
+
+        Action onClick = () =>
         {
-            Debug.LogWarning("No Text Component Found.");
-            return this;
-        }
+            buttonManager.MakeDecision(optionIndex);
+            buttonManager.OnButtonSelectedCallBack.Invoke();
+        };
 
-        hoverImage.rectTransform.sizeDelta = GetTextBoxSize;
-        buttonObject.GetComponent<RectTransform>().sizeDelta = GetTextBoxSize;
-        buttonImage.rectTransform.sizeDelta = GetTextBoxSize;
+        Action onHover = () => { buttonManager.HoverOverButton(selectableImage);};
 
-        return this;
-    }
+        Action unHover = () => { }; // TODO : Make the current keyboard hovered unhover when using mouse.
 
-    public ButtonCreator SetParent(Transform parent)
-    {
-        buttonObject.transform.SetParent(parent);
-        return this;
-    }
+        selectableImage.Initialize(hoverImage, onClick, onHover, unHover);
 
-    public ButtonCreator AddButtonScript(int optionIndex)
-    {
-        var buttonScript = buttonObject.AddComponent<ButtonScript>();
-        buttonScript.AssociatedOption = optionIndex;
 
-        selectableImage.SetOnClickEvent(buttonScript.ChooseDecisionClick);
-        selectableImage.SetHoverImage(hoverImage);
-
-        return this;
-    }
-
-    public ButtonCreator AddOnClickEvent(Action onClickEvent)
-    {
-        var clickableImage = buttonObject.AddComponent<SelectableImage>();
-
-        clickableImage.SetOnClickEvent(onClickEvent);
-        return this;
     }
 }
