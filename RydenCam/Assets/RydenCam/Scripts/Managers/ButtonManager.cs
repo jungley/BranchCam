@@ -40,10 +40,14 @@ namespace RydenCam.DialogueGameUI
             {
                 DialoguePlayer scriptComponent = FindObjectOfType<DialoguePlayer>();
             }
+
+            if (scrollBar == null)
+            {
+                Scrollbar scriptComponent = FindObjectOfType<Scrollbar>();
+            }
             #endregion
 
             OnButtonSelectedCallBack += Clear;
-
         }
 
         public void Clear()
@@ -58,7 +62,7 @@ namespace RydenCam.DialogueGameUI
             if (!GlobalSettings.Settings.isKeyboardAllowed) return;
             if (isLockedOut) return;
 
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            if (Inputs.UpKey)
             {
                 if (scrollIndex - 1 < 0) return;
 
@@ -66,7 +70,7 @@ namespace RydenCam.DialogueGameUI
                 Scroll(scrollUp);
             }
 
-            if (Input.GetKeyDown(KeyCode.DownArrow))
+            if (Inputs.DownKey)
             {
                 if (scrollIndex + 1 >= ButtonList.Count) return;
 

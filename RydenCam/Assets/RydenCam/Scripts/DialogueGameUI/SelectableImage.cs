@@ -23,7 +23,7 @@ public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDown
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        Select();
+        if(Input.GetMouseButtonDown(0)) Select();
     }
 
     public void OnPointerEnter(PointerEventData eventData)

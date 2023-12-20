@@ -79,27 +79,9 @@ namespace RydenCam.DialogueGameUI
         {
             //This was included because SequenceControls.TraverseNodeNetwork(); was being called and causing issues when decisions were being presented.
             if (ButtonManager.Instance.ButtonList.Count > 0) return;
+            if (!Input.anyKey) return;
 
-            if (GlobalSettings.Settings.isKeyboardAllowed) 
-            {
-                if (!Input.anyKey) return;
-
-                foreach(var key in GlobalSettings.Settings.progressionKeyInputs)
-                {
-                    if (Input.GetKeyDown(key))
-                    {
-                        SequenceControls.TraverseNodeNetwork();
-                    }
-                }
-            }
-
-            if (GlobalSettings.Settings.isMouseAllowed)
-            {
-                if(Input.GetMouseButtonDown(1))
-                {
-                    SequenceControls.TraverseNodeNetwork();
-                }
-            }
+            if(Inputs.ProgressionKey()) SequenceControls.TraverseNodeNetwork();
         }
 
         /// <summary>
