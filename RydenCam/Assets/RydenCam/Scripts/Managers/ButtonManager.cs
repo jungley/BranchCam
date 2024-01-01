@@ -89,17 +89,6 @@ namespace RydenCam.DialogueGameUI
             }
         }
 
-        public void StartLockOut()
-        {
-            StartCoroutine(Co_DecisionLockout());
-        }
-
-        private IEnumerator Co_DecisionLockout()
-        {
-            isLockedOut = true;
-            yield return new WaitForEndOfFrame();
-            isLockedOut = false;
-        }
 
         private void Scroll(int scrollValue)
         {

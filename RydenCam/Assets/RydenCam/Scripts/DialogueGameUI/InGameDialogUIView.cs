@@ -104,8 +104,6 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode;
             CreateButtons(node);
 
-            //Not ideal this is being called here. Will look into it later.
-            ButtonManager.Instance.StartLockOut();
 
             //Make sure this is called AFTER CreateButtons();
             DecisionPanel.SetActive(true);
