@@ -5,8 +5,9 @@ using UnityEngine;
 public static class Inputs 
 {
     public static bool DownKey => Input.GetKeyDown(KeyCode.DownArrow);
-
     public static bool UpKey => Input.GetKeyDown(KeyCode.UpArrow);
+
+    public static int LeftClick = 0;
 
     public static bool ProgressionKey()
     {
@@ -25,7 +26,7 @@ public static class Inputs
 
         if (GlobalSettings.Settings.isMouseAllowed)
         {
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(LeftClick))
             {
                 validKeyPressed = true;
             }

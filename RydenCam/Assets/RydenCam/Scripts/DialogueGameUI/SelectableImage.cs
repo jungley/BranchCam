@@ -44,7 +44,7 @@ public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDown
     public void Hover()
     {
         onHoverEvent?.Invoke();
-        hoverImage.gameObject.SetActive(true);
+        hoverImage.gameObject.SetActive(true);           
     }
 
     public void UnHover()
