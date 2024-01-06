@@ -13,17 +13,18 @@ public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDown
     private Action onHoverEvent;
     private Action onUnhoverEvent;
 
-    public void Initialize(Image hoverImage, Action onClickEvent, Action onHoverEvent, Action onUnhoverEvent)
+    public void Initialize(Image hoverImage, Action onSelectEvent, Action onHoverEvent, Action onUnhoverEvent)
     {
         this.hoverImage = hoverImage;
-        this.onSelectEvent = onClickEvent;
+        this.onSelectEvent = onSelectEvent;
         this.onHoverEvent = onHoverEvent;
         this.onUnhoverEvent = onUnhoverEvent;
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if(Input.GetMouseButtonDown(0)) Select();
+        if (InputWrapper.ProgressionKeyPressed) Select();
+       // if(Input.GetMouseButtonDown(0)) Select();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -44,7 +45,7 @@ public class SelectableImage : MonoBehaviour, IPointerEnterHandler, IPointerDown
     public void Hover()
     {
         onHoverEvent?.Invoke();
-        hoverImage.gameObject.SetActive(true);           
+        hoverImage.gameObject.SetActive(true);
     }
 
     public void UnHover()

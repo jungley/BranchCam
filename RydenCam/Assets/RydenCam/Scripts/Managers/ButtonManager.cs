@@ -22,7 +22,6 @@ namespace RydenCam.DialogueGameUI
         private SelectableImage currentHoveredImage;
         [SerializeField] private Scrollbar scrollBar;
         private int scrollIndex;
-        private bool isLockedOut;
 
         private void Awake()
         {
@@ -60,35 +59,21 @@ namespace RydenCam.DialogueGameUI
         {
             if (ButtonList.Count <= 0) return;
             if (!GlobalSettings.Settings.isKeyboardAllowed) return;
-            if (isLockedOut) return;
-
-            if (Inputs.UpKey)
-            {
-                if (scrollIndex - 1 < 0) return;
-
-                var scrollUp = -1;
-                Scroll(scrollUp);
-            }
-
-            if (Inputs.DownKey)
-            {
-                if (scrollIndex + 1 >= ButtonList.Count) return;
-
-                var scrollDown = 1;
-                Scroll(scrollDown);
-            }
-
             if (!Input.anyKey) return;
 
-            foreach (var key in GlobalSettings.Settings.progressionKeyInputs)
-            {
-                if (Input.GetKeyDown(key))
-                {
-                    currentHoveredImage.Select();
-                }
-            }
+            var isInUpperBounds = scrollIndex - 1 < 0;
+            var isInLowerBounds = scrollIndex + 1 >= ButtonList.Count;
+
+            if (InputWrapper.UpKeyPressed && !isInUpperBounds) Scroll(-1);
+            if (InputWrapper.DownKeyPressed && !isInLowerBounds) Scroll(1);
+
+            SelectHoveredButton();
         }
 
+        private void SelectHoveredButton()
+        {
+            if (InputWrapper.ProgressionKeyPressed) currentHoveredImage.Select();
+        }
 
         private void Scroll(int scrollValue)
         {
@@ -99,9 +84,6 @@ namespace RydenCam.DialogueGameUI
             scrollBar.value = 1 - (scrollIndex / ((float)ButtonList.Count - 1));
         }
 
-        public void HoverOverButton(SelectableImage selectableImage)
-        {
-            currentHoveredImage = selectableImage;
-        }
+        public void HoverOverButton(SelectableImage selectableImage) => currentHoveredImage = selectableImage;
     }
 }

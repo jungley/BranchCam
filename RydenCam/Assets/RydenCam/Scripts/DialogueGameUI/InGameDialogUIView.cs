@@ -135,7 +135,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
                 buttonManager.ButtonList.Add(decisionButton.selectableImage);
             }
 
-            //Hovers over the first option when decision panel appears.
+            //Automatically hover the first option.
             buttonManager.ButtonList[0].Hover();
 
         }

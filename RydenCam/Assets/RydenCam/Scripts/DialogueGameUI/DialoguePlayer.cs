@@ -79,7 +79,7 @@ namespace RydenCam.DialogueGameUI
         public void Update()
         {
 
-            if (Inputs.ProgressionKey() && SequenceControls.DialogueIsRunning)
+            if (InputWrapper.ProgressionKeyPressed && SequenceControls.DialogueIsRunning)
             {
                 if (!SequenceControls.DecisionBeingMadeLock)
                 {
