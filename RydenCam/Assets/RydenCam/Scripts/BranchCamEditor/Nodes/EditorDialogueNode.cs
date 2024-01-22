@@ -8,6 +8,7 @@ using RydenCam.Common;
 using System.Linq;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
+using RydenCam.BranchCamEditor.Serialization;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -55,6 +56,51 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             //Add Single Default Shot
             NodeConvodata.ShotConfig = new CamShotConfig(NodeConvodata.Actor.ActorName, CameraGoal.Portrait, CameraDistance.Mid, CameraAngle.EyeLevel, CustomCameraType.None);
+        }
+
+        public EditorDialogueNode(Saveable savenode) : base()
+        {
+            //Cast it down
+            SaveableDialogueNode dianode = (SaveableDialogueNode)savenode;
+
+            defineStyles();
+            nodeWidth = 200;
+            nodeHeight = 120;
+
+            //Saveable info
+            windowRect = dianode.windowRect;
+            node_id = dianode.node_id;
+
+            ColorUtility.TryParseHtmlString("#1700FF", out nodeColor);
+
+            ActorInfo actor = dianode.NodeConvodata.Actor;
+            NodeConvodata = new ConversationData(actor, dianode.NodeConvodata.DialogTextList);
+
+            //Editor Specifications
+            Sel_ActorID = actor.ActorID;
+            ActorIndex = EditorController.Instance.ActorsInScene.FindIndex(x => x.ActorID == Sel_ActorID);
+
+            //Instantiate ConnectionPoints
+            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            PointOut = new List<ConnectionPoint>();
+            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+
+            //Set Camera Info
+            if (savenode.goal_type == CameraGoal.Custom)
+            {
+                NodeConvodata.ShotConfig =
+                    new CamShotConfig(actor.ActorName, savenode.goal_customtype, savenode.CamPositon, savenode.CamRotation);
+
+                NodeConvodata.ShotConfig.LocalRelativeActorPos = savenode.LocalActorPos;
+                NodeConvodata.ShotConfig.LocalRelativeActorRot = savenode.LocalActorRot;
+            }
+            else
+            {
+                NodeConvodata.ShotConfig = new CamShotConfig(actor.ActorName, savenode.goal_type, savenode.goal_dist, savenode.goal_angle, savenode.goal_customtype);
+            }
+
+            NodeConvodata.ShotConfig.oppositeActor = savenode.oppositeActor;
+            NodeConvodata.ShotConfig.actor = actor.ActorName;
         }
 
         public bool ReachedLastDialogueText(int currentIndex) => currentIndex == NodeConvodata.DialogTextList.Count - 1;
@@ -221,103 +267,6 @@ namespace RydenCam.BranchCamEditor.Nodes
             {
                 Debug.Log("This shouldnt have happened");
                 return null;
-            }
-        }
-
-
-        //When writing to JSON
-        public override Saveable Saveable()
-        {
-            return new SaveableDialogueNode(this);
-        }
-
-        public EditorDialogueNode(Saveable savenode) : base()
-        {
-            //Cast it down
-            SaveableDialogueNode dianode = (SaveableDialogueNode)savenode;
-
-            defineStyles();
-            nodeWidth = 200;
-            nodeHeight = 120;
-
-            //Saveable info
-            windowRect = dianode.windowRect;
-            node_id = dianode.node_id;
-
-            ColorUtility.TryParseHtmlString("#1700FF", out nodeColor);
-
-            ActorInfo actor = dianode.NodeConvodata.Actor;
-            NodeConvodata = new ConversationData(actor, dianode.NodeConvodata.DialogTextList);
-
-            //Editor Specifications
-            Sel_ActorID = actor.ActorID;
-            ActorIndex = EditorController.Instance.ActorsInScene.FindIndex(x => x.ActorID == Sel_ActorID);
-
-            //Instantiate ConnectionPoints
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
-            PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
-
-            //Set Camera Info
-            if (savenode.goal_type == CameraGoal.Custom)
-            {
-                NodeConvodata.ShotConfig =
-                    new CamShotConfig(actor.ActorName, savenode.goal_customtype, savenode.CamPositon, savenode.CamRotation);
-
-                NodeConvodata.ShotConfig.LocalRelativeActorPos = savenode.LocalActorPos;
-                NodeConvodata.ShotConfig.LocalRelativeActorRot = savenode.LocalActorRot;
-            }
-            else
-            {
-                NodeConvodata.ShotConfig = new CamShotConfig(actor.ActorName, savenode.goal_type, savenode.goal_dist, savenode.goal_angle, savenode.goal_customtype);
-            }
-
-            NodeConvodata.ShotConfig.oppositeActor = savenode.oppositeActor;
-            NodeConvodata.ShotConfig.actor = actor.ActorName;
-        }
-
-        //SAVEable class when it becomes a scriptable object
-        [System.Serializable]
-        [ExecuteAlways]
-        public class SaveableDialogueNode : Saveable
-        {
-            public ConversationData NodeConvodata;
-            public override NodeType TypeOfNode => NodeType.DialogueNode;
-
-            public SaveableDialogueNode(EditorDialogueNode noderef)
-            {
-                node_id = noderef.node_id;
-                windowRect = noderef.windowRect;
-                NodeConvodata = noderef.NodeConvodata;
-
-                IN_connTo = new List<string>();
-                if (noderef.PointIn.connectedTo != null)
-                {
-                    IN_connTo.Add(noderef.PointIn.connectedTo.node.node_id);
-                }
-
-                if (noderef.PointOut[0].connectedTo != null)
-                {
-                    OUT_connTo = new List<string>();
-                    OUT_connTo.Add(noderef.PointOut[0].connectedTo.node.node_id);
-                }
-
-                //Saving Camera Info Here
-                var cameraShot = NodeConvodata.ShotConfig;
-                oppositeActor = cameraShot.oppositeActor;
-                goal_type = cameraShot.GoalType;
-                goal_dist = cameraShot.GoalDistance;
-                goal_angle = cameraShot.GoalAngle;
-                goal_customtype = cameraShot.GoalCustomType;
-                CamPositon = (cameraShot.CustomCamPos != null) ? cameraShot.CustomCamPos.Value : Vector3.zero;
-                CamRotation = (cameraShot.CustomCamRot != null) ? cameraShot.CustomCamRot.Value : Quaternion.identity;
-                LocalActorPos = cameraShot.LocalRelativeActorPos;
-                LocalActorRot = cameraShot.LocalRelativeActorRot;
-            }
-
-            public override EditorBaseNode ConvertToUnity()
-            {
-                return new EditorDialogueNode(this);
             }
         }
     }
