@@ -2,6 +2,9 @@
 
 namespace RydenCam.BranchCamEditor
 {
+    /// <summary>
+    ///Used for loading the conversation when closing then reopening the BranchCam UI
+    /// <summary>
     public static class BranchCamEditorPreferences
     {
         private const string LastFilePathKey = "Last File Path Key";

@@ -5,6 +5,7 @@ using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.SequenceData;
 using System;
 using RydenCam.Common;
+using RydenCam.BranchCamEditor.Serialization;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -126,7 +127,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
         public EditorGotoNode(Saveable savenode) : base()
         {
-            EditorGotoNode.SaveableGotoNode gonode = (EditorGotoNode.SaveableGotoNode)savenode;
+            SaveableGotoNode gonode = savenode as SaveableGotoNode;
             defineStyles();
 
             ColorUtility.TryParseHtmlString("#FF530D", out nodeColor);
@@ -143,42 +144,6 @@ namespace RydenCam.BranchCamEditor.Nodes
             PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>();
             PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
-        }
-
-        public override Saveable Saveable()
-        {
-            return new SaveableGotoNode(this);
-        }
-
-        //SAVEable class when it becomes a scriptable object
-        [System.Serializable]
-        [ExecuteAlways]
-
-        public class SaveableGotoNode : Saveable
-        {
-            public override NodeType TypeOfNode => NodeType.GoToNode;
-            public SaveableGotoNode(EditorGotoNode noderef)
-            {
-                node_id = noderef.node_id;
-                windowRect = noderef.windowRect;
-
-                IN_connTo = new List<string>();
-                if (noderef.PointIn.connectedTo != null)
-                {
-                    IN_connTo.Add(noderef.PointIn.connectedTo.node.node_id);
-                }
-
-                if (noderef.PointOut[0].connectedTo != null)
-                {
-                    OUT_connTo = new List<string>();
-                    OUT_connTo.Add(noderef.PointOut[0].connectedTo.node.node_id);
-                }
-            }
-
-            public override EditorBaseNode ConvertToUnity()
-            {
-                return new EditorGotoNode(this);
-            }
         }
     }
 }

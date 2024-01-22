@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.SequenceData;
-using RydenCam.BranchCamEditor.BranchFile;
-using RydenCam.Common;
+
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.BranchCamEditor.Managers;
 using Cinemachine;
-using UnityEngine.Rendering.PostProcessing;
 using Assets.RydenCam.Scripts.DialogueGameUI;
 
 namespace RydenCam.BranchCamEditor.Controllers
