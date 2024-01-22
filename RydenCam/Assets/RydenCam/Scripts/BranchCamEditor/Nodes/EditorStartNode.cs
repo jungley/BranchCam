@@ -8,6 +8,8 @@ using RydenCam.Common;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using System.Linq;
+using RydenCam.BranchCamEditor.Serialization;
+using Assets.RydenCam.Scripts.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -44,6 +46,30 @@ namespace RydenCam.BranchCamEditor.Nodes
             PointOut = new List<ConnectionPoint>();
             PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
 
+        }
+
+        public EditorStartNode(Saveable savenode) : base()
+        {
+            SaveableStartNode stnode = savenode as SaveableStartNode;
+            SequenceName = stnode.SequenceName;
+            node_id = stnode.node_id;
+            CameraSide = stnode.CameraSide;
+            nodeWidth = 200;
+            nodeHeight = 70;
+            StartPositionsEnabled = stnode.startPositionsEnabled;
+            ReturnToOriginalPositions = stnode.returnToOriginalPositions;
+            EditorController.Instance.ActorsInScene = stnode.ActorsInScene;
+            PointOut = new List<ConnectionPoint>();
+            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+#if UNITY_EDITOR
+            labelStyle = new GUIStyle();
+            labelStyle.fontStyle = FontStyle.Bold;
+            labelStyle.fontSize = 10;
+            windowRect = stnode.windowRect;
+            SequenceName = stnode.SequenceName;
+            ColorUtility.TryParseHtmlString("#009900", out nodeColor);
+            BranchCamEditor.startNodeAdded = true;
+#endif
         }
 
         public override void DrawForInspector()
@@ -198,78 +224,6 @@ namespace RydenCam.BranchCamEditor.Nodes
         }
 
         public override ConnectionPoint getConPoint(Vector2 mousePos) => PointOut[0];
-
-        public override Saveable Saveable() => new SaveableStartNode(this);
         
-
-        //Converting from Saveable
-        public EditorStartNode(Saveable savenode) : base()
-        {
-
-            //Cast it down
-            EditorStartNode.SaveableStartNode stnode = (EditorStartNode.SaveableStartNode)savenode;
-            SequenceName = stnode.SequenceName;
-            node_id = stnode.node_id;
-            CameraSide = stnode.CameraSide;
-            nodeWidth = 200;
-            nodeHeight = 70;
-
-            StartPositionsEnabled = stnode.startPositionsEnabled;
-            ReturnToOriginalPositions = stnode.returnToOriginalPositions;
-
-            EditorController.Instance.ActorsInScene = stnode.ActorsInScene;
-            //Out Point
-            PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
-#if UNITY_EDITOR
-            //HEADERS for shots
-            labelStyle = new GUIStyle();
-            labelStyle.fontStyle = FontStyle.Bold;
-            labelStyle.fontSize = 10;
-            windowRect = stnode.windowRect;
-            SequenceName = stnode.SequenceName;
-            ColorUtility.TryParseHtmlString("#009900", out nodeColor);
-            BranchCamEditor.startNodeAdded = true;
-#endif
-        }
-
-        //SAVEable class when it becomes a scriptable object
-        [System.Serializable]
-        [ExecuteAlways]
-        public class SaveableStartNode : Saveable
-        {
-            public string SequenceName;
-            public Side CameraSide;
-            public List<ActorInfo> ActorsInScene;
-            public bool startPositionsEnabled;
-            public bool overrideRotation;
-            public bool returnToOriginalPositions;
-            public string unitySceneName;
-
-            public override NodeType TypeOfNode => NodeType.StartNode;
-
-            public SaveableStartNode(EditorStartNode noderef)
-            {
-                node_id = noderef.node_id;
-                windowRect = noderef.windowRect;
-                SequenceName = noderef.SequenceName;
-                CameraSide = noderef.CameraSide;
-                ActorsInScene = EditorController.Instance.ActorsInScene;
-
-                //predefind start variables
-                unitySceneName = noderef.UnitySceneName;
-                overrideRotation = noderef.OverrideRotation;
-                startPositionsEnabled = noderef.StartPositionsEnabled;
-                returnToOriginalPositions = noderef.ReturnToOriginalPositions;
-
-                if (noderef.PointOut[0].connectedTo != null)
-                {
-                    OUT_connTo = new List<string>();
-                    OUT_connTo.Add(noderef.PointOut[0].connectedTo.node.node_id);
-                }
-            }
-
-            public override EditorBaseNode ConvertToUnity() => new EditorStartNode(this);
-        }
     }
 }

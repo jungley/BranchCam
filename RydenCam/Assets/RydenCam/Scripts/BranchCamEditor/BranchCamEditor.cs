@@ -5,7 +5,7 @@ using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using System.Linq;
 using RydenCam.Common;
-using RydenCam.BranchCamEditor.BranchFile;
+using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 
 namespace RydenCam.BranchCamEditor
@@ -110,8 +110,6 @@ namespace RydenCam.BranchCamEditor
             if (lastFilePath != string.Empty)
             {
                 EditorController.Instance.ResetEverything();
-
-                JsonNodeConverter converter = new JsonNodeConverter();
 
                 LoadFile.LoadSaveables();
             }

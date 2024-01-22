@@ -1,6 +1,6 @@
 ﻿using Cinemachine;
 using RydenCam.BranchCamEditor;
-using RydenCam.BranchCamEditor.BranchFile;
+using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;

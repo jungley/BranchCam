@@ -26,8 +26,6 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
 
         public bool ContainsPoint(ConnectionPoint A)
         {
-            //return (A == Point_IN || A == Point_OUT);
-
             if ((A == Point_IN || A == Point_OUT))
             {
                 return true;

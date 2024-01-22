@@ -10,6 +10,7 @@ using RydenCam.Common;
 using RydenCam.BranchCamEditor.Controllers;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.Serialization;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -17,7 +18,7 @@ namespace RydenCam.BranchCamEditor.Nodes
     [Serializable]
     public class EditorActionNode : EditorBaseNode
     {
-        List<MethodInfoContainer> methodContainers = new List<MethodInfoContainer>();
+        public List<MethodInfoContainer> methodContainers = new List<MethodInfoContainer>();
 
         private GUIStyle labelStyle;
 
@@ -274,12 +275,9 @@ namespace RydenCam.BranchCamEditor.Nodes
         {
             //Cast it down
             SaveableActionNode actnode = (SaveableActionNode)savenode;
-
             defineStyles();
             nodeWidth = 150;
             nodeHeight = 100;
-
-
             //Saveable info
             windowRect = actnode.windowRect;
             node_id = actnode.node_id;
@@ -293,45 +291,5 @@ namespace RydenCam.BranchCamEditor.Nodes
             PointOut = new List<ConnectionPoint>();
             PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
         }
-
-        public override Saveable Saveable()
-        {
-            return new SaveableActionNode(this);
-        }
-
-        [System.Serializable]
-        [ExecuteAlways]
-        public class SaveableActionNode : Saveable
-        {
-            [SerializeField]
-            public List<MethodInfoContainer> methodInfoConatiners;
-
-            public override NodeType TypeOfNode => NodeType.ActionNode;
-
-            public SaveableActionNode(EditorActionNode noderef)
-            {
-                node_id = noderef.node_id;
-                windowRect = noderef.windowRect;
-                methodInfoConatiners = noderef.methodContainers;
-
-                IN_connTo = new List<string>();
-                if (noderef.PointIn.connectedTo != null)
-                {
-                    IN_connTo.Add(noderef.PointIn.connectedTo.node.node_id);
-                }
-
-                if (noderef.PointOut[0].connectedTo != null)
-                {
-                    OUT_connTo = new List<string>();
-                    OUT_connTo.Add(noderef.PointOut[0].connectedTo.node.node_id);
-                }
-            }
-
-            public override EditorBaseNode ConvertToUnity()
-            {
-                return new EditorActionNode(this);
-            }
-        }
-
     }
 }
