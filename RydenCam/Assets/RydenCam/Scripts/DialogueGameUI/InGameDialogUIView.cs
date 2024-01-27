@@ -4,6 +4,7 @@ using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.DialogueGameUI;
 using RydenCam.Utilities;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -106,7 +107,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
 
 
             //Make sure this is called AFTER CreateButtons();
-            DecisionPanel.SetActive(true);
+           // DecisionPanel.SetActive(true);
 
 
             if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
@@ -130,9 +131,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {
-                var decisionButton = new ButtonCreator("Button_" + i, DecisionViewContainer.transform, node.DecisionOptions[i], i);
-
-                buttonManager.ButtonList.Add(decisionButton.selectableImage);
+                buttonManager.ButtonList.Add(new ButtonHolder(node.DecisionOptions[i], i));
             }
 
             //Automatically hover the first option.

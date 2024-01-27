@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="ScrollView" src="project://database/Assets/RydenCam/UIToolkit/ScrollView.uxml?fileID=9197481963319205126&amp;guid=c3dc714095661b847abb35fa0398165f&amp;type=3#ScrollView" />
+    <Style src="project://database/Assets/RydenCam/UIToolkit/RydenStyleSheet.uss?fileID=7433441132597879392&amp;guid=05dac8634c6802b4b997a578098662c4&amp;type=3#RydenStyleSheet" />
+    <ui:VisualElement name="main-container" style="flex-grow: 1; justify-content: flex-end; background-color: rgba(255, 255, 255, 0);">
+        <ui:Instance template="ScrollView" name="ScrollView" />
+    </ui:VisualElement>
+</ui:UXML>

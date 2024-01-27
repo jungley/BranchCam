@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using RydenCam.Common;
 using System;
+using UnityEngine.UIElements;
+using System.Xml;
+using System.Linq;
 
 namespace RydenCam.DialogueGameUI
 {
@@ -14,14 +16,15 @@ namespace RydenCam.DialogueGameUI
     {
         public static ButtonManager Instance;
 
-        public delegate void OnButtonSelected();
-        public OnButtonSelected OnButtonSelectedCallBack;
-        [HideInInspector]public List<SelectableImage> ButtonList = new List<SelectableImage>();
+        [HideInInspector]
+        public List<ButtonHolder> ButtonList = new List<ButtonHolder>();
         public DialoguePlayer DialoguePlayer;
+        //public bool HasHoveredImage => currentHoveredImage != null;
+        public UIDocument ScrollViewUIDocument;
 
-        private SelectableImage currentHoveredImage;
-        [SerializeField] private Scrollbar scrollBar;
+        //private SelectableImage currentHoveredImage;
         private int scrollIndex;
+        private ScrollView scrollView;
 
         private void Awake()
         {
@@ -40,18 +43,20 @@ namespace RydenCam.DialogueGameUI
                 DialoguePlayer scriptComponent = FindObjectOfType<DialoguePlayer>();
             }
 
-            if (scrollBar == null)
-            {
-                Scrollbar scriptComponent = FindObjectOfType<Scrollbar>();
-            }
+            scrollView = ScrollViewUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");
             #endregion
-
-            OnButtonSelectedCallBack += Clear;
         }
+
 
         public void Clear()
         {
             scrollIndex = 0;
+
+            foreach(var buttonHolder in ButtonList)
+            {
+                scrollView.Remove(buttonHolder.Button);
+            }
+
             ButtonList.Clear();
         }
 
@@ -67,23 +72,18 @@ namespace RydenCam.DialogueGameUI
             if (InputWrapper.UpKeyPressed && !isInUpperBounds) Scroll(-1);
             if (InputWrapper.DownKeyPressed && !isInLowerBounds) Scroll(1);
 
-            SelectHoveredButton();
-        }
-
-        private void SelectHoveredButton()
-        {
-            if (InputWrapper.ProgressionKeyPressed) currentHoveredImage.Select();
+            if (InputWrapper.ProgressionKeyPressed) ButtonList[scrollIndex].ButtonAction();
         }
 
         private void Scroll(int scrollValue)
         {
-            currentHoveredImage.UnHover();
+            ButtonList[scrollIndex].Unhover();
+
             scrollIndex += scrollValue;
+
+            scrollView.ScrollTo(ButtonList[scrollIndex].Button);
             ButtonList[scrollIndex].Hover();
 
-            scrollBar.value = 1 - (scrollIndex / ((float)ButtonList.Count - 1));
         }
-
-        public void HoverOverButton(SelectableImage selectableImage) => currentHoveredImage = selectableImage;
     }
 }
