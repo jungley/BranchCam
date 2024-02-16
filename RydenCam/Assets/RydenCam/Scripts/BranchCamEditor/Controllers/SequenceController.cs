@@ -28,6 +28,10 @@ namespace RydenCam.BranchCamEditor.Controllers
         public InGameDialogUIView UIView { get; set; }
         public CameraCalculator CamCalculator { get; set; }
         public List<ActorInfo> ActorsInScene => EditorController.Instance.ActorsInScene;
+
+        public bool DialogueIsRunning = false;
+
+        public bool DecisionBeingMadeLock = false;
         public SequenceController(GameObject dcamera, GameObject dcameraBrain, GameObject canvas)
         {
             dialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
@@ -46,14 +50,13 @@ namespace RydenCam.BranchCamEditor.Controllers
             CamCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
             SetDepthOfField(depthEnabled: true);
             PreviousDialogue = new Stack<string>();
+            DialogueIsRunning = true;
+            DecisionBeingMadeLock = false;
         }
 
-        public void OnUserClick()
-        {
-            TraverseNodeNetwork();
-        }
         public void MakeDecision(int choiceIndex)
         {
+            DecisionBeingMadeLock = true;
             if (CurrentNode is EditorDecisionNode node)
             {
                 CurrentNode = node.MakeDecision(choiceIndex);
@@ -89,7 +92,7 @@ namespace RydenCam.BranchCamEditor.Controllers
                     case EditorDialogueNode dialogueNode:
                         HandleDialogueText(dialogueNode);
                         SetCamera();
-                        if (DialogueIndex == dialogueNode.NodeConvodata.DialogTextList.Count - 1)
+                        if (dialogueNode.ReachedLastDialogueText(DialogueIndex))
                         {
                             DialogueIndex = -1;
                             CurrentNode = CurrentNode.GetNextNode();
@@ -129,6 +132,8 @@ namespace RydenCam.BranchCamEditor.Controllers
             UIView.ClearPanels();
             ToggleRelevantObjects(visibility: false);
             PreviousDialogue = new Stack<string>();
+            DialogueIsRunning = false;
+            DecisionBeingMadeLock = false;
         }
 
         public void ToggleRelevantObjects(bool visibility)

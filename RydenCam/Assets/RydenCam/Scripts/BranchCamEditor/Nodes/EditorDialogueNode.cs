@@ -57,6 +57,8 @@ namespace RydenCam.BranchCamEditor.Nodes
             NodeConvodata.ShotConfig = new CamShotConfig(NodeConvodata.Actor.ActorName, CameraGoal.Portrait, CameraDistance.Mid, CameraAngle.EyeLevel, CustomCameraType.None);
         }
 
+        public bool ReachedLastDialogueText(int currentIndex) => currentIndex == NodeConvodata.DialogTextList.Count - 1;
+
         public override EditorBaseNode GetNextNode() => PointOut[0]?.connectedTo?.node;
         
 

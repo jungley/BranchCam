@@ -4,6 +4,7 @@ using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.DialogueGameUI;
 using RydenCam.Utilities;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -94,40 +95,47 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         {
             ClearPanels();
             DialoguePanel.SetActive(true);
-            DialoguePanel.GetComponentInChildren<TextMeshProUGUI>().text = dialogue;
+            var textComponent = DialoguePanel.GetComponentInChildren<TextMeshProUGUI>();
+            SetText(textComponent, dialogue);
         }
 
         public void DisplayDecisionNode()
         {
             ClearPanels();
+            EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode;
+            CreateButtons(node);
 
-            EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode; 
 
-            for (int i = 0; i < node.DecisionOptions.Count; i++)
-            {
-                var widthRatio = 0.35f;
-                var heightRatio = 0.0725f;
+            //Make sure this is called AFTER CreateButtons();
+           // DecisionPanel.SetActive(true);
 
-                var buttonWidth = Screen.width * widthRatio;
-                var buttonHeight = Screen.height * heightRatio;
-
-                new ButtonCreator("Button_" + i, buttonWidth, buttonHeight)
-                    .AddUIImage()
-                    .AddHoverImage()
-                    .AddText(node.DecisionOptions[i])
-                    .SetParent(DecisionViewContainer.transform)
-                    .AddButtonScript(i)
-                    .ResizeElementsByTextSize();
-            }
-
-            //Keep DecisionPanel.SetActive(true) after nodes are created.
-            DecisionPanel.SetActive(true);
 
             if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
             {
                 DecisionDialoguePanel.SetActive(true);
-                DecisionDialoguePanel.GetComponentInChildren<TextMeshProUGUI>().text = Controller.PreviousDialogue.Peek();
+                var textComponent = DecisionDialoguePanel.GetComponentInChildren<TextMeshProUGUI>();
+                SetText(textComponent, Controller.PreviousDialogue.Peek());
             }
+        }
+
+        private void SetText(TextMeshProUGUI textComponent, string text)
+        {
+            textComponent.text = text;
+            textComponent.font = GlobalSettings.Settings.defaultFont;
+            textComponent.fontSize = GlobalSettings.Settings.defaultFontSize;
+        }
+
+        private void CreateButtons(EditorDecisionNode node)
+        {
+            var buttonManager = ButtonManager.Instance;
+
+            for (int i = 0; i < node.DecisionOptions.Count; i++)
+            {
+                buttonManager.ButtonList.Add(new ButtonHolder(node.DecisionOptions[i], i));
+            }
+
+            //Automatically hover the first option.
+            buttonManager.ButtonList[0].Hover();
 
         }
 

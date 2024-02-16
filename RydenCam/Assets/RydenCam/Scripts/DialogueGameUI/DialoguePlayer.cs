@@ -67,7 +67,7 @@ namespace RydenCam.DialogueGameUI
         [HideInInspector]
         public string DialogueFolder;
         public SequenceController SequenceControls;
-        public bool IsDialogueRunning => SequenceControls != null && SequenceControls.CurrentNode != null;
+        public bool IsDialogueRunning => SequenceControls.DialogueIsRunning;
 
         public void Start()
         {
@@ -75,13 +75,25 @@ namespace RydenCam.DialogueGameUI
             SequenceControls.ToggleRelevantObjects(visibility: false);
         }
 
+        
         public void Update()
         {
-            if(Input.GetMouseButtonDown(1))
+
+            if (InputWrapper.ProgressionKeyPressed && SequenceControls.DialogueIsRunning)
             {
-                SequenceControls.TraverseNodeNetwork();
+                if (!SequenceControls.DecisionBeingMadeLock)
+                {
+                    SequenceControls.TraverseNodeNetwork();
+                }
+                else
+                {
+                    //Lock for when Traverse is being called from a UI Button.
+                    SequenceControls.DecisionBeingMadeLock = false;
+                }
             }
+
         }
+
 
         /// <summary>
         /// StartSequence should be triggered by a trigger collider
