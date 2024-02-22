@@ -37,7 +37,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             {
                 string assetFileName = Directory.GetFiles(directoryPath, "*.json").FirstOrDefault();
 
-                string assetFilePath = assetFileName.Replace("\\", "/");
+                string assetFilePath = assetFileName?.Replace("\\", "/");
 
                 if (!string.IsNullOrEmpty(assetFilePath))
                 {
