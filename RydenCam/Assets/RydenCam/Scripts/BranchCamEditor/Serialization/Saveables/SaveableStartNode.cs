@@ -1,6 +1,7 @@
 ﻿using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System;
@@ -10,20 +11,33 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Assets.RydenCam.Scripts.BranchCamEditor.Serialization.Saveables
+namespace RydenCam.BranchCamEditor.Serialization
 {
     [System.Serializable]
     public class SaveableStartNode : Saveable
     {
+        [SerializeField]
         public string SequenceName;
+        [SerializeField]
         public Side CameraSide;
+        [SerializeField]
         public List<ActorInfo> ActorsInScene;
+        [SerializeField]
         public bool startPositionsEnabled;
+        [SerializeField]
         public bool overrideRotation;
+        [SerializeField]
         public bool returnToOriginalPositions;
+        [SerializeField]
         public string unitySceneName;
 
-        public override NodeType TypeOfNode => NodeType.StartNode;
+        [SerializeField]
+        private NodeType typeOfNode = NodeType.StartNode;
+
+        public new NodeType TypeOfNode
+        {
+            get { return typeOfNode; }
+        }
 
         public SaveableStartNode(EditorStartNode node) : base(node)
         {

@@ -107,7 +107,7 @@ namespace RydenCam.BranchCamEditor.Managers
                     connection.Draw();
                 }
             }
-            catch (Exception e) { }
+            catch (Exception) { }
 #endif
         }
     }

@@ -9,6 +9,7 @@ using System.Linq;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -204,11 +205,11 @@ namespace RydenCam.BranchCamEditor.Nodes
             if (NodeConvodata.Actor == null)
             {
                 try { EditorGUILayout.LabelField(BranchConstants.UnAssignedActor, labelStyleHead_Node); }
-                catch (Exception e) { };
+                catch (Exception) { };
             }
             else
             {
-                try { EditorGUILayout.LabelField(NodeConvodata.Actor.ActorName, labelStyleHead_Node); } catch (Exception e) { };
+                try { EditorGUILayout.LabelField(NodeConvodata.Actor.ActorName, labelStyleHead_Node); } catch (Exception) { };
             }
 
             //Needs to be scrollable for multiple dialogs like decision
@@ -216,11 +217,11 @@ namespace RydenCam.BranchCamEditor.Nodes
             {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(nodeWidth - 10), GUILayout.Height(nodeHeight - 70));
             }
-            catch(Exception e) { };
+            catch(Exception) { };
 
             for (int i = 0; i < NodeConvodata.DialogTextList.Count; i++)
             {
-                try { NodeConvodata.DialogTextList[i] = EditorGUILayout.TextArea(NodeConvodata.DialogTextList[i], GUILayout.Width(nodeWidth - 40), GUILayout.Height(20)); } catch (Exception e) { };
+                try { NodeConvodata.DialogTextList[i] = EditorGUILayout.TextArea(NodeConvodata.DialogTextList[i], GUILayout.Width(nodeWidth - 40), GUILayout.Height(20)); } catch (Exception) { };
             }
 
 

@@ -6,6 +6,7 @@ using RydenCam.SequenceData;
 using System;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {

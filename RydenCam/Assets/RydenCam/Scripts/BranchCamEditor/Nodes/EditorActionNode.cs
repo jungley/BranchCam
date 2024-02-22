@@ -11,6 +11,8 @@ using RydenCam.BranchCamEditor.Controllers;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
+using Assets.RydenCam.Scripts.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -62,7 +64,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             {
                 //Repaint is ocurring
                 try { EditorGUILayout.LabelField(name, GUILayout.Width(100), GUILayout.Height(18)); }
-                catch (Exception ex) { }
+                catch (Exception) { }
             }
 
 
