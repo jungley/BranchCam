@@ -45,7 +45,10 @@ namespace RydenCam.BranchCamEditor.Serialization
 
             NodeManager.Instance.Clear();
 
-            loadedEditorNodes.ForEach(n => NodeManager.Instance.AddNode(n));
+            if (loadedEditorNodes != null)
+            {
+                loadedEditorNodes.ForEach(n => NodeManager.Instance.AddNode(n));
+            }
         }
         
     }

@@ -8,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using System;
 using UnityEditor;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -40,19 +41,21 @@ namespace RydenCam.BranchCamEditor.Serialization
 
                 List<Saveable> saveableList = NodeSerializer.SerializeNodes(NodeManager.Instance.GetList());
 
-                SaveDataContainer saveDataContainer = ScriptableObject.CreateInstance<SaveDataContainer>();
-                saveDataContainer.saveables = saveableList;
+                List<string> jsonStrings = new List<string>();
+                foreach(Saveable save in saveableList)
+                {
+                    string result = JsonUtility.ToJson(save);
+                    jsonStrings.Add(result);
+                }
 
-                // Save the ScriptableObject
-                //TODO PROCESS HERE WITH SAVING Need to weird stuff here TODO
-                string path = directoryPath + name + ".asset";
-                UnityEditor.AssetDatabase.CreateAsset(saveDataContainer, path);
-                UnityEditor.AssetDatabase.SaveAssets();
-                EditorUtility.SetDirty(saveDataContainer);
+                SaveDataContainer saveDataContainer = new SaveDataContainer(jsonStrings);
+                string combinedJson = JsonUtility.ToJson(saveDataContainer);
+
+               File.WriteAllText(directoryPath + name + ".json", combinedJson);
 
                 BranchLog.Log("Saved File");
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 BranchLog.Error("An error with Saving occured");
 

@@ -9,7 +9,7 @@ using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using System.Linq;
 using RydenCam.BranchCamEditor.Serialization;
-using Assets.RydenCam.Scripts.BranchCamEditor.Serialization.Saveables;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
