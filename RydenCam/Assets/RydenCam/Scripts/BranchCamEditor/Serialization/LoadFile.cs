@@ -5,6 +5,7 @@ using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Managers;
+using System;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -20,10 +21,17 @@ namespace RydenCam.BranchCamEditor.Serialization
             // Get the data path of the Unity project
             string projectPath = Application.dataPath;
 
-            // Calculate the relative path
-            string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
+            try
+            {
+                // Calculate the relative path
+                string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
 
-            BranchCamEditorPreferences.SetLastFilePath(relativePath);
+                BranchCamEditorPreferences.SetLastFilePath(relativePath);
+            }
+            catch(Exception)
+            {
+                BranchLog.Log("Cannot open file or no file chosen.");
+            }
         }
 
         public static bool IsValidEditorPath()
