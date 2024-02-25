@@ -13,7 +13,6 @@ namespace RydenCam.Common
         DialogueNode,
         DecisionNode,
         ActionNode,
-        GoToNode,
         ConditionalNode
     }
 

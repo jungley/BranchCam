@@ -73,11 +73,6 @@ namespace RydenCam.BranchCamEditor.Serialization
                                     deserializedNodes.Add(actionNode);
                                     break;
 
-                                case NodeType.GoToNode:
-                                    SaveableGotoNode gotoNode = JsonUtility.FromJson<SaveableGotoNode>(nodeJsonContent);
-                                    deserializedNodes.Add(gotoNode);
-                                    break;
-
                                 default:
                                     break;
                             }
