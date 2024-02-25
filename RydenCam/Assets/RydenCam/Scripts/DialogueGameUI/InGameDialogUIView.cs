@@ -116,7 +116,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         private void SetText(Label textLabel, string text)
         {
             textLabel.text = text;
-            textLabel.style.unityFont = GlobalSettings.Settings.defaultFont;
+            textLabel.style.unityFont = GlobalSettings.Settings.defaultFont ? GlobalSettings.Settings.defaultFont : Resources.Load<Font>("Afacad-Regular");
             textLabel.style.fontSize = GlobalSettings.Settings.defaultFontSize;
         }
 

@@ -22,7 +22,7 @@ public class ButtonHolder
         Button = (Resources.Load("option-button") as VisualTreeAsset).CloneTree().Q<Button>();
 
         Button.text = buttonText;
-        Button.style.unityFont = GlobalSettings.Settings.defaultFont;
+        Button.style.unityFont = GlobalSettings.Settings.defaultFont ? GlobalSettings.Settings.defaultFont : Resources.Load<Font>("Afacad-Regular");
         Button.style.fontSize = GlobalSettings.Settings.defaultFontSize;
 
         if(GlobalSettings.Settings.isMouseAllowed) Button.RegisterCallback<ClickEvent>(evt => ButtonAction());
