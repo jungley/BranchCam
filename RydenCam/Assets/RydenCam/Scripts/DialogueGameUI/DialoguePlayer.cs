@@ -78,20 +78,11 @@ namespace RydenCam.DialogueGameUI
         
         public void Update()
         {
+            if (!ValidInputs.ProgressionInputPressed) return;
+            if (!SequenceControls.DialogueIsRunning) return;
 
-            if (InputWrapper.ProgressionKeyPressed && SequenceControls.DialogueIsRunning)
-            {
-                if (!SequenceControls.DecisionBeingMadeLock)
-                {
-                    SequenceControls.TraverseNodeNetwork();
-                }
-                else
-                {
-                    //Lock for when Traverse is being called from a UI Button.
-                    SequenceControls.DecisionBeingMadeLock = false;
-                }
-            }
-
+            if (!SequenceControls.DecisionBeingMadeLock)
+                SequenceControls.TraverseNodeNetwork();
         }
 
 

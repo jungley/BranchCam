@@ -1,8 +1,6 @@
 .option-button-default {
     background-color: rgba(0, 0, 0, 0);
     font-size: 26px;
-    color: rgb(219, 219, 219);
-    text-shadow: 2px 2px 2px rgb(0, 0, 0);
     border-left-width: 0;
     border-right-width: 0;
     border-top-width: 0;
@@ -13,3 +11,35 @@
     border-bottom-right-radius: 0;
 }
 
+.dialogue-panel {
+    align-self: center;
+    margin-bottom: 25px;
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    max-height: 15%;
+    max-width: 60%;
+    -unity-font-definition: initial;
+    visibility: hidden;
+}
+
+.decision-panel {
+    align-self: center;
+    justify-content: flex-start;
+    top: 0;
+    flex-direction: row;
+    margin-top: 30px;
+    flex-grow: 1;
+    max-height: 15%;
+    max-width: 60%;
+    -unity-font-definition: initial;
+    visibility: hidden;
+}
+
+.text {
+    color: rgb(219, 219, 219);
+    text-shadow: 2px 2px 2px rgb(0, 0, 0);
+    align-self: auto;
+    -unity-text-align: middle-center;
+    -unity-font-definition: initial;
+}

@@ -17,12 +17,15 @@ public class ButtonHolder
     {
         this.optionIndex = optionIndex;
 
-        var container = ButtonManager.Instance.ScrollViewUIDocument.rootVisualElement.Q<VisualElement>("unity-content-container");
+        var container = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<VisualElement>("unity-content-container");
 
         Button = (Resources.Load("option-button") as VisualTreeAsset).CloneTree().Q<Button>();
 
         Button.text = buttonText;
-        Button.RegisterCallback<ClickEvent>(evt => ButtonAction());
+        Button.style.unityFont = GlobalSettings.Settings.defaultFont;
+        Button.style.fontSize = GlobalSettings.Settings.defaultFontSize;
+
+        if(GlobalSettings.Settings.isMouseAllowed) Button.RegisterCallback<ClickEvent>(evt => ButtonAction());
         Button.RegisterCallback<MouseOverEvent>(evt => Hover());
         Button.RegisterCallback<MouseOutEvent>(evt => Unhover());
 

@@ -8,34 +8,33 @@ using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Assets.RydenCam.Scripts.DialogueGameUI
 {
     public class InGameDialogUIView
     {
-        private GameObject _dialoguePanel;
-        private GameObject DialoguePanel
+        private VisualElement _dialoguePanel;
+        private VisualElement DialoguePanel
         {
             get
             {
                 if (_dialoguePanel == null)
                 {
-                    _dialoguePanel = Controller.CanvasMain.transform
-                        .Find(BranchConstants.DialoguePanel).gameObject;
+                    _dialoguePanel = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<VisualElement>("dialogue-panel");
                 }
                 return _dialoguePanel;
             }
         }
-        private GameObject _decisionPanel;
-        private GameObject DecisionPanel
+        private VisualElement _decisionPanel;
+        private VisualElement DecisionPanel
         {
             get
             {
                 if (_decisionPanel == null)
                 {
-                    _decisionPanel = Controller.CanvasMain.transform
-                        .Find(BranchConstants.DecicionPanel).gameObject;
-                    
+                    _decisionPanel = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");
+
                 }
                 return _decisionPanel;
             }
@@ -56,15 +55,14 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             }
         }
 
-        private GameObject _decisionDialoguePanel;
-        private GameObject DecisionDialoguePanel
+        private VisualElement _decisionDialoguePanel;
+        private VisualElement DecisionDialoguePanel
         {
             get
             {
                 if (_decisionDialoguePanel == null)
                 {
-                    _decisionDialoguePanel = Controller.CanvasMain.transform
-                        .Find(BranchConstants.DecisionDialoguePanel).gameObject;
+                    _decisionDialoguePanel = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<VisualElement>("previous-dialogue-panel");
                 }
                 return _decisionDialoguePanel;
             }
@@ -94,8 +92,8 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         public void DisplayDialogueText(string dialogue)
         {
             ClearPanels();
-            DialoguePanel.SetActive(true);
-            var textComponent = DialoguePanel.GetComponentInChildren<TextMeshProUGUI>();
+            DialoguePanel.visible = true;
+            var textComponent = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<Label>("dialogue-text");
             SetText(textComponent, dialogue);
         }
 
@@ -103,26 +101,23 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         {
             ClearPanels();
             EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode;
+            DecisionPanel.visible = true;
             CreateButtons(node);
-
-
-            //Make sure this is called AFTER CreateButtons();
-           // DecisionPanel.SetActive(true);
-
 
             if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
             {
-                DecisionDialoguePanel.SetActive(true);
-                var textComponent = DecisionDialoguePanel.GetComponentInChildren<TextMeshProUGUI>();
+                DecisionDialoguePanel.visible = true;
+
+                var textComponent = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<Label>("previous-dialogue-text");
                 SetText(textComponent, Controller.PreviousDialogue.Peek());
             }
         }
 
-        private void SetText(TextMeshProUGUI textComponent, string text)
+        private void SetText(Label textLabel, string text)
         {
-            textComponent.text = text;
-            textComponent.font = GlobalSettings.Settings.defaultFont;
-            textComponent.fontSize = GlobalSettings.Settings.defaultFontSize;
+            textLabel.text = text;
+            textLabel.style.unityFont = GlobalSettings.Settings.defaultFont;
+            textLabel.style.fontSize = GlobalSettings.Settings.defaultFontSize;
         }
 
         private void CreateButtons(EditorDecisionNode node)
@@ -141,21 +136,11 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
 
         public void ClearPanels()
         {
-            //Clear Dialogue
-            DialoguePanel.GetComponentInChildren<TextMeshProUGUI>().text = string.Empty;
-            DialoguePanel.SetActive(false);
+            DialoguePanel.visible = false;
 
-            //Clear Decision Text
-            DecisionDialoguePanel.GetComponentInChildren<TextMeshProUGUI>().text = string.Empty;
-            DecisionDialoguePanel.SetActive(false);
+            DecisionDialoguePanel.visible = false;
 
-            //Remove Buttons
-            foreach (Transform child in DecisionViewContainer.transform)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
-            
-            DecisionPanel.SetActive(false);
+            DecisionPanel.visible = false;
         }
     }
 }

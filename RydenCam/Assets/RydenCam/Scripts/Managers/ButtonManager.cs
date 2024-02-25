@@ -19,12 +19,12 @@ namespace RydenCam.DialogueGameUI
         [HideInInspector]
         public List<ButtonHolder> ButtonList = new List<ButtonHolder>();
         public DialoguePlayer DialoguePlayer;
-        //public bool HasHoveredImage => currentHoveredImage != null;
-        public UIDocument ScrollViewUIDocument;
+        public UIDocument DialogueUIDocument;
 
-        //private SelectableImage currentHoveredImage;
         private int scrollIndex;
         private ScrollView scrollView;
+        private bool isInUpperBounds => scrollIndex - 1 < 0;
+        private bool isInLowerBounds => scrollIndex + 1 >= ButtonList.Count;
 
         private void Awake()
         {
@@ -43,7 +43,7 @@ namespace RydenCam.DialogueGameUI
                 DialoguePlayer scriptComponent = FindObjectOfType<DialoguePlayer>();
             }
 
-            scrollView = ScrollViewUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");
+            scrollView = DialogueUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");
             #endregion
         }
 
@@ -66,13 +66,10 @@ namespace RydenCam.DialogueGameUI
             if (!GlobalSettings.Settings.isKeyboardAllowed) return;
             if (!Input.anyKey) return;
 
-            var isInUpperBounds = scrollIndex - 1 < 0;
-            var isInLowerBounds = scrollIndex + 1 >= ButtonList.Count;
+            if (ValidInputs.UpKeyPressed && !isInUpperBounds) Scroll(-1);
+            if (ValidInputs.DownKeyPressed && !isInLowerBounds) Scroll(1);
 
-            if (InputWrapper.UpKeyPressed && !isInUpperBounds) Scroll(-1);
-            if (InputWrapper.DownKeyPressed && !isInLowerBounds) Scroll(1);
-
-            if (InputWrapper.ProgressionKeyPressed) ButtonList[scrollIndex].ButtonAction();
+            if (ValidInputs.ProgressionKeyPressed) ButtonList[scrollIndex].ButtonAction();
         }
 
         private void Scroll(int scrollValue)
@@ -83,7 +80,6 @@ namespace RydenCam.DialogueGameUI
 
             scrollView.ScrollTo(ButtonList[scrollIndex].Button);
             ButtonList[scrollIndex].Hover();
-
         }
     }
 }

@@ -56,7 +56,7 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void MakeDecision(int choiceIndex)
         {
-            DecisionBeingMadeLock = true;
+            DecisionBeingMadeLock = false;
             if (CurrentNode is EditorDecisionNode node)
             {
                 CurrentNode = node.MakeDecision(choiceIndex);
@@ -99,6 +99,7 @@ namespace RydenCam.BranchCamEditor.Controllers
                         }
                         return;
                     case EditorDecisionNode _:
+                        DecisionBeingMadeLock = true;
                         UIView.DisplayDecisionNode();
                         SetCamera();
                         return;

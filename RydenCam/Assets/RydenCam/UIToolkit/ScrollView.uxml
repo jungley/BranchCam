@@ -1,3 +1,3 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:ScrollView mouse-wheel-scroll-size="100" name="ScrollView" style="width: 500px; height: 165px; justify-content: flex-start; align-self: center; align-items: stretch; margin-bottom: 0; top: -65px;" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:ScrollView mouse-wheel-scroll-size="100" name="ScrollView" nested-interaction-kind="StopScrolling" horizontal-scroller-visibility="Hidden" style="width: 500px; height: 165px; justify-content: flex-start; align-self: auto; align-items: stretch; top: -65px;" />
 </ui:UXML>

@@ -1,3 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:Button text="option button text option button text option button text option button text option button text option button text option button text " parse-escape-sequences="true" display-tooltip-when-elided="true" name="option-button" class="option-button option-button-default" style="flex-wrap: nowrap; flex-direction: column; white-space: normal;" />
+    <Style src="project://database/Assets/RydenCam/UIToolkit/RydenStyleSheet.uss?fileID=7433441132597879392&amp;guid=05dac8634c6802b4b997a578098662c4&amp;type=3#RydenStyleSheet" />
+    <ui:Button text="option button text option button text option button text option button text option button text option button text option button text " parse-escape-sequences="true" display-tooltip-when-elided="true" name="option-button" class="option-button option-button-default text" style="flex-wrap: nowrap; flex-direction: column; white-space: normal;" />
 </ui:UXML>

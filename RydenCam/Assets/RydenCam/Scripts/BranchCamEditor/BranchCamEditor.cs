@@ -455,6 +455,25 @@ namespace RydenCam.BranchCamEditor
 
                 }
 
+                if (GUILayout.Button("Locate Global Settings", GUILayout.Width(140), GUILayout.Height(30)))
+                {
+                    GlobalSettingsData globalSetting = FindGlobalSetting();
+
+                    if (globalSetting != null)
+                    {
+                        // Asset exists, ping it
+                        EditorGUIUtility.PingObject(globalSetting);
+                    }
+                    else
+                    {
+                        // Asset doesn't exist, create it
+                        globalSetting = ScriptableObject.CreateInstance<GlobalSettingsData>();
+                        AssetDatabase.CreateAsset(globalSetting, "Assets/Resources/Global Settings.asset");
+                        AssetDatabase.SaveAssets();
+                        EditorGUIUtility.PingObject(globalSetting);
+                    }
+                }
+
             }
 
 
@@ -473,6 +492,22 @@ namespace RydenCam.BranchCamEditor
 
         }
 
+        private GlobalSettingsData FindGlobalSetting()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:GlobalSettingsData");
+
+            foreach (string guid in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                GlobalSettingsData globalSetting = AssetDatabase.LoadAssetAtPath<GlobalSettingsData>(assetPath);
+                if (globalSetting != null)
+                {
+                    return globalSetting;
+                }
+            }
+
+            return null;
+        }
         public void ShowWindow(int id)
         {
             // Get existing open window or if none, make a new one:
