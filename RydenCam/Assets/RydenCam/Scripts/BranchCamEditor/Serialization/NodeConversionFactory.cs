@@ -23,13 +23,11 @@ namespace RydenCam.BranchCamEditor.Serialization
             createNodeMap[NodeType.DialogueNode] = savenode => new EditorDialogueNode(savenode);
             createNodeMap[NodeType.DecisionNode] = savenode => new EditorDecisionNode(savenode);
             createNodeMap[NodeType.ActionNode] = savenode => new EditorActionNode(savenode);
-            createNodeMap[NodeType.GoToNode] = savenode => new EditorGotoNode(savenode);
 
             createSaveNodeMap[NodeType.StartNode] = node => new SaveableStartNode(node as EditorStartNode);
             createSaveNodeMap[NodeType.DialogueNode] = node => new SaveableDialogueNode(node as EditorDialogueNode);
             createSaveNodeMap[NodeType.DecisionNode] = node => new SaveableDecisionNode(node as EditorDecisionNode);
             createSaveNodeMap[NodeType.ActionNode] = node => new SaveableActionNode(node as EditorActionNode);
-            createSaveNodeMap[NodeType.GoToNode] = node => new SaveableGotoNode(node as EditorGotoNode);
         }
 
         public EditorBaseNode CreateEditorNode(Saveable savenode)

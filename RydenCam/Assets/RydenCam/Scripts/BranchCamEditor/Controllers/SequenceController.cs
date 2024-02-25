@@ -83,7 +83,6 @@ namespace RydenCam.BranchCamEditor.Controllers
                 switch (CurrentNode)
                 {
                     case EditorStartNode _:
-                    case EditorGotoNode _:
                         CurrentNode = CurrentNode.GetNextNode();
                         TraverseNodeNetwork();
                         return;
