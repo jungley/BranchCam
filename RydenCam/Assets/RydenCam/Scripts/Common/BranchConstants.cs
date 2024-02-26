@@ -13,19 +13,8 @@ namespace RydenCam.Common
         public static string VirtualDialogueCamera = "VirtualDialogueCamera";
         public static string CustomCamera = "CustomRydenCam";
 
-        //In Game Dialog UI
-        public static string RydenCanvas = "RydenCanvas";
-        public static string DialoguePanel = "CT_DialoguePanel";
-
-        public static string DecicionPanel = "CT_Container";
-        //The object that decision options will be instantiated under
-        public static string DecisionViewContainer = "CT_ContentDecisionContainer";
-
-        public static string DecisionDialoguePanel = "CT_PrecDevPanel";
-
         //Prefab Paths
-        public static string CamPrefabPath = "Assets/RydenCam/Prefabs/CustomRydenCam.prefab";//"Assets/Resources/Prefabs/CustomRydenCam.prefab";  //"Assets/RydenCam/Prefabs/CustomRydenCam";
-        public static string ButtonPrefabPath = "DecOptionButton";
+        public static string CamPrefabPath = "Assets/RydenCam/Prefabs/CustomRydenCam.prefab";
         //Dialog Files Path
         public static string DialogueFolder = "Assets/RydenCam/DialogueFiles/";
 

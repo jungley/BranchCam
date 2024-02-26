@@ -40,20 +40,6 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             }
         }
 
-        private GameObject _decisionViewContainer;
-        private GameObject DecisionViewContainer
-        {
-            get
-            {
-                if(_decisionViewContainer == null)
-                {
-                    _decisionViewContainer = Controller.CanvasMain.transform
-                        .FindDeepChild(BranchConstants.DecisionViewContainer)
-                        .gameObject;
-                }
-                return _decisionViewContainer;
-            }
-        }
 
         private VisualElement _decisionDialoguePanel;
         private VisualElement DecisionDialoguePanel
@@ -69,20 +55,6 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         }
 
         public ISequenceController Controller;
-
-        public GameObject DecOptionButton
-        {
-            get
-            {
-                GameObject prefab = Resources.Load<GameObject>(BranchConstants.ButtonPrefabPath);
-                if(prefab == null)
-                {
-                    Debug.LogError("Prefab not found at path: " + BranchConstants.ButtonPrefabPath);
-                    return null;
-                }
-                return prefab;
-            } 
-        }
 
         public InGameDialogUIView(ISequenceController controller)
         {

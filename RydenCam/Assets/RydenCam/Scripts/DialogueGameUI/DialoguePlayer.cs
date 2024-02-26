@@ -47,22 +47,6 @@ namespace RydenCam.DialogueGameUI
             }
         }
 
-        [SerializeField] private GameObject _requiredCanvasMain;
-        public GameObject CanvasMain
-        {
-            get 
-            { 
-                if(_requiredCanvasMain == null)
-                {
-                    Debug.LogWarning("RequiredCanvasMain cannot be set to null.");
-                }
-                return _requiredCanvasMain; 
-            }
-            set
-            {
-                _requiredCanvasMain = value;
-            }
-        }
 
         [HideInInspector]
         public string DialogueFolder;
@@ -71,7 +55,7 @@ namespace RydenCam.DialogueGameUI
 
         public void Start()
         {
-            SequenceControls = new SequenceController(DialogueCamera, DialogueCameraBrain, CanvasMain);
+            SequenceControls = new SequenceController(DialogueCamera, DialogueCameraBrain);
             SequenceControls.ToggleRelevantObjects(visibility: false);
         }
 

@@ -16,7 +16,6 @@ namespace RydenCam.BranchCamEditor.Controllers
         //Relevant GameObjects
         [SerializeField] [HideInInspector] private CinemachineVirtualCamera dialogueCamera;
         [SerializeField] [HideInInspector] private GameObject cameraBrain;
-        [SerializeField] [HideInInspector] public GameObject CanvasMain { get; set; }
         [SerializeField] [HideInInspector] private Queue<string> dialogQueue;
 
         public EditorBaseNode CurrentNode { get; set; }
@@ -30,11 +29,10 @@ namespace RydenCam.BranchCamEditor.Controllers
         public bool DialogueIsRunning = false;
 
         public bool DecisionBeingMadeLock = false;
-        public SequenceController(GameObject dcamera, GameObject dcameraBrain, GameObject canvas)
+        public SequenceController(GameObject dcamera, GameObject dcameraBrain)
         {
             dialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
             cameraBrain = dcameraBrain;
-            CanvasMain = canvas;
             CamCalculator = new CameraCalculator(this);
             UIView = new InGameDialogUIView(this);
         }
@@ -137,7 +135,6 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void ToggleRelevantObjects(bool visibility)
         {
             dialogueCamera.enabled = visibility;
-            CanvasMain.GetComponent<Canvas>().enabled = visibility;
         }
 
         //TODO move this as part of Calculator or CameraUtility somewhere else

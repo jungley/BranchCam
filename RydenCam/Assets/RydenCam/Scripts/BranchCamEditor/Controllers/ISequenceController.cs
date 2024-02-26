@@ -10,7 +10,6 @@ namespace RydenCam.BranchCamEditor.Controllers
 {
     public interface ISequenceController
     {
-        GameObject CanvasMain { get; set; }
         Stack<string> PreviousDialogue { get; set; }
         EditorBaseNode CurrentNode { get; set; }
     }
