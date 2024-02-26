@@ -16,18 +16,17 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public Action<Connection> OnClickRemoveConnection;
         Texture2D arrowImage;
 
-        public Connection(ConnectionPoint p1, ConnectionPoint p2, Action<Connection> OnClickRemoveConnection)
+        public Connection(ConnectionPoint pointIN, ConnectionPoint pointOUT, Action<Connection> OnClickRemoveConnection)
         {
-            this.Point_IN = p1;
-            this.Point_OUT = p2;
+            this.Point_IN = pointIN;
+            this.Point_OUT = pointOUT;
+
             this.OnClickRemoveConnection = OnClickRemoveConnection;
             arrowImage = Resources.Load("arrowImage2") as Texture2D;
         }
 
         public bool ContainsPoint(ConnectionPoint A)
         {
-            //return (A == Point_IN || A == Point_OUT);
-
             if ((A == Point_IN || A == Point_OUT))
             {
                 return true;
@@ -96,19 +95,24 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         //Draws the Connection
         public void Draw()
         {
-            //Wow what is happening
-            if (Point_OUT.node.TypeOfNode == NodeType.GoToNode && Point_OUT.type == ConnectionPointType.Out 
-                || Point_IN.node.TypeOfNode == NodeType.GoToNode && Point_IN.type == ConnectionPointType.Out)
+            Vector2 inGlobalPoint = Point_IN.getGlobalPoint();
+            Vector2 outGlobalPoint = Point_OUT.getGlobalPoint();
+            Vector3 startPos = new Vector3(inGlobalPoint.x, inGlobalPoint.y, 0);
+            Vector3 endPos = new Vector3(outGlobalPoint.x, outGlobalPoint.y, 0);
+
+            // Draw special curve for certain conditions, otherwise draw a bezier curve
+            if (ShouldDrawGotoCurve(inGlobalPoint, outGlobalPoint))
             {
                 DrawGotoCurve();
                 return;
             }
-            Vector2 result_01 = Point_IN.getGlobalPoint();
-            Vector3 startPos = new Vector3(result_01.x, result_01.y, 0);
-            Vector2 result_02 = Point_OUT.getGlobalPoint();
-            Vector3 endPos = new Vector3(result_02.x, result_02.y, 0);
-            Handles.DrawBezier(startPos, endPos, startPos, endPos, Color.green, null, 5);
+            else
+            {
+                Handles.DrawBezier(startPos, endPos, startPos, endPos, Color.green, null, 5);
+                Handles.color = Color.green;
+            }
 
+            // Draw arrow pointers based on connection point types
             if (Point_IN.type == ConnectionPointType.Out)
             {
                 DrawArrowPointer(startPos, endPos);
@@ -118,16 +122,26 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
                 DrawArrowPointer(endPos, startPos);
             }
 
+            // Check and handle click to remove connection
+            CheckAndHandleClickToRemoveConnection(inGlobalPoint, outGlobalPoint);
+        }
 
-            Handles.color = Color.green;
-            //Check Click Remove
-            if (Handles.Button((Point_IN.getGlobalPoint() + Point_OUT.getGlobalPoint()) * 0.5f, Quaternion.identity, 8, 20, Handles.RectangleHandleCap))
+        private bool ShouldDrawGotoCurve(Vector2 inPoint, Vector2 outPoint)
+        {
+            return inPoint.y < outPoint.y && Point_OUT.type == ConnectionPointType.Out && Point_IN.type == ConnectionPointType.In;
+        }
+
+        private void CheckAndHandleClickToRemoveConnection(Vector2 inGlobalPoint, Vector2 outGlobalPoint)
+        {
+            Vector2 midpoint = (inGlobalPoint + outGlobalPoint) * 0.5f;
+            if (Handles.Button(new Vector3(midpoint.x, midpoint.y, 0), Quaternion.identity, 8, 20, Handles.RectangleHandleCap))
             {
                 Point_IN.ClearPointer();
                 Point_OUT.ClearPointer();
                 RemoveConnection();
             }
         }
+
 #endif
     }
 

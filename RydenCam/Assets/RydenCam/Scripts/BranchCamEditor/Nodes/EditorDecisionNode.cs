@@ -9,6 +9,8 @@ using RydenCam.Common;
 using System.Linq;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
+using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.BranchCamEditor.Serialization.Saveables;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -288,12 +290,6 @@ namespace RydenCam.BranchCamEditor.Nodes
 #endif
         }
 
-        //When writing to Scriptable Object
-        public override Saveable Saveable()
-        {
-            return new SaveableDecisionNode(this);
-        }
-
         public EditorDecisionNode(Saveable savenode) : base()
         {
             //Cast it down
@@ -347,64 +343,6 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             NodeConvodata.ShotConfig.oppositeActor = savenode.oppositeActor;
             NodeConvodata.ShotConfig.actor = actor.ActorName;
-        }
-
-        //SAVEable class when it becomes a scriptable object
-        [System.Serializable]
-        [ExecuteAlways]
-        public class SaveableDecisionNode : Saveable
-        {
-            public ConversationData NodeConvodata;
-            public List<string> DecisionOptions;
-            public bool ShowPreviousDialog;
-
-            public override NodeType TypeOfNode => NodeType.DecisionNode;
-
-            public SaveableDecisionNode(EditorDecisionNode noderef)
-            {
-                node_id = noderef.node_id;
-                windowRect = noderef.windowRect;
-                NodeConvodata = noderef.NodeConvodata;
-                DecisionOptions = noderef.DecisionOptions;
-                ShowPreviousDialog = noderef.ShowPreviousDialog;
-
-                IN_connTo = new List<string>();
-                if (noderef.PointIn.connectedTo != null)
-                {
-                    IN_connTo.Add(noderef.PointIn.connectedTo.node.node_id);
-                }
-
-                //Loop Through out points
-                OUT_connTo = new List<string>();
-                for (int i = 0; i < DecisionOptions.Count; i++)
-                {
-                    if (noderef.PointOut[i].connectedTo != null)
-                    {
-                        OUT_connTo.Add(noderef.PointOut[i].connectedTo.node.node_id);
-                    }
-                    else
-                    {
-                        OUT_connTo.Add("blank");
-                    }
-                }
-
-                //Saving Camera Info Here
-                var cameraShot = NodeConvodata.ShotConfig;
-                oppositeActor = cameraShot.oppositeActor;
-                goal_type = cameraShot.GoalType;
-                goal_dist = cameraShot.GoalDistance;
-                goal_angle = cameraShot.GoalAngle;
-                goal_customtype = cameraShot.GoalCustomType;
-                CamPositon = (cameraShot.CustomCamPos != null) ? cameraShot.CustomCamPos.Value : Vector3.zero;
-                CamRotation = (cameraShot.CustomCamRot != null) ? cameraShot.CustomCamRot.Value : Quaternion.identity;
-                LocalActorPos = cameraShot.LocalRelativeActorPos;
-                LocalActorRot = cameraShot.LocalRelativeActorRot;
-            }
-
-            public override EditorBaseNode ConvertToUnity()
-            {
-                return new EditorDecisionNode(this);
-            }
         }
     }
 }

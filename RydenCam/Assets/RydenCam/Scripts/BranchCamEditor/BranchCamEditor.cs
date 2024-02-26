@@ -5,7 +5,7 @@ using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using System.Linq;
 using RydenCam.Common;
-using RydenCam.BranchCamEditor.BranchFile;
+using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 
 namespace RydenCam.BranchCamEditor
@@ -110,7 +110,8 @@ namespace RydenCam.BranchCamEditor
             if (lastFilePath != string.Empty)
             {
                 EditorController.Instance.ResetEverything();
-                NodeManager.Instance.ConvertSaveables(LoadFile.LoadSaveables());
+
+                LoadFile.LoadSaveables();
             }
 
         }
@@ -267,7 +268,9 @@ namespace RydenCam.BranchCamEditor
                 Vector3 endPos = new Vector3(mousePos.x, mousePos.y, 0);
 
                 //Goto Curve
-                if (ActiveNode.TypeOfNode == NodeType.GoToNode && handlePoint.type == ConnectionPointType.Out)
+                //If making line above the point
+                if (handlePoint.type == ConnectionPointType.Out 
+                    && hpoint.y > endPos.y )
                 {
                     Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
                     float arc;
@@ -286,7 +289,6 @@ namespace RydenCam.BranchCamEditor
                     Handles.color = Color.green;
                     Handles.DrawAAPolyLine(5.0f, vector3array);
                 }
-                //Everything else (Dialogue Decision Nodes)
                 else
                 {
                     Handles.DrawBezier(startPos, endPos, startPos, endPos, Color.green, null, 5);
@@ -347,7 +349,6 @@ namespace RydenCam.BranchCamEditor
                             menu.AddItem(new GUIContent("Add Dialogue Node"), false, ContextCallback, "dialogueNode");
                             menu.AddItem(new GUIContent("Add Decision Node"), false, ContextCallback, "decisionNode");
                             menu.AddItem(new GUIContent("Add Action Node"), false, ContextCallback, "actionNode");
-                            menu.AddItem(new GUIContent("Add GoTo Node"), false, ContextCallback, "gotoNode");
                         }
                         menu.ShowAsContext();
                         e.Use();
@@ -362,15 +363,7 @@ namespace RydenCam.BranchCamEditor
             for (int i = 0; i < NodeManager.Instance.Length; i++)
             {
                 EditorBaseNode nodeCur = NodeManager.Instance.GetNode(i);
-                //Set Background Colors
-                if (nodeCur.TypeOfNode == NodeType.GoToNode)
-                {
-                    GUI.backgroundColor = nodeCur.nodeColor;
-                }
-                else
-                {
-                    GUI.backgroundColor = Color.gray;
-                }
+                GUI.backgroundColor = Color.gray;
 
                 if (nodeCur == ActiveNode && ActiveNode != null)
                 {
@@ -441,7 +434,7 @@ namespace RydenCam.BranchCamEditor
                     if (LoadFile.IsValidEditorPath())
                     {
                         EditorController.Instance.ResetEverything();
-                        NodeManager.Instance.ConvertSaveables(LoadFile.LoadSaveables());
+                        LoadFile.LoadSaveables();
                     }
                 }
 
@@ -562,11 +555,6 @@ namespace RydenCam.BranchCamEditor
                     EditorBaseNode actionNode = new EditorActionNode(mousePos);
                     NodeManager.Instance.AddNode(actionNode);
                     ActiveNode = actionNode;
-                    break;
-                case ("gotoNode"):
-                    EditorBaseNode gotoNode = new EditorGotoNode(mousePos);
-                    NodeManager.Instance.AddNode(gotoNode);
-                    ActiveNode = gotoNode;
                     break;
             }
         }

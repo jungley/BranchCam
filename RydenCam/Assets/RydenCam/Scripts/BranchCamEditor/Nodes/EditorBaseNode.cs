@@ -65,7 +65,6 @@ namespace RydenCam.BranchCamEditor.Nodes
         public abstract bool isOverPoint(Vector2 mousePos);
         public abstract ConnectionPoint getConPoint(Vector2 mousePos);
         public abstract void DrawContent();
-        public abstract Saveable Saveable();
 
         public EditorBaseNode()
         {
@@ -370,55 +369,9 @@ namespace RydenCam.BranchCamEditor.Nodes
             ConnectionManager.Instance.Remove(connection);
         }
 
-
-        public void AssociateConnections(Saveable savenode)
-        {
-            EditorBaseNode node = this;
-            //Check out Connection
-            if (savenode.OUT_connTo.Count != 0)
-            {
-                for (int i = 0; i < savenode.OUT_connTo.Count; i++)
-                {
-                    EditorBaseNode node_OUT = NodeManager.Instance.FindNode(savenode.OUT_connTo[i]);
-                    if (node_OUT != null)
-                    {
-                        node.PointOut[i].connectedTo = node_OUT.PointIn;
-                        node_OUT.PointIn.connectedTo = node.PointOut[i];
-                        ConnectionManager.Instance.AddConnection(node.PointOut[i], node_OUT.PointIn, OnClickRemoveConnection); 
-                    }
-                }
-            }
-        }
-
         public virtual EditorBaseNode GetNextNode()
         {
             return PointOut[0]?.connectedTo?.node;
-        }
-    }
-
-    [System.Serializable]
-    [ExecuteAlways]
-    public class Saveable: INode
-    {
-        public virtual NodeType TypeOfNode => NodeType.None;
-
-        public string node_id;
-        public Rect windowRect;
-        public CameraGoal goal_type;
-        public CameraDistance goal_dist;
-        public CameraAngle goal_angle;
-        public CustomCameraType goal_customtype;
-        public List<string> OUT_connTo;
-        public List<string> IN_connTo;
-        public string oppositeActor;
-        public Vector3 CamPositon;
-        public Quaternion CamRotation;
-        public Vector3 LocalActorPos;
-        public Quaternion LocalActorRot;
-
-        public virtual EditorBaseNode ConvertToUnity()
-        {
-            return null;
         }
     }
 }

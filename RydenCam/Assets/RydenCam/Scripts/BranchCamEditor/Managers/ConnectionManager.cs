@@ -36,9 +36,12 @@ namespace RydenCam.BranchCamEditor.Managers
             connectionList.Clear();
         }
 
-        public void AddConnection(ConnectionPoint A, ConnectionPoint B, Action<Connection> C)
+        public void AddConnection(ConnectionPoint fromPoint, ConnectionPoint handlePoint, Action<Connection> action)
         {
-            Connection newConnection = new Connection(A, B, C);
+            var pointIN = fromPoint.type == ConnectionPointType.In ? fromPoint : handlePoint.type == ConnectionPointType.In ? handlePoint : null;
+            var pointOUT = fromPoint.type == ConnectionPointType.Out ? fromPoint : handlePoint.type == ConnectionPointType.Out ? handlePoint : null;
+
+            Connection newConnection = new Connection(pointIN, pointOUT, action);
             connectionList.Add(newConnection);
         }
 
@@ -107,7 +110,7 @@ namespace RydenCam.BranchCamEditor.Managers
                     connection.Draw();
                 }
             }
-            catch (Exception e) { }
+            catch (Exception) { }
 #endif
         }
     }

@@ -6,7 +6,7 @@ using RydenCam.SequenceData;
 using System.Linq;
 
 namespace RydenCam.BranchCamEditor.Managers
-{
+{    
     [System.Serializable]
     [ExecuteAlways]
     public class NodeManager
@@ -29,7 +29,17 @@ namespace RydenCam.BranchCamEditor.Managers
         public EditorStartNode StartNode => nodes.Find(n => n.TypeOfNode == NodeType.StartNode) as EditorStartNode;
         public List<EditorBaseNode> GetList() => nodes;
         public void Clear() => instance = new NodeManager();
-        public EditorBaseNode GetNode(int i) => nodes[i];
+        public void RemoveNode(EditorBaseNode node)
+        {
+            if (node.TypeOfNode == NodeType.StartNode)
+            {
+                BranchCamEditor.startNodeAdded = false;
+            }
+            nodes.Remove(node);
+        }
+
+        public void AddNode(EditorBaseNode node) => nodes.Add(node);
+        public EditorBaseNode GetNode(int index) => nodes[index];
         public EditorBaseNode FindNode(string id) => nodes.Find(n => n.node_id == id);
         private NodeManager()
         {
@@ -50,24 +60,6 @@ namespace RydenCam.BranchCamEditor.Managers
             }
             
         }
-        
-
-        public void ConvertSaveables(List<Saveable> saveNodes)
-        {
-            nodes.Clear();
-
-            foreach (Saveable saveNode in saveNodes)
-            {
-                EditorBaseNode node = saveNode.ConvertToUnity();
-                nodes.Add(node);
-
-            }
-
-            for (int i = 0; i < saveNodes.Count; i++)
-            {
-                nodes[i].AssociateConnections(saveNodes[i]);
-            }
-        }
 
 
         public void ReplaceActorInfo(string previousActorName, ActorInfo newActorInfo)
@@ -82,20 +74,5 @@ namespace RydenCam.BranchCamEditor.Managers
                 node.NodeConvodata.Actor.ActorGO = newActorInfo.ActorGO;
             }
         }
-
-
-
-#if UNITY_EDITOR
-        public void RemoveNode(EditorBaseNode node)
-        {
-            if (node.TypeOfNode == NodeType.StartNode)
-            {
-                BranchCamEditor.startNodeAdded = false;
-            }
-            nodes.Remove(node);
-        }
-#endif
-
-        public void AddNode(EditorBaseNode node) => nodes.Add(node);
     }
 }
