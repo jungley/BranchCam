@@ -58,6 +58,26 @@ namespace RydenCam.BranchCamEditor.Serialization
                 loadedEditorNodes.ForEach(n => NodeManager.Instance.AddNode(n));
             }
         }
+
+        public static void SetLastFilePath()
+        {
+            string fullPath = EditorUtility.OpenFolderPanel("Choose a folder containing Dialogue files only", BranchConstants.DialogueFolder, "Choose a folder containing Dialogue files only");
+
+
+            string projectPath = Application.dataPath;
+
+            try
+            {
+                // Calculate the relative path
+                string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
+
+                BranchCamEditorPreferences.SetLastFilePath(relativePath);
+            }
+            catch (Exception)
+            {
+                BranchLog.Log("Cannot open file or no file chosen.");
+            }
+        }
         
     }
 }

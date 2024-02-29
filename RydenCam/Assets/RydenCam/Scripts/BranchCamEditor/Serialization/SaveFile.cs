@@ -51,7 +51,9 @@ namespace RydenCam.BranchCamEditor.Serialization
                 SaveDataContainer saveDataContainer = new SaveDataContainer(jsonStrings);
                 string combinedJson = JsonUtility.ToJson(saveDataContainer);
 
-               File.WriteAllText(directoryPath + name + ".json", combinedJson);
+                File.WriteAllText(directoryPath + name + ".json", combinedJson);
+
+                AssetDatabase.Refresh();
 
                 BranchLog.Log("Saved File");
             }

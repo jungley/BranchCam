@@ -7,6 +7,7 @@ using System.Linq;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
+using System.IO;
 
 namespace RydenCam.BranchCamEditor
 {
@@ -38,8 +39,6 @@ namespace RydenCam.BranchCamEditor
         private Rect lastEditorWindowPos;
         bool IsDrawingHandle = false;
         ConnectionPoint handlePoint;
-
-
         static Texture2D _targetTextureInspector { get; set; }
         static Texture2D TargetTextureInspector
         {
@@ -417,16 +416,24 @@ namespace RydenCam.BranchCamEditor
 
             using (var horizontalScope = new GUILayout.HorizontalScope(panelstyle_button, horizontalLayoutOptions))
             {
-                if (GUILayout.Button("NEW", GUILayout.Width(65), GUILayout.Height(30)))
+                // File dropdown menu
+                if (GUILayout.Button("File", GUILayout.Width(100), GUILayout.Height(30)))
                 {
-                    EditorController.Instance.ResetEverything();
-                    EditorController.Instance.RedrawAll();
-                    BranchCamEditorPreferences.SetLastFilePath(string.Empty);
+                    GenericMenu menu = new();
+
+                    for (int i = 0; i < BranchConstants.FileDropdownOptions.Length; i++)
+                    {
+                        string option = BranchConstants.FileDropdownOptions[i];
+                        menu.AddItem(new GUIContent(option), false, () => HandleFileDropdownOption(option));
+                    }
+
+                    menu.ShowAsContext();
                 }
 
                 if (GUILayout.Button("SAVE", GUILayout.Width(65), GUILayout.Height(30)))
                 {
                     SaveFile.SaveConversation();
+                    AssetDatabase.Refresh();
                 }
                 if (GUILayout.Button("LOAD", GUILayout.Width(65), GUILayout.Height(30)))
                 {
@@ -466,7 +473,6 @@ namespace RydenCam.BranchCamEditor
                         EditorGUIUtility.PingObject(globalSetting);
                     }
                 }
-
             }
 
 
@@ -485,6 +491,39 @@ namespace RydenCam.BranchCamEditor
 
         }
 
+        private void HandleFileDropdownOption(string option)
+        {
+
+            switch (option)
+            {
+                case "New":
+
+                    bool shouldReset = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset everything?", "Yes", "No");
+
+                    if (shouldReset)
+                    {
+                        EditorController.Instance.ResetEverything();
+                        EditorController.Instance.RedrawAll();
+                        BranchCamEditorPreferences.SetLastFilePath(string.Empty);
+                    }
+                    break;
+                case "Save As":
+                    LoadFile.SelectDialogueWindow();
+
+                    if (LoadFile.IsValidEditorPath())
+                    {
+                        SaveFile.SaveConversation();
+
+                        string path = "Assets/Your/Path/To/Your/Object.prefab"; // Specify the path to your object
+                        Object obj = AssetDatabase.LoadAssetAtPath<Object>(path);
+
+                        EditorGUIUtility.PingObject(obj);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
         private GlobalSettingsData FindGlobalSetting()
         {
             string[] guids = AssetDatabase.FindAssets("t:GlobalSettingsData");
