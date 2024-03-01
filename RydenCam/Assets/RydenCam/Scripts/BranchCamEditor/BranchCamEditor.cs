@@ -433,7 +433,6 @@ namespace RydenCam.BranchCamEditor
                 if (GUILayout.Button("SAVE", GUILayout.Width(65), GUILayout.Height(30)))
                 {
                     SaveFile.SaveConversation();
-                    AssetDatabase.Refresh();
                 }
                 if (GUILayout.Button("LOAD", GUILayout.Width(65), GUILayout.Height(30)))
                 {
