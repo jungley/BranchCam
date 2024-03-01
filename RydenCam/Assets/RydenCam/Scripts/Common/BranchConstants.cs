@@ -26,5 +26,7 @@ namespace RydenCam.Common
         public const string MainWindowName = "Window/BranchCam";
         public static string WindowTitle = "BranchCam";
         public static readonly string[] FileDropdownOptions = { "New", "Save As" };
+        public static readonly string LoadFolderPanelTitle = "Choose a folder containing Dialogue files only";
+        public static readonly string SaveAsTitle = "Select a folder";
     }
 }

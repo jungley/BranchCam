@@ -27,13 +27,13 @@ namespace RydenCam.BranchCamEditor.Serialization
                 }
                 EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
                 string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
-                string defaultPath = $"Assets/RydenCam/DialogueFiles/";
-                string directoryPath = Directory.Exists(BranchCamEditorPreferences.GetLastFilePath())
+                string defaultPath = $"Assets/RydenCam/DialogueFiles";
+
+                string directoryPath = Directory.Exists(BranchCamEditorPreferences.GetLastFileFolderPath())
                     ? BranchCamEditorPreferences.GetLastFileFolderPath()
                     : defaultPath;
-
                 //Name is stripped and readded to ensure the file and the folder have the same name. 
-                string directoryPathWithName = directoryPath += "/" + name;
+                string directoryPathWithName = $"{directoryPath}/{name}";
 
                 if (Directory.Exists(directoryPathWithName))
                 {

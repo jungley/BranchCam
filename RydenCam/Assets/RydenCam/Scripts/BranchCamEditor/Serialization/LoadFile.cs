@@ -6,6 +6,7 @@ using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Managers;
 using System;
+using System.Linq;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -14,13 +15,13 @@ namespace RydenCam.BranchCamEditor.Serialization
     {
         private static string path;
 
-        public static bool SelectDialogueWindow(string folderTitle, string defaultName, bool isSaveAs)
+        private static string FindPath(string folderTitle, string defaultName)
         {
             string fullPath = EditorUtility.OpenFolderPanel(folderTitle, BranchCamEditorPreferences.GetLastFileFolderPath(), defaultName);
 
             //Cancel Button Pressed
-            if (string.IsNullOrEmpty(fullPath)) return false; 
-         
+            if (string.IsNullOrEmpty(fullPath)) return string.Empty;
+
 
             // Get the data path of the Unity project
             string projectPath = Application.dataPath;
@@ -29,25 +30,51 @@ namespace RydenCam.BranchCamEditor.Serialization
             {
                 // Calculate the relative path
                 string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
-
-                if (isSaveAs)
-                {
-                    EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
-                    string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
-
-                    relativePath += "/" + name;
-                }
-
-                BranchCamEditorPreferences.SetLastFilePath(relativePath);
+                return relativePath;
             }
             catch (Exception)
             {
                 BranchLog.Log("Cannot open file or no file chosen.");
+                return string.Empty;
             }
+        }
+
+        public static bool IsSavePathValid(string folderTitle, string defaultName)
+        {
+            var directoryPath = FindPath(folderTitle, defaultName);
+
+            if (string.IsNullOrEmpty(directoryPath)) return false;
+
+            EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
+            string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
+
+            string pathWithNodeName = $"{directoryPath}/{name}";
+
+            BranchCamEditorPreferences.SetLastFilePath(pathWithNodeName);
 
             return true;
         }
-     
+
+        public static bool HasDialogueFile(string folderTitle, string defaultName)
+        {
+            var directoryPath = FindPath(folderTitle, defaultName);
+
+            if(string.IsNullOrEmpty(directoryPath)) return false;
+
+            string assetFileName = Directory.GetFiles(directoryPath, "*.json").FirstOrDefault();
+            string assetFilePath = assetFileName?.Replace("\\", "/");
+
+            if (!string.IsNullOrEmpty(assetFilePath))
+            {
+                BranchCamEditorPreferences.SetLastFilePath(directoryPath);
+                return true;
+            }
+            else
+            {
+                BranchLog.Log("No Dialogue File found. Select a folder containing a dialogue file.");
+                return false;
+            }
+        }
         public static bool IsValidEditorPath()
         {
             string filepath = BranchCamEditorPreferences.GetLastFilePath();

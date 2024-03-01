@@ -23,7 +23,7 @@ namespace RydenCam.BranchCamEditor
 
         public static string GetLastFileFolderPath()
         {
-            return Path.GetDirectoryName(PlayerPrefs.GetString(LastFilePathKey, string.Empty));
+            return string.IsNullOrEmpty(GetLastFilePath()) ? string.Empty : Path.GetDirectoryName(GetLastFilePath());
         }
     }
 }

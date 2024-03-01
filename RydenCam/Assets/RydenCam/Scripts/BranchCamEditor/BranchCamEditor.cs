@@ -436,9 +436,7 @@ namespace RydenCam.BranchCamEditor
                 }
                 if (GUILayout.Button("LOAD", GUILayout.Width(65), GUILayout.Height(30)))
                 {
-                    if (!LoadFile.SelectDialogueWindow("Choose a folder containing Dialogue files only", "Choose a folder containing Dialogue files only", false)) return;
-                    
-                    if (LoadFile.IsValidEditorPath())
+                    if(LoadFile.HasDialogueFile(BranchConstants.LoadFolderPanelTitle, BranchConstants.LoadFolderPanelTitle))
                     {
                         EditorController.Instance.ResetEverything();
                         LoadFile.LoadSaveables();
@@ -493,35 +491,47 @@ namespace RydenCam.BranchCamEditor
 
         private void HandleFileDropdownOption(string option)
         {
-
             switch (option)
             {
                 case "New":
-
-                    bool shouldReset = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset everything?", "Yes", "No");
-
-                    if (shouldReset)
-                    {
-                        EditorController.Instance.ResetEverything();
-                        EditorController.Instance.RedrawAll();
-                        BranchCamEditorPreferences.SetLastFilePath(string.Empty);
-                    }
+                    New();
                     break;
                 case "Save As":
-
-                    string defaultFolderName = new DirectoryInfo(BranchCamEditorPreferences.GetLastFileFolderPath()).Name;
-
-                    if (!LoadFile.SelectDialogueWindow("Choose a folder to save to", defaultFolderName, true)) return;
-
-                    if (LoadFile.IsValidEditorPath())
-                    {
-                        SaveFile.SaveConversation();
-                    }
+                    SaveAs();
                     break;
                 default:
                     break;
             }
         }
+
+        private void New()
+        {
+            bool shouldReset = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset everything?", "Yes", "No");
+
+            if (shouldReset)
+            {
+                EditorController.Instance.ResetEverything();
+                EditorController.Instance.RedrawAll();
+                BranchCamEditorPreferences.SetLastFilePath(string.Empty);
+            }
+        }
+
+        private void SaveAs()
+        {
+            if (NodeManager.Instance.Length == 0)
+            {
+                BranchLog.Log("Cannot save an empty file!");
+                return;
+            }
+
+            string defaultFolderName = string.IsNullOrEmpty(BranchCamEditorPreferences.GetLastFileFolderPath()) ? BranchConstants.SaveAsTitle : new DirectoryInfo(BranchCamEditorPreferences.GetLastFileFolderPath()).Name;
+
+            if (LoadFile.IsSavePathValid(BranchConstants.SaveAsTitle, defaultFolderName))
+            {
+                SaveFile.SaveConversation();
+            }
+        }
+
         private GlobalSettingsData FindGlobalSetting()
         {
             string[] guids = AssetDatabase.FindAssets("t:GlobalSettingsData");
