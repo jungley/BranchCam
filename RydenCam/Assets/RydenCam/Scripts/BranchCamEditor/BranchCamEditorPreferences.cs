@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
 
 namespace RydenCam.BranchCamEditor
 {
@@ -18,6 +19,11 @@ namespace RydenCam.BranchCamEditor
         {
             PlayerPrefs.SetString(LastFilePathKey, filePath);
             PlayerPrefs.Save();
+        }
+
+        public static string GetLastFileFolderPath()
+        {
+            return Path.GetDirectoryName(PlayerPrefs.GetString(LastFilePathKey, string.Empty));
         }
     }
 }

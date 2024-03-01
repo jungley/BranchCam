@@ -59,7 +59,7 @@ namespace RydenCam.BranchCamEditor
         {
             get
             {
-                if(_tt == null)
+                if (_tt == null)
                 {
                     _tt = new Texture2D(1, 1, TextureFormat.RGBA32, false);
                     _tt.SetPixel(0, 0, new Color(0f, 0f, 0f));
@@ -144,7 +144,7 @@ namespace RydenCam.BranchCamEditor
             //Button Header Texture
             Texture2D targetTextureButtonHeader = new Texture2D(1, 1);
             targetTextureButtonHeader.SetPixel(0, 0, Color.gray);
-            targetTextureButtonHeader.Apply(); 
+            targetTextureButtonHeader.Apply();
 
             panelstyle_button = new GUIStyle();
             panelstyle_button.normal.background = targetTextureButtonHeader;
@@ -246,9 +246,9 @@ namespace RydenCam.BranchCamEditor
 
         void OnGUI()
         {
-            
+
             //Wrap Everything In Flag
-            if(!initHasBeenCalled)
+            if (!initHasBeenCalled)
             {
                 Initialize();
                 return;
@@ -268,8 +268,8 @@ namespace RydenCam.BranchCamEditor
 
                 //Goto Curve
                 //If making line above the point
-                if (handlePoint.type == ConnectionPointType.Out 
-                    && hpoint.y > endPos.y )
+                if (handlePoint.type == ConnectionPointType.Out
+                    && hpoint.y > endPos.y)
                 {
                     Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
                     float arc;
@@ -437,7 +437,8 @@ namespace RydenCam.BranchCamEditor
                 }
                 if (GUILayout.Button("LOAD", GUILayout.Width(65), GUILayout.Height(30)))
                 {
-                    LoadFile.SelectDialogueWindow();
+                    if (!LoadFile.SelectDialogueWindow("Choose a folder containing Dialogue files only", "Choose a folder containing Dialogue files only", false)) return;
+                    
                     if (LoadFile.IsValidEditorPath())
                     {
                         EditorController.Instance.ResetEverything();
@@ -447,7 +448,7 @@ namespace RydenCam.BranchCamEditor
 
                 if (GUILayout.Button("Graph View", GUILayout.Width(85), GUILayout.Height(30)))
                 {
-    
+
                 }
 
                 if (GUILayout.Button("Inkle Script View", GUILayout.Width(120), GUILayout.Height(30)))
@@ -508,16 +509,14 @@ namespace RydenCam.BranchCamEditor
                     }
                     break;
                 case "Save As":
-                    LoadFile.SelectDialogueWindow();
+
+                    string defaultFolderName = new DirectoryInfo(BranchCamEditorPreferences.GetLastFileFolderPath()).Name;
+
+                    if (!LoadFile.SelectDialogueWindow("Choose a folder to save to", defaultFolderName, true)) return;
 
                     if (LoadFile.IsValidEditorPath())
                     {
                         SaveFile.SaveConversation();
-
-                        string path = "Assets/Your/Path/To/Your/Object.prefab"; // Specify the path to your object
-                        Object obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-
-                        EditorGUIUtility.PingObject(obj);
                     }
                     break;
                 default:
@@ -545,7 +544,7 @@ namespace RydenCam.BranchCamEditor
             // Get existing open window or if none, make a new one:
             BeginWindows();
             //var window = GetWindow(typeof());
-           // window.Show();
+            // window.Show();
             EndWindows();
         }
 

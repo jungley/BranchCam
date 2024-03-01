@@ -27,22 +27,26 @@ namespace RydenCam.BranchCamEditor.Serialization
                 }
                 EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
                 string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
-                string directoryPath = $"Assets/RydenCam/DialogueFiles/{name}/";
+                string defaultPath = $"Assets/RydenCam/DialogueFiles/";
+                string directoryPath = Directory.Exists(BranchCamEditorPreferences.GetLastFileFolderPath())
+                    ? BranchCamEditorPreferences.GetLastFileFolderPath()
+                    : defaultPath;
 
+                string directoryPathWithName = directoryPath += "/" + name;
 
-                if (Directory.Exists(directoryPath))
+                if (Directory.Exists(directoryPathWithName))
                 {
-                    Directory.Delete(directoryPath, true);
+                    Directory.Delete(directoryPathWithName, true);
                 }
 
-                Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(directoryPathWithName);
 
-                BranchCamEditorPreferences.SetLastFilePath(directoryPath);
+                BranchCamEditorPreferences.SetLastFilePath(directoryPathWithName);
 
                 List<Saveable> saveableList = NodeSerializer.SerializeNodes(NodeManager.Instance.GetList());
 
                 List<string> jsonStrings = new List<string>();
-                foreach(Saveable save in saveableList)
+                foreach (Saveable save in saveableList)
                 {
                     string result = JsonUtility.ToJson(save);
                     jsonStrings.Add(result);
@@ -51,13 +55,19 @@ namespace RydenCam.BranchCamEditor.Serialization
                 SaveDataContainer saveDataContainer = new SaveDataContainer(jsonStrings);
                 string combinedJson = JsonUtility.ToJson(saveDataContainer);
 
-                File.WriteAllText(directoryPath + name + ".json", combinedJson);
+                var finalPath = $"{directoryPathWithName}/{name}.json";
+
+                File.WriteAllText(finalPath, combinedJson);
 
                 AssetDatabase.Refresh();
 
+                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(finalPath);
+
+                EditorGUIUtility.PingObject(obj);
+
                 BranchLog.Log("Saved File");
             }
-            catch(Exception)
+            catch (Exception)
             {
                 BranchLog.Error("An error with Saving occured");
 
@@ -65,3 +75,5 @@ namespace RydenCam.BranchCamEditor.Serialization
         }
     }
 }
+
+
