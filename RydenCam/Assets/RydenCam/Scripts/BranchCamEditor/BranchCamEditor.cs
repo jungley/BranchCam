@@ -518,15 +518,9 @@ namespace RydenCam.BranchCamEditor
 
         private void SaveAs()
         {
-            if (NodeManager.Instance.Length == 0)
-            {
-                BranchLog.Log("Cannot save an empty file!");
-                return;
-            }
+            if (!NodeManager.Instance.IsValidSequence()) return;
 
-            string defaultFolderName = string.IsNullOrEmpty(BranchCamEditorPreferences.GetLastFileFolderPath()) ? BranchConstants.SaveAsTitle : new DirectoryInfo(BranchCamEditorPreferences.GetLastFileFolderPath()).Name;
-
-            if (LoadFile.IsSavePathValid(BranchConstants.SaveAsTitle, defaultFolderName))
+            if (LoadFile.IsSavePathValid(BranchConstants.SaveAsTitle, NodeManager.Instance.GetSequenceName()))
             {
                 SaveFile.SaveConversation();
             }

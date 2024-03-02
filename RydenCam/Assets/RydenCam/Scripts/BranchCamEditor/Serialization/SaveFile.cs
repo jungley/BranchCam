@@ -20,13 +20,9 @@ namespace RydenCam.BranchCamEditor.Serialization
         {
             try
             {
-                if (NodeManager.Instance.Length == 0)
-                {
-                    BranchLog.Log("Cannot save an empty file!");
-                    return;
-                }
-                EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
-                string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
+                if (!NodeManager.Instance.IsValidSequence()) return;
+
+                string name = NodeManager.Instance.GetSequenceName();
                 string defaultPath = $"Assets/RydenCam/DialogueFiles";
 
                 string directoryPath = Directory.Exists(BranchCamEditorPreferences.GetLastFileFolderPath())

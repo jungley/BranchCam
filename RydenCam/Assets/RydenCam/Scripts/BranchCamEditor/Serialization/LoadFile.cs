@@ -45,10 +45,7 @@ namespace RydenCam.BranchCamEditor.Serialization
 
             if (string.IsNullOrEmpty(directoryPath)) return false;
 
-            EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
-            string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
-
-            string pathWithNodeName = $"{directoryPath}/{name}";
+            string pathWithNodeName = $"{directoryPath}/{NodeManager.Instance.GetSequenceName()}";
 
             BranchCamEditorPreferences.SetLastFilePath(pathWithNodeName);
 

@@ -41,6 +41,26 @@ namespace RydenCam.BranchCamEditor.Managers
         public void AddNode(EditorBaseNode node) => nodes.Add(node);
         public EditorBaseNode GetNode(int index) => nodes[index];
         public EditorBaseNode FindNode(string id) => nodes.Find(n => n.node_id == id);
+
+        public string GetSequenceName()
+        {
+            EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
+            string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
+
+            return name;
+        }
+        public bool IsValidSequence()
+        {
+            if (Length == 0)
+            {
+                BranchLog.Log("Cannot save an empty file!");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
         private NodeManager()
         {
             nodes = new List<EditorBaseNode>();
