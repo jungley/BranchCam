@@ -58,9 +58,7 @@ namespace RydenCam.BranchCamEditor.Serialization
 
                 AssetDatabase.Refresh();
 
-                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(finalPath);
-
-                EditorGUIUtility.PingObject(obj);
+                PingObject(finalPath);
 
                 BranchLog.Log("Saved File");
             }
@@ -68,6 +66,17 @@ namespace RydenCam.BranchCamEditor.Serialization
             {
                 BranchLog.Error("An error with Saving occured");
 
+            }
+
+            void PingObject(string path)
+            {
+                path = path.Replace("\\", "/");
+
+                if (!path.StartsWith("Assets/")) return;
+
+                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+
+                EditorGUIUtility.PingObject(obj);
             }
         }
     }

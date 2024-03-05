@@ -25,12 +25,11 @@ namespace RydenCam.BranchCamEditor.Serialization
 
             // Get the data path of the Unity project
             string projectPath = Application.dataPath;
-
             try
             {
                 // Calculate the relative path
-                string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
-                return relativePath;
+              //  string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
+                return fullPath;
             }
             catch (Exception)
             {
