@@ -432,7 +432,15 @@ namespace RydenCam.BranchCamEditor
 
                 if (GUILayout.Button("SAVE", GUILayout.Width(65), GUILayout.Height(30)))
                 {
-                    SaveFile.SaveConversation();
+                    if (string.IsNullOrEmpty(BranchCamEditorPreferences.GetLastFilePath()))
+                    {
+                        SaveAs();
+                    }
+                    else
+                    {
+                        SaveFile.SaveConversation();
+                    }
+
                 }
                 if (GUILayout.Button("LOAD", GUILayout.Width(65), GUILayout.Height(30)))
                 {
