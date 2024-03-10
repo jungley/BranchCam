@@ -98,7 +98,7 @@ namespace RydenCam.DialogueGameUI
         {
             DialogueFolder = EditorUtility
                 .OpenFolderPanel("Choose a folder containing Dialogue JSON files only",
-                 BranchConstants.DialogueFolder,
+                 BranchConstants.DefaultDialogueFolder,
                  "Choose a folder containing Dialogue JSON files only");
         }
 #endif

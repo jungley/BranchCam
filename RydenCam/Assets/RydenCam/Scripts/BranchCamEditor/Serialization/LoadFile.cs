@@ -17,25 +17,33 @@ namespace RydenCam.BranchCamEditor.Serialization
 
         private static string FindPath(string folderTitle, string defaultName)
         {
-            string fullPath = EditorUtility.OpenFolderPanel(folderTitle, BranchCamEditorPreferences.GetLastFileFolderPath(), defaultName);
-
-            //Cancel Button Pressed
-            if (string.IsNullOrEmpty(fullPath)) return string.Empty;
+            string lastFileFolderPath = BranchCamEditorPreferences.GetLastFilePath();
 
 
-            // Get the data path of the Unity project
-            string projectPath = Application.dataPath;
+            if(string.IsNullOrEmpty(lastFileFolderPath) || !Directory.Exists(lastFileFolderPath))
+            {
+                string relativePath = BranchConstants.DefaultDialogueFolder;
+                //string relativePath = $"RydenCam/DialogueFiles/";
+                lastFileFolderPath = Path.Combine(Application.dataPath, relativePath);
+                if(!Directory.Exists(lastFileFolderPath))
+                {
+                    Directory.CreateDirectory(lastFileFolderPath);
+                }
+            }
+
+            string fullPath;
             try
             {
-                // Calculate the relative path
-              //  string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
-                return fullPath;
+                fullPath = EditorUtility.OpenFolderPanel(folderTitle, lastFileFolderPath, defaultName);
+                //Cancel Button Pressed
+                if (string.IsNullOrEmpty(fullPath)) return string.Empty;
             }
-            catch (Exception)
+            catch(Exception)
             {
                 BranchLog.Log("Cannot open file or no file chosen.");
                 return string.Empty;
             }
+            return fullPath;
         }
 
         public static bool IsSavePathValid(string folderTitle, string defaultName)
@@ -71,11 +79,6 @@ namespace RydenCam.BranchCamEditor.Serialization
                 return false;
             }
         }
-        public static bool IsValidEditorPath()
-        {
-            string filepath = BranchCamEditorPreferences.GetLastFilePath();
-            return !string.IsNullOrEmpty(filepath);
-        }
 
         public static bool IsValidDialogueTriggerPath(string path)
         {
@@ -98,7 +101,7 @@ namespace RydenCam.BranchCamEditor.Serialization
 
         public static void SetLastFilePath()
         {
-            string fullPath = EditorUtility.OpenFolderPanel("Choose a folder containing Dialogue files only", BranchConstants.DialogueFolder, "Choose a folder containing Dialogue files only");
+            string fullPath = EditorUtility.OpenFolderPanel("Choose a folder containing Dialogue files only", BranchConstants.DefaultDialogueFolder, "Choose a folder containing Dialogue files only");
 
 
             string projectPath = Application.dataPath;
