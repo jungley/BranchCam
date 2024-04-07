@@ -17,6 +17,8 @@ namespace RydenCam.BranchCamEditor
     [ExecuteAlways]
     public class BranchCamEditor : EditorWindow
     {
+        private bool showDropdown = false;
+
         private static EditorBaseNode activeNode;
         public static EditorBaseNode ActiveNode
         {
@@ -404,34 +406,27 @@ namespace RydenCam.BranchCamEditor
                 }
             }
 
-
-            //BUTTON HEADER
-            // Define common GUILayoutOptions
             GUILayoutOption[] horizontalLayoutOptions = new GUILayoutOption[]
             {
-                 GUILayout.Width(EditorGUIUtility.currentViewWidth),
-                 GUILayout.Height(30)
+                  GUILayout.Width(EditorGUIUtility.currentViewWidth),
+                  GUILayout.Height(30)
             };
-
 
             using (var horizontalScope = new GUILayout.HorizontalScope(panelstyle_button, horizontalLayoutOptions))
             {
-                // File dropdown menu
-                if (GUILayout.Button("File", GUILayout.Width(100), GUILayout.Height(30)))
+                using (var scope = new GUILayout.VerticalScope(GUILayout.Width(100)))
                 {
-                    GenericMenu menu = new();
-
-                    for (int i = 0; i < BranchConstants.FileDropdownOptions.Length; i++)
+                    if (GUILayout.Button("File", GUILayout.Width(100), GUILayout.Height(30))) showDropdown = !showDropdown;
+                    if (showDropdown)
                     {
-                        string option = BranchConstants.FileDropdownOptions[i];
-                        menu.AddItem(new GUIContent(option), false, () => HandleFileDropdownOption(option));
-                    }
 
-                    menu.ShowAsContext();
+                        foreach (var option in BranchConstants.FileDropdownOptions)
+                            if (GUILayout.Button(option, GUILayout.Width(100))) HandleFileDropdownOption(option);
+                    }
                 }
 
-                if (GUILayout.Button("SAVE", GUILayout.Width(65), GUILayout.Height(30)))
-                {
+                if (GUILayout.Button("Save", GUILayout.Width(65), GUILayout.Height(30)))
+                { 
                     if (string.IsNullOrEmpty(BranchCamEditorPreferences.GetLastFilePath()))
                     {
                         SaveAs();
@@ -442,7 +437,7 @@ namespace RydenCam.BranchCamEditor
                     }
 
                 }
-                if (GUILayout.Button("LOAD", GUILayout.Width(65), GUILayout.Height(30)))
+                if (GUILayout.Button("Load", GUILayout.Width(65), GUILayout.Height(30)))
                 {
                     if(LoadFile.HasDialogueFile(BranchConstants.LoadFolderPanelTitle, BranchConstants.LoadFolderPanelTitle))
                     {
