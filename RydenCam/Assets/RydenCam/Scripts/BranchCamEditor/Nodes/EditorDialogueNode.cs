@@ -186,8 +186,18 @@ namespace RydenCam.BranchCamEditor.Nodes
             EditorGUILayout.Space();
             EditorGUILayout.EndScrollView();
 
-            //GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
+            GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
             DrawUICamCompOptions(NodeConvodata);
+
+           //The Preview window is called from here
+            
+            PreviewCameraRenderUtil cam = new PreviewCameraRenderUtil();
+            Texture previewTexture = cam.RenderPreview(EditorController.Instance.ActorsInScene[0].ActorGO, 256, 256);
+            if (previewTexture != null)
+            {
+                GUILayout.Label(previewTexture);
+            }
+            
 
         }
 
