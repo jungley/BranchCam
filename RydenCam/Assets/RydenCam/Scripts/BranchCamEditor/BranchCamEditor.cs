@@ -8,6 +8,7 @@ using RydenCam.Common;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 using System.IO;
+using RydenCam.BranchCamEditor.PreviewRender;
 
 namespace RydenCam.BranchCamEditor
 {
@@ -18,6 +19,7 @@ namespace RydenCam.BranchCamEditor
     public class BranchCamEditor : EditorWindow
     {
         private bool showDropdown = false;
+        private DialoguePreview dialoguePreviewWindow;
 
         private static EditorBaseNode activeNode;
         public static EditorBaseNode ActiveNode
@@ -235,6 +237,13 @@ namespace RydenCam.BranchCamEditor
         private void OnEnable()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            dialoguePreviewWindow = new DialoguePreview();
+        }
+
+        private void OnDisable()
+        {
+            if (dialoguePreviewWindow != null)
+                dialoguePreviewWindow.CleanUp();
         }
 
         void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -385,6 +394,9 @@ namespace RydenCam.BranchCamEditor
 
             //Draw Connections
             ConnectionManager.Instance.DrawConnections();
+
+            //Draw Preview Windows
+            dialoguePreviewWindow.DrawPreviewWindows();
 
             GUI.EndGroup();
 

@@ -411,7 +411,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _requiredDialogueCamera: {fileID: 2871365018967173003}
   _requiredDialogueCameraBrain: {fileID: 1251845246931807342}
-  _requiredCanvasMain: {fileID: 0}
   DialogueFolder: C:/Users/rshar/Documents/UnityProjects/Core/BranchCam_GIT/BranchCam/RydenCam/Assets/RydenCam/DialogueFiles/4Decisions
 --- !u!1 &843023391
 GameObject:
@@ -859,6 +858,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5983695973843599674, guid: d001792f7b96c45498c59d554f0f72ed,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: -5200250868657063561, guid: d001792f7b96c45498c59d554f0f72ed,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -981,6 +985,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5983695973843599674, guid: d001792f7b96c45498c59d554f0f72ed,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: -5200250868657063561, guid: d001792f7b96c45498c59d554f0f72ed,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -1016,6 +1025,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 3b4afb43d103528409d214cae928347c, type: 2}
+    - target: {fileID: 7925988380684254088, guid: d001792f7b96c45498c59d554f0f72ed,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
