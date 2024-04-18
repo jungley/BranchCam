@@ -21,6 +21,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         private PreviewRenderUtility previewUtility;
 
+        Dictionary<GameObject, Mesh> cachedMeshes = new Dictionary<GameObject, Mesh>();
+
         public void Initialize()
         {
             if(previewUtility == null) previewUtility = new PreviewRenderUtility();
@@ -77,21 +79,37 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         }
         private Mesh GetMesh(GameObject obj)
         {
-            if (obj.GetComponent<SkinnedMeshRenderer>() != null)
-            {
-                //TODO: Implement way to bake mesh once in order to avoid baking the mesh every GUI call.
-                var bakedMesh = new Mesh();
-                var skinnedRenderer = obj.GetComponent<SkinnedMeshRenderer>();
-                skinnedRenderer.BakeMesh(bakedMesh);
-
-                return bakedMesh;
-            }
+            if (obj.GetComponent<SkinnedMeshRenderer>() != null) return GetCachedMesh(obj);
 
             if (obj.GetComponent<MeshFilter>() != null) return obj.GetComponent<MeshFilter>().sharedMesh;
 
 
             BranchLog.Log("No Mesh or Skinned Mesh found on " + obj);
             return null;
+        }
+
+
+        private Mesh GetCachedMesh(GameObject keyObject)
+        {
+            if (keyObject == null)
+            {
+                BranchLog.Log ("GameObject is null. Cannot retrieve cached mesh.");
+                return null;
+            }
+
+            // Check if the mesh is already cached
+            if (cachedMeshes.TryGetValue(keyObject, out Mesh cachedMesh)) return cachedMesh;
+
+            var skinnedRenderer = keyObject.GetComponent<SkinnedMeshRenderer>();
+
+            // Create a new Mesh and bake it
+            Mesh newMesh = new Mesh();
+            skinnedRenderer.BakeMesh(newMesh);
+
+            // Cache the new mesh
+            cachedMeshes[keyObject] = newMesh;
+
+            return newMesh;
         }
 
         void SetCamera()
