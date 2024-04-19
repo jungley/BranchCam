@@ -18,10 +18,28 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     public class PreviewCameraRenderUtil 
     {
         public PreviewRenderUtility PreviewRenderUtility { get => previewUtility; }
-
         private PreviewRenderUtility previewUtility;
 
+        GameObject[] previousRenderObject;
         Dictionary<GameObject, Mesh> cachedMeshes = new Dictionary<GameObject, Mesh>();
+        Texture cachedTexture;
+
+        Texture2D blankTexture;
+        Texture2D BlankTexture
+        {
+            get
+            {
+                if(blankTexture == null)
+                {
+                    var previewTexture = new Texture2D(1, 1);
+                    previewTexture.SetPixel(0, 0, Color.black);
+                    previewTexture.Apply(); 
+                    blankTexture = previewTexture;
+                }
+                return blankTexture;
+            }
+        }
+        
 
         public void Initialize()
         {
@@ -30,29 +48,33 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawPreview(GameObject[] objsToRender, Rect windowRect)
         {
-            SetCamera();
-
-            previewUtility.BeginStaticPreview(windowRect);
-
-            foreach(var obj in objsToRender)
+            if (ShouldCreateNewPreview(objsToRender))
             {
-                DrawCustomObjectPreview(obj);
+                SetCamera();
+
+                previewUtility.BeginStaticPreview(windowRect);
+
+                foreach (var obj in objsToRender)
+                {
+                    DrawCustomObjectPreview(obj);
+                }
+
+                previewUtility.Render();
+                Texture previewTexture = previewUtility.EndStaticPreview();
+                GUI.DrawTexture(windowRect, previewTexture);
+
+                cachedTexture = previewTexture;
+                previousRenderObject = objsToRender;
             }
-
-            previewUtility.Render();
-            Texture previewTexture = previewUtility.EndStaticPreview();
-
-            GUI.DrawTexture(windowRect, previewTexture);
+            else
+            {
+                GUI.DrawTexture(windowRect, cachedTexture);
+            }
         }
 
-        public void DrawBlankPreview(Rect windowRect)
-        {
-            var previewTexture = new Texture2D(1, 1);
-            previewTexture.SetPixel(0, 0, Color.black);
-            previewTexture.Apply(); // Apply changes to the texture (upload to GPU)
+        public void DrawBlankPreview(Rect windowRect) => GUI.DrawTexture(windowRect, BlankTexture);
 
-            GUI.DrawTexture(windowRect, previewTexture);
-        }
+        private bool ShouldCreateNewPreview(GameObject[] objs) => objs != previousRenderObject;
 
         private void DrawCustomObjectPreview(GameObject objToRender)
         {

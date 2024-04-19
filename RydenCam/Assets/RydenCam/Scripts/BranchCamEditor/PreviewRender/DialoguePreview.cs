@@ -19,6 +19,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     public class DialoguePreview
     {
         PreviewCameraRenderUtil previewUtil;
+        Dictionary<Transform, GameObject[]> cachedChildrenWithMeshes = new Dictionary<Transform, GameObject[]>();
+
 
         public DialoguePreview()
         {
@@ -52,28 +54,37 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         private GameObject[] GetChildrenWithMeshes(Transform actorParent)
         {
-            var meshChildren = new List<GameObject>();
-
-            // Define a local function for recursive traversal
-            void FindMeshChildren(Transform parent)
+            if (cachedChildrenWithMeshes.TryGetValue(actorParent, out GameObject[] cachedObjects))
             {
-                foreach (Transform child in parent)
-                {
-                    // Check if the child has a MeshRenderer or SkinnedMeshRenderer
-                    if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
-                    {
-                        meshChildren.Add(child.gameObject);
-                    }
-
-                    // Recursively search through all children
-                    FindMeshChildren(child);
-                }
+                return cachedObjects;
             }
+            else
+            {
+                var meshChildren = new List<GameObject>();
 
-            // Start recursive traversal from the actor's transform
-            FindMeshChildren(actorParent.transform);
+                // Define a local function for recursive traversal
+                void FindMeshChildren(Transform parent)
+                {
+                    foreach (Transform child in parent)
+                    {
+                        // Check if the child has a MeshRenderer or SkinnedMeshRenderer
+                        if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
+                        {
+                            meshChildren.Add(child.gameObject);
+                        }
 
-            return meshChildren.ToArray();
+                        // Recursively search through all children
+                        FindMeshChildren(child);
+                    }
+                }
+
+                // Start recursive traversal from the actor's transform
+                FindMeshChildren(actorParent.transform);
+
+                cachedChildrenWithMeshes[actorParent] = meshChildren.ToArray();
+
+                return meshChildren.ToArray();
+            }
         }
 
         private Pose[] GetActorPoses()
