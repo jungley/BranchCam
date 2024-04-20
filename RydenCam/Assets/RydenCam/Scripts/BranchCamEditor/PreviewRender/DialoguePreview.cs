@@ -1,13 +1,16 @@
+using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
+using RydenCam.SequenceData;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
@@ -19,12 +22,14 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     public class DialoguePreview
     {
         PreviewCameraRenderUtil previewUtil;
+        CameraCalculator cameraCalculator;
         Dictionary<Transform, GameObject[]> cachedChildrenWithMeshes = new Dictionary<Transform, GameObject[]>();
 
 
         public DialoguePreview()
         {
             previewUtil = new PreviewCameraRenderUtil();
+            cameraCalculator = new CameraCalculator();
         }
 
         public void DrawPreviewWindows()
@@ -42,7 +47,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                 if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
                 {
-                    previewUtil.DrawPreview(actorObjects, windowRect);
+                    previewUtil.DrawPreview(actorObjects, windowRect, GetCamPose(dialogueNode), GetActorPose());
                 }
                 else
                 {
@@ -87,16 +92,18 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             }
         }
 
-        private Pose[] GetActorPoses()
+        private Pose GetActorPose()
         {
-            //TODO: get the actors pos/rot based on settings.
-            throw new NotImplementedException();
+            return new Pose();
+            var actor = EditorController.Instance.ActorsInScene[0];
+
+            return new Pose(actor.PreDefinedStartPosition.position, actor.PreDefinedStartPosition.rotation);
         }
 
-        private Pose GetCamPosition()
+        private Pose GetCamPose(EditorDialogueNode posNode)
         {
-            //TODO: get the camera pos/rot based on settings.
-            throw new NotImplementedException();
+            cameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
+            return cameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig);
         }
 
         public void CleanUp() => previewUtil.PreviewRenderUtility.Cleanup();

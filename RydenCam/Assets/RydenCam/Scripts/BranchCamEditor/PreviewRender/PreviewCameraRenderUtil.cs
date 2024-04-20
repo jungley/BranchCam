@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using RydenCam.Common;
+using RydenCam.BranchCamEditor.BranchCam;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
@@ -40,23 +41,24 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             }
         }
         
+        
 
         public void Initialize()
         {
             if(previewUtility == null) previewUtility = new PreviewRenderUtility();
         }
 
-        public void DrawPreview(GameObject[] objsToRender, Rect windowRect)
+        public void DrawPreview(GameObject[] objsToRender, Rect windowRect, Pose camPose, Pose actorPose)
         {
             if (ShouldCreateNewPreview(objsToRender))
             {
-                SetCamera();
+                SetCamera(camPose);
 
                 previewUtility.BeginStaticPreview(windowRect);
 
                 foreach (var obj in objsToRender)
                 {
-                    DrawCustomObjectPreview(obj);
+                    DrawCustomObjectPreview(obj, actorPose);
                 }
 
                 previewUtility.Render();
@@ -74,9 +76,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawBlankPreview(Rect windowRect) => GUI.DrawTexture(windowRect, BlankTexture);
 
-        private bool ShouldCreateNewPreview(GameObject[] objs) => objs != previousRenderObject;
+        private bool ShouldCreateNewPreview(GameObject[] objs) => objs != previousRenderObject && cachedTexture == null;
 
-        private void DrawCustomObjectPreview(GameObject objToRender)
+        private void DrawCustomObjectPreview(GameObject objToRender, Pose actorPose)
         {
             if (objToRender == null)
             {
@@ -84,8 +86,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return;
             }
 
-            //TODO: Replace Matrix4x4.identity with custom Matrix according to custom convo settings in order to set the actors in the right place.
-            Matrix4x4 customMatrix = Matrix4x4.TRS(new Vector3(), Quaternion.Euler(0f, 180f, 0f), Vector3.one);
+            Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation.normalized, Vector3.one);
 
             previewUtility.DrawMesh(GetMesh(objToRender), customMatrix, GetMaterial(objToRender), 0);
         }
@@ -134,14 +135,30 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             return newMesh;
         }
 
-        void SetCamera()
+        void SetCamera(Pose camPose)
         {
-            //TODO: Set the camera's pos/rot according to settings.
-            previewUtility.camera.transform.position = new Vector3(0f, 1.5f, -2.5f);
+            Vector3 finalCameraPosition()
+            {
+                //Need to flip the x axis to be on the correct side.
+                Vector3 flippedCameraVector = new Vector3(-camPose.position.x, camPose.position.y, camPose.position.z);
+                //forced to add this strange offset in order to get the camera on the actor. Need to figure out a way to not need this offset.
+                var offset = new Vector3(0.6f, -0.1f, -3);
+                return flippedCameraVector + offset;
+            }
+
+            Quaternion finalCameraRotation()
+            {
+                Vector3 euler = camPose.rotation.eulerAngles;
+                //flip the camera around to face the actor.
+                euler.y += 180f;
+                return Quaternion.Euler(euler);
+            }
+
+            previewUtility.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
 
             //Set near/far plane for performance. If something is not rendering, it could be outside the farclip plane.
             previewUtility.camera.nearClipPlane = 1f;
-            previewUtility.camera.farClipPlane = 20f;
+            previewUtility.camera.farClipPlane = 20;
         }
     }
 }
