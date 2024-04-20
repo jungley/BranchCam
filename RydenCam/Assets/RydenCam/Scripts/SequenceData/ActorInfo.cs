@@ -13,10 +13,24 @@ namespace RydenCam.SequenceData
         public Pose PreDefinedStartPosition;
         public Pose OriginalPositionAtStartOfDialogue;
 
-        //Make into ScriptableObject
-        public GameObject ActorGO;
-      
-        public ActorInfo()
+        private GameObject _actorGO { get; set; }
+        public GameObject ActorGO
+        {
+            get
+            {
+                if (_actorGO == null && !string.IsNullOrEmpty(ActorName))
+                {
+                    _actorGO = GameObject.Find(ActorName);
+                }
+                return _actorGO;
+            }
+            set
+            {
+                _actorGO = value;
+            }
+        }
+
+    public ActorInfo()
         {
             ActorID = Guid.NewGuid().ToString();
             ActorName = BranchConstants.UnAssignedActor;
