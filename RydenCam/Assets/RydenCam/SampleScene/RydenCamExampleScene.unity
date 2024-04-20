@@ -1060,7 +1060,7 @@ GameObject:
   - component: {fileID: 1251845246931807344}
   m_Layer: 0
   m_Name: RydenCameraBrain
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
