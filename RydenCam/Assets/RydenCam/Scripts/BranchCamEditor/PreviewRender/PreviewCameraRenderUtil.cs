@@ -53,7 +53,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 var sourceCamera = Camera.main;
                 previewUtility.camera.fieldOfView = sourceCamera.fieldOfView;
                 previewUtility.camera.depth = sourceCamera.depth;
-                previewUtility.camera.aspect = sourceCamera.aspect;
                 previewUtility.camera.nearClipPlane = 1f;
                 previewUtility.camera.farClipPlane = 20;
             }
@@ -87,7 +86,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawBlankPreview(Rect windowRect) => GUI.DrawTexture(windowRect, BlankTexture);
 
-        private bool ShouldCreateNewPreview(GameObject[] objs) => objs != previousRenderObject && cachedTexture == null;
+        //BUG: For some reason this outputs a blank grey box sometimes. 
+       //private bool ShouldCreateNewPreview(GameObject[] objs) => objs != previousRenderObject || cachedTexture == null;
+       
+        //TEMP: Redraw preview every GUI call in order to debug camera situation.
+        private bool ShouldCreateNewPreview(GameObject[] objs) => true;
 
         private void DrawCustomObjectPreview(GameObject objToRender, Pose actorPose)
         {
@@ -150,11 +153,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             Vector3 finalCameraPosition()
             {
-                //Need to flip the x axis to be on the correct side.
-                Vector3 flippedCameraVector = new Vector3(-camPose.position.x, camPose.position.y, camPose.position.z);
                 //forced to add this strange offset in order to get the camera on the actor. Need to figure out a way to not need this offset.
-                var offset = new Vector3(0f, 0, -4f);
-                return flippedCameraVector + offset;
+                var offset = new Vector3(-0.5f, 0, -4f);
+                return camPose.position + offset;
             }
 
             Quaternion finalCameraRotation()
@@ -166,8 +167,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             }
 
             previewUtility.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
-
-            Debug.Log(finalCameraPosition() + "::" + finalCameraRotation().eulerAngles);
         }
     }
 }
