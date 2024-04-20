@@ -45,7 +45,18 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void Initialize()
         {
-            if(previewUtility == null) previewUtility = new PreviewRenderUtility();
+            if(previewUtility == null)
+            {
+                previewUtility = new PreviewRenderUtility();
+
+                //Initialize Camera Settings
+                var sourceCamera = Camera.main;
+                previewUtility.camera.fieldOfView = sourceCamera.fieldOfView;
+                previewUtility.camera.depth = sourceCamera.depth;
+                previewUtility.camera.aspect = sourceCamera.aspect;
+                previewUtility.camera.nearClipPlane = 1f;
+                previewUtility.camera.farClipPlane = 20;
+            }
         }
 
         public void DrawPreview(GameObject[] objsToRender, Rect windowRect, Pose camPose, Pose actorPose)
@@ -142,7 +153,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 //Need to flip the x axis to be on the correct side.
                 Vector3 flippedCameraVector = new Vector3(-camPose.position.x, camPose.position.y, camPose.position.z);
                 //forced to add this strange offset in order to get the camera on the actor. Need to figure out a way to not need this offset.
-                var offset = new Vector3(0.6f, -0.1f, -3);
+                var offset = new Vector3(0f, 0, -4f);
                 return flippedCameraVector + offset;
             }
 
@@ -156,9 +167,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             previewUtility.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
 
-            //Set near/far plane for performance. If something is not rendering, it could be outside the farclip plane.
-            previewUtility.camera.nearClipPlane = 1f;
-            previewUtility.camera.farClipPlane = 20;
+            Debug.Log(finalCameraPosition() + "::" + finalCameraRotation().eulerAngles);
         }
     }
 }
