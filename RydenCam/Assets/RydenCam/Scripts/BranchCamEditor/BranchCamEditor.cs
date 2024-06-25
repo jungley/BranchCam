@@ -19,7 +19,6 @@ namespace RydenCam.BranchCamEditor
     public class BranchCamEditor : EditorWindow
     {
         private bool showDropdown = false;
-        private DialoguePreview dialoguePreviewWindow;
 
         private static EditorBaseNode activeNode;
         public static EditorBaseNode ActiveNode
@@ -237,14 +236,8 @@ namespace RydenCam.BranchCamEditor
         private void OnEnable()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-            dialoguePreviewWindow = new DialoguePreview();
         }
 
-        private void OnDisable()
-        {
-            if (dialoguePreviewWindow != null)
-                dialoguePreviewWindow.CleanUp();
-        }
 
         void OnPlayModeStateChanged(PlayModeStateChange state)
         {
@@ -368,6 +361,7 @@ namespace RydenCam.BranchCamEditor
 
             //Draw Each Node
             Color saved = GUI.backgroundColor;
+            DialoguePreview dialoguePreviewWindow = new DialoguePreview();
             BeginWindows();
 
             for (int i = 0; i < NodeManager.Instance.Length; i++)
@@ -387,6 +381,10 @@ namespace RydenCam.BranchCamEditor
                 NodeManager.Instance.GetNode(i).windowRect =
                     GUI.Window(i, NodeManager.Instance.GetNode(i).windowRect,
                     DrawNodeWindow, NodeManager.Instance.GetNode(i).windowTitle);
+
+
+                //Draw Preview Windows
+                dialoguePreviewWindow.DrawPreviewWindow(nodeCur);
             }
 
             EndWindows();
@@ -394,9 +392,6 @@ namespace RydenCam.BranchCamEditor
 
             //Draw Connections
             ConnectionManager.Instance.DrawConnections();
-
-            //Draw Preview Windows
-            dialoguePreviewWindow.DrawPreviewWindows();
 
             GUI.EndGroup();
 

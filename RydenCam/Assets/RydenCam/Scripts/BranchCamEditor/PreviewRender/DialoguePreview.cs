@@ -21,39 +21,76 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
     public class DialoguePreview
     {
-        PreviewCameraRenderUtil previewUtil;
-        CameraCalculator cameraCalculator;
-        Dictionary<Transform, GameObject[]> cachedChildrenWithMeshes = new Dictionary<Transform, GameObject[]>();
 
+        //Every node should have a separate PreviewCameraRenderUtil
+        private static Dictionary<string, PreviewCameraRenderUtil> _previewWindowLookUp { get; set; }
+        public static Dictionary<string, PreviewCameraRenderUtil> PreviewWindowLookUp
+        {
+            get
+            {
+                if(_previewWindowLookUp == null)
+                {
+                    _previewWindowLookUp = new Dictionary<string, PreviewCameraRenderUtil>();
+                }
+                return _previewWindowLookUp;
+            }
+            set
+            {
+                _previewWindowLookUp = value;
+            }
+        }
+      
+        Dictionary<Transform, GameObject[]> cachedChildrenWithMeshes = new Dictionary<Transform, GameObject[]>();
 
         public DialoguePreview()
         {
-            previewUtil = new PreviewCameraRenderUtil();
-            cameraCalculator = new CameraCalculator();
         }
 
-        public void DrawPreviewWindows()
+        public void DrawPreviewWindow(EditorBaseNode node)
         {
-            previewUtil.Initialize();
+            PreviewCameraRenderUtil previewindow;
 
-            var previewRender = previewUtil.PreviewRenderUtility;
-
-            foreach (EditorDialogueNode dialogueNode in NodeManager.Instance.GetList().Where(x => x.TypeOfNode == NodeType.DialogueNode))
+            if (node is EditorDialogueNode)
             {
-                var focusTarget = GameObject.Find(dialogueNode.NodeConvodata.Actor.ActorName);
-                var actorObjects = GetChildrenWithMeshes(focusTarget.transform.parent);
-                var windowRect = new Rect(dialogueNode.windowRect.position.x + dialogueNode.windowRect.width, dialogueNode.windowRect.position.y,
-                    dialogueNode.windowRect.width, dialogueNode.windowRect.height);
+                var dialogudeNode = node as EditorDialogueNode;
 
-                if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
+                //TODO: Remove this
+                //for the sake of the tool running I've kept it in here
+                PreviewWindowLookUp.Clear();
+
+                if (PreviewWindowLookUp.TryGetValue(dialogudeNode.node_id, out PreviewCameraRenderUtil util))
                 {
-                    previewUtil.DrawPreview(actorObjects, windowRect, GetCamPose(dialogueNode), GetActorPose());
+                    previewindow = util;
                 }
                 else
                 {
-                    //Temp: Do not render any unfinished shots types.
-                    previewUtil.DrawBlankPreview(windowRect);
+                    PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil();
+                    newUtil.Initialize();
+                    previewindow = newUtil;
+                    PreviewWindowLookUp.Add(node.node_id, newUtil);
+
                 }
+
+                var focusTarget = GameObject.Find(dialogudeNode.NodeConvodata.Actor.ActorName);
+                var actorObjects = GetChildrenWithMeshes(focusTarget.transform.parent);
+                var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
+                    node.windowRect.width, node.windowRect.height);
+
+                if (dialogudeNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
+                {
+
+                    previewindow.DrawPreview(actorObjects, windowRect, dialogudeNode);
+                }
+
+                previewindow.PreviewRenderUtility.Cleanup();
+            }
+            else
+            {
+                //Temp: Do not render any unfinished shots types.
+                previewindow = new PreviewCameraRenderUtil();
+                previewindow.Initialize();
+                previewindow.DrawBlankPreview(node.windowRect);
+                previewindow.PreviewRenderUtility.Cleanup();
             }
         }
 
@@ -91,21 +128,5 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return meshChildren.ToArray();
             }
         }
-
-        private Pose GetActorPose()
-        {
-            return new Pose();
-            var actor = EditorController.Instance.ActorsInScene[0];
-
-            return new Pose(actor.PreDefinedStartPosition.position, actor.PreDefinedStartPosition.rotation);
-        }
-
-        private Pose GetCamPose(EditorDialogueNode posNode)
-        {
-            cameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
-            return cameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig);
-        }
-
-        public void CleanUp() => previewUtil.PreviewRenderUtility.Cleanup();
     }
 }

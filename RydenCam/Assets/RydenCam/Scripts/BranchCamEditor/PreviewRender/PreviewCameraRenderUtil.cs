@@ -21,6 +21,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         public PreviewRenderUtility PreviewRenderUtility { get => previewUtility; }
         private PreviewRenderUtility previewUtility;
 
+        public CameraCalculator CameraCalculator;
         GameObject[] previousRenderObject;
         Dictionary<GameObject, Mesh> cachedMeshes = new Dictionary<GameObject, Mesh>();
         Texture cachedTexture;
@@ -40,14 +41,13 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return blankTexture;
             }
         }
-        
-        
 
         public void Initialize()
         {
             if(previewUtility == null)
             {
                 previewUtility = new PreviewRenderUtility();
+                CameraCalculator = new CameraCalculator();
 
                 //Initialize Camera Settings
                 var sourceCamera = Camera.main;
@@ -58,11 +58,18 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             }
         }
 
-        public void DrawPreview(GameObject[] objsToRender, Rect windowRect, Pose camPose, Pose actorPose)
+
+
+        public void DrawPreview(GameObject[] objsToRender, Rect windowRect, EditorDialogueNode node)
         {
             if (ShouldCreateNewPreview(objsToRender))
             {
-                SetCamera(camPose);
+
+                Pose actorPose = new Pose(node.NodeConvodata.Actor.PreDefinedStartPosition.position, node.NodeConvodata.Actor.PreDefinedStartPosition.rotation);
+                CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
+                CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
+
+                SetCamera(actorPose);
 
                 previewUtility.BeginStaticPreview(windowRect);
 
@@ -166,7 +173,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return Quaternion.Euler(euler);
             }
 
-            previewUtility.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
+            previewUtility?.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
         }
     }
 }
