@@ -18,114 +18,61 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     /// <summary>
     /// Sets up the dialogue variables in order to send to the PreviewCameraRenderUtil to render.
     /// </summary>
+    /// 
 
     public class DialoguePreview
     {
 
-        //Every node should have a separate PreviewCameraRenderUtil
-        private static Dictionary<string, PreviewCameraRenderUtil> _previewWindowLookUp { get; set; }
-        public static Dictionary<string, PreviewCameraRenderUtil> PreviewWindowLookUp
+        static Dictionary<string, PreviewCameraRenderUtil> PreviewRenderMap { get; set; } = new Dictionary<string, PreviewCameraRenderUtil>();
+
+        Texture2D blankTexture;
+        Texture2D BlankTexture
         {
             get
             {
-                if(_previewWindowLookUp == null)
+                if (blankTexture == null)
                 {
-                    _previewWindowLookUp = new Dictionary<string, PreviewCameraRenderUtil>();
+                    var previewTexture = new Texture2D(1, 1);
+                    previewTexture.SetPixel(0, 0, Color.black);
+                    previewTexture.Apply();
+                    blankTexture = previewTexture;
                 }
-                return _previewWindowLookUp;
+                return blankTexture;
             }
-            set
-            {
-                _previewWindowLookUp = value;
-            }
-        }
-      
-        Dictionary<Transform, GameObject[]> cachedChildrenWithMeshes = new Dictionary<Transform, GameObject[]>();
-
-        public DialoguePreview()
-        {
         }
 
         public void DrawPreviewWindow(EditorBaseNode node)
         {
-            PreviewCameraRenderUtil previewindow;
+
+            var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
+                node.windowRect.width, node.windowRect.height);
 
             if (node is EditorDialogueNode)
             {
-                var dialogudeNode = node as EditorDialogueNode;
+                var dialogueNode = node as EditorDialogueNode;
 
-                //TODO: Remove this
-                //for the sake of the tool running I've kept it in here
-                PreviewWindowLookUp.Clear();
+                PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
 
-                if (PreviewWindowLookUp.TryGetValue(dialogudeNode.node_id, out PreviewCameraRenderUtil util))
+                if (previewRender == null || previewRender != null) //|| (!previewRender.CachedShot.Equals(dialogueNode.NodeConvodata.ShotConfig)))
                 {
-                    previewindow = util;
+                    PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil(dialogueNode.NodeConvodata.ShotConfig);
+
+                    if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
+                    {
+                        newUtil.DrawSavePreview(windowRect, dialogueNode);
+                        //PreviewRenderMap.Add(node.node_id, newUtil);
+                    }
+                    else
+                    {
+                        //unnhandled shot type
+                        GUI.DrawTexture(windowRect, BlankTexture);
+                    }
                 }
                 else
                 {
-                    PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil();
-                    newUtil.Initialize();
-                    previewindow = newUtil;
-                    PreviewWindowLookUp.Add(node.node_id, newUtil);
-
+                    GUI.DrawTexture(windowRect, previewRender.CachedRenderTexture);
                 }
 
-                var focusTarget = GameObject.Find(dialogudeNode.NodeConvodata.Actor.ActorName);
-                var actorObjects = GetChildrenWithMeshes(focusTarget.transform.parent);
-                var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
-                    node.windowRect.width, node.windowRect.height);
-
-                if (dialogudeNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
-                {
-
-                    previewindow.DrawPreview(actorObjects, windowRect, dialogudeNode);
-                }
-
-                previewindow.PreviewRenderUtility.Cleanup();
-            }
-            else
-            {
-                //Temp: Do not render any unfinished shots types.
-                previewindow = new PreviewCameraRenderUtil();
-                previewindow.Initialize();
-                previewindow.DrawBlankPreview(node.windowRect);
-                previewindow.PreviewRenderUtility.Cleanup();
-            }
-        }
-
-        private GameObject[] GetChildrenWithMeshes(Transform actorParent)
-        {
-            if (cachedChildrenWithMeshes.TryGetValue(actorParent, out GameObject[] cachedObjects))
-            {
-                return cachedObjects;
-            }
-            else
-            {
-                var meshChildren = new List<GameObject>();
-
-                // Define a local function for recursive traversal
-                void FindMeshChildren(Transform parent)
-                {
-                    foreach (Transform child in parent)
-                    {
-                        // Check if the child has a MeshRenderer or SkinnedMeshRenderer
-                        if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
-                        {
-                            meshChildren.Add(child.gameObject);
-                        }
-
-                        // Recursively search through all children
-                        FindMeshChildren(child);
-                    }
-                }
-
-                // Start recursive traversal from the actor's transform
-                FindMeshChildren(actorParent.transform);
-
-                cachedChildrenWithMeshes[actorParent] = meshChildren.ToArray();
-
-                return meshChildren.ToArray();
             }
         }
     }

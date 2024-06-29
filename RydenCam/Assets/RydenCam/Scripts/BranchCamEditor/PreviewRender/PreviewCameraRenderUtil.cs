@@ -16,89 +16,68 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     /// Draws a rect and renders objects into the preview window.
     /// </summary>
 
-    public class PreviewCameraRenderUtil 
+    public class PreviewCameraRenderUtil  
     {
-        public PreviewRenderUtility PreviewRenderUtility { get => previewUtility; }
-        private PreviewRenderUtility previewUtility;
+        public PreviewRenderUtility PreviewRenderUtility { get; set; }
+        public Texture CachedRenderTexture { get; set; }
+        public CamShotConfig CachedShot { get; set; }
+
+        //May not need the 2 cached Meshs stuff after saving Texture in Dictionary
+        public List<GameObject> cachedChildrenWithMeshes = new List<GameObject>();
+        public Dictionary<GameObject, Mesh> cachedMeshes = new Dictionary<GameObject, Mesh>();
+
 
         public CameraCalculator CameraCalculator;
-        GameObject[] previousRenderObject;
-        Dictionary<GameObject, Mesh> cachedMeshes = new Dictionary<GameObject, Mesh>();
-        Texture cachedTexture;
 
-        Texture2D blankTexture;
-        Texture2D BlankTexture
+
+        public PreviewCameraRenderUtil(CamShotConfig shot)
         {
-            get
-            {
-                if(blankTexture == null)
-                {
-                    var previewTexture = new Texture2D(1, 1);
-                    previewTexture.SetPixel(0, 0, Color.black);
-                    previewTexture.Apply(); 
-                    blankTexture = previewTexture;
-                }
-                return blankTexture;
-            }
+            CachedShot = shot;
+            CameraCalculator = new CameraCalculator();
+            InitializeUnityRenderUtility();
         }
 
-        public void Initialize()
+        public void InitializeUnityRenderUtility()
         {
-            if(previewUtility == null)
-            {
-                previewUtility = new PreviewRenderUtility();
-                CameraCalculator = new CameraCalculator();
+            PreviewRenderUtility = new PreviewRenderUtility();
 
-                //Initialize Camera Settings
-                var sourceCamera = Camera.main;
-                previewUtility.camera.fieldOfView = sourceCamera.fieldOfView;
-                previewUtility.camera.depth = sourceCamera.depth;
-                previewUtility.camera.nearClipPlane = 1f;
-                previewUtility.camera.farClipPlane = 20;
-            }
+            //Initialize Camera Settings
+            var sourceCamera = Camera.main;
+            PreviewRenderUtility.camera.fieldOfView = sourceCamera.fieldOfView;
+            PreviewRenderUtility.camera.depth = sourceCamera.depth;
+            PreviewRenderUtility.camera.nearClipPlane = 1f;
+            PreviewRenderUtility.camera.farClipPlane = 20;
         }
 
 
-
-        public void DrawPreview(GameObject[] objsToRender, Rect windowRect, EditorDialogueNode node)
+        public void DrawSavePreview(Rect windowRect, EditorDialogueNode node)
         {
-            if (ShouldCreateNewPreview(objsToRender))
+
+            var focusTarget = GameObject.Find(node.NodeConvodata.Actor.ActorName);
+            var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
+
+            Pose actorPose = new Pose(node.NodeConvodata.Actor.PreDefinedStartPosition.position, node.NodeConvodata.Actor.PreDefinedStartPosition.rotation);
+            CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
+            CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
+
+            SetCamera(actorPose);
+
+            PreviewRenderUtility.BeginStaticPreview(windowRect);
+
+            foreach (var obj in objsToRender)
             {
-
-                Pose actorPose = new Pose(node.NodeConvodata.Actor.PreDefinedStartPosition.position, node.NodeConvodata.Actor.PreDefinedStartPosition.rotation);
-                CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
-                CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
-
-                SetCamera(actorPose);
-
-                previewUtility.BeginStaticPreview(windowRect);
-
-                foreach (var obj in objsToRender)
-                {
-                    DrawCustomObjectPreview(obj, actorPose);
-                }
-
-                previewUtility.Render();
-                Texture previewTexture = previewUtility.EndStaticPreview();
-                GUI.DrawTexture(windowRect, previewTexture);
-
-                cachedTexture = previewTexture;
-                previousRenderObject = objsToRender;
+                DrawCustomObjectPreview(obj, actorPose);
             }
-            else
-            {
-                GUI.DrawTexture(windowRect, cachedTexture);
-            }
+
+            PreviewRenderUtility.Render();
+            Texture previewRenderTexture = PreviewRenderUtility.EndStaticPreview();
+            PreviewRenderUtility.Cleanup();
+            GUI.DrawTexture(windowRect, previewRenderTexture);
+
+            CachedRenderTexture = previewRenderTexture;
         }
 
-        public void DrawBlankPreview(Rect windowRect) => GUI.DrawTexture(windowRect, BlankTexture);
-
-        //BUG: For some reason this outputs a blank grey box sometimes. 
-       //private bool ShouldCreateNewPreview(GameObject[] objs) => objs != previousRenderObject || cachedTexture == null;
-       
-        //TEMP: Redraw preview every GUI call in order to debug camera situation.
-        private bool ShouldCreateNewPreview(GameObject[] objs) => true;
-
+      
         private void DrawCustomObjectPreview(GameObject objToRender, Pose actorPose)
         {
             if (objToRender == null)
@@ -109,7 +88,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation.normalized, Vector3.one);
 
-            previewUtility.DrawMesh(GetMesh(objToRender), customMatrix, GetMaterial(objToRender), 0);
+            PreviewRenderUtility.DrawMesh(GetMesh(objToRender), customMatrix, GetMaterial(objToRender), 0);
         }
 
         private Material GetMaterial(GameObject obj)
@@ -156,6 +135,43 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             return newMesh;
         }
 
+        private GameObject[] GetChildrenWithMeshes(Transform actorParent)
+        {
+            //if (cachedChildrenWithMeshes.TryGetValue(actorParent, out GameObject[] cachedObjects))
+            if(cachedChildrenWithMeshes.Any())
+            {
+                return cachedChildrenWithMeshes.ToArray();
+            }
+            else
+            {
+                var meshChildren = new List<GameObject>();
+
+                // Define a local function for recursive traversal
+                void FindMeshChildren(Transform parent)
+                {
+                    foreach (Transform child in parent)
+                    {
+                        // Check if the child has a MeshRenderer or SkinnedMeshRenderer
+                        if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
+                        {
+                            meshChildren.Add(child.gameObject);
+                        }
+
+                        // Recursively search through all children
+                        FindMeshChildren(child);
+                    }
+                }
+
+                // Start recursive traversal from the actor's transform
+                FindMeshChildren(actorParent.transform);
+
+                //cachedChildrenWithMeshes[actorParent] = meshChildren.ToArray();
+                cachedChildrenWithMeshes = meshChildren;
+
+                return meshChildren.ToArray();
+            }
+        }
+
         void SetCamera(Pose camPose)
         {
             Vector3 finalCameraPosition()
@@ -173,7 +189,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return Quaternion.Euler(euler);
             }
 
-            previewUtility?.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
+            PreviewRenderUtility.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
         }
     }
 }

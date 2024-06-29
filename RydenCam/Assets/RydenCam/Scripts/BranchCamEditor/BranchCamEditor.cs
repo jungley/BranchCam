@@ -383,7 +383,7 @@ namespace RydenCam.BranchCamEditor
                     DrawNodeWindow, NodeManager.Instance.GetNode(i).windowTitle);
 
 
-                //Draw Preview Windows
+                //Draw Preview Window next to node
                 dialoguePreviewWindow.DrawPreviewWindow(nodeCur);
             }
 
