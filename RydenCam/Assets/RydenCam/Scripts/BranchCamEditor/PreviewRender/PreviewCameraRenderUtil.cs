@@ -28,7 +28,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
 
         public CameraCalculator CameraCalculator;
-
+   
 
         public PreviewCameraRenderUtil(CamShotConfig shot)
         {
@@ -43,24 +43,28 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             //Initialize Camera Settings
             var sourceCamera = Camera.main;
-            PreviewRenderUtility.camera.fieldOfView = sourceCamera.fieldOfView;
-            PreviewRenderUtility.camera.depth = sourceCamera.depth;
-            PreviewRenderUtility.camera.nearClipPlane = 1f;
+            PreviewRenderUtility.camera.fieldOfView = 40;
+            PreviewRenderUtility.camera.nearClipPlane = 0.01f;
             PreviewRenderUtility.camera.farClipPlane = 20;
         }
-
-
+    
         public void DrawSavePreview(Rect windowRect, EditorDialogueNode node)
         {
-
             var focusTarget = GameObject.Find(node.NodeConvodata.Actor.ActorName);
             var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
 
-            Pose actorPose = new Pose(node.NodeConvodata.Actor.PreDefinedStartPosition.position, node.NodeConvodata.Actor.PreDefinedStartPosition.rotation);
-            CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
-            CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
+            //TODO: Adjust the rotation of each object individually.
+            Quaternion adjustedRotation = objsToRender[0].transform.rotation * Quaternion.Euler(0, 180, 0);
+            Pose actorPose = new Pose(Vector3.zero, adjustedRotation);
 
-            SetCamera(actorPose);
+            CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
+            Pose camPose = CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
+
+            var inSceneActorPos = GameObject.Find(node.NodeConvodata.ShotConfig.actor).transform.position;
+            var relativeVector = inSceneActorPos - camPose.position; 
+            var finalPose = new Pose(actorPose.position + relativeVector + new Vector3(0, camPose.position.y, 0), camPose.rotation);
+
+            SetCamera(finalPose);
 
             PreviewRenderUtility.BeginStaticPreview(windowRect);
 
@@ -174,13 +178,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         void SetCamera(Pose camPose)
         {
-            Vector3 finalCameraPosition()
-            {
-                //forced to add this strange offset in order to get the camera on the actor. Need to figure out a way to not need this offset.
-                var offset = new Vector3(-0.5f, 0, -4f);
-                return camPose.position + offset;
-            }
-
             Quaternion finalCameraRotation()
             {
                 Vector3 euler = camPose.rotation.eulerAngles;
@@ -189,7 +186,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return Quaternion.Euler(euler);
             }
 
-            PreviewRenderUtility.camera.transform.SetPositionAndRotation(finalCameraPosition(), finalCameraRotation());
+            PreviewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, finalCameraRotation());
         }
     }
 }

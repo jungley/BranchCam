@@ -53,7 +53,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                 PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
 
-                if (previewRender == null || previewRender != null) //|| (!previewRender.CachedShot.Equals(dialogueNode.NodeConvodata.ShotConfig)))
+                if (previewRender == null || previewRender != null) 
                 {
                     PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil(dialogueNode.NodeConvodata.ShotConfig);
 

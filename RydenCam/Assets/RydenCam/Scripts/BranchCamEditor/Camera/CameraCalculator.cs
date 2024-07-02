@@ -1,4 +1,5 @@
-﻿using Ink.Parsed;
+﻿using Cinemachine.Utility;
+using Ink.Parsed;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.Common;
@@ -117,6 +118,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             camPos = cam.transform.position;
             camRot = cam.transform.rotation;
             DestroyTempCamCalcObject(cam);
+
             return new Pose(camPos, camRot);
         }
 
