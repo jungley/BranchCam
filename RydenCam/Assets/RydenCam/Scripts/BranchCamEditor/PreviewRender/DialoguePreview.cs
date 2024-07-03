@@ -51,27 +51,17 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             {
                 var dialogueNode = node as EditorDialogueNode;
 
-                PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
+                //PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
 
-                if (previewRender == null || previewRender != null) 
-                {
-                    PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil(dialogueNode.NodeConvodata.ShotConfig);
+                PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil(dialogueNode.NodeConvodata.ShotConfig);
 
                     if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
                     {
                         newUtil.DrawSavePreview(windowRect, dialogueNode);
+                        //newUtil.PreviewRenderUtility.Cleanup();
                         //PreviewRenderMap.Add(node.node_id, newUtil);
                     }
-                    else
-                    {
-                        //unnhandled shot type
-                        GUI.DrawTexture(windowRect, BlankTexture);
-                    }
-                }
-                else
-                {
-                    GUI.DrawTexture(windowRect, previewRender.CachedRenderTexture);
-                }
+                    newUtil.PreviewRenderUtility.Cleanup();
 
             }
         }

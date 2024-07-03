@@ -75,7 +75,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             PreviewRenderUtility.Render();
             Texture previewRenderTexture = PreviewRenderUtility.EndStaticPreview();
-            PreviewRenderUtility.Cleanup();
             GUI.DrawTexture(windowRect, previewRenderTexture);
 
             CachedRenderTexture = previewRenderTexture;
