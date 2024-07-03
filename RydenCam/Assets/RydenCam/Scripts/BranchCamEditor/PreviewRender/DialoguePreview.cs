@@ -47,9 +47,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
                 node.windowRect.width, node.windowRect.height);
 
-            if (node is EditorDialogueNode)
+            if (node is IPositionalNode)
             {
-                var dialogueNode = node as EditorDialogueNode;
+                var dialogueNode = node as IPositionalNode;
 
                 //PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
 

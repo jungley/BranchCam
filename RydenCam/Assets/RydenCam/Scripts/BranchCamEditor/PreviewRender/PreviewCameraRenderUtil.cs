@@ -48,7 +48,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             PreviewRenderUtility.camera.farClipPlane = 20;
         }
     
-        public void DrawSavePreview(Rect windowRect, EditorDialogueNode node)
+        internal void DrawSavePreview(Rect windowRect, IPositionalNode node)
         {
             var focusTarget = GameObject.Find(node.NodeConvodata.Actor.ActorName);
             var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
