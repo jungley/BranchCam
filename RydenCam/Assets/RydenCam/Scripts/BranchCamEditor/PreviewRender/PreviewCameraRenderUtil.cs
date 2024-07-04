@@ -42,7 +42,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             PreviewRenderUtility = new PreviewRenderUtility();
 
             //Initialize Camera Settings
-            var sourceCamera = Camera.main;
             PreviewRenderUtility.camera.fieldOfView = 40;
             PreviewRenderUtility.camera.nearClipPlane = 0.01f;
             PreviewRenderUtility.camera.farClipPlane = 20;
@@ -50,18 +49,19 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     
         internal void DrawSavePreview(Rect windowRect, IPositionalNode node)
         {
-            var focusTarget = GameObject.Find(node.NodeConvodata.Actor.ActorName);
+            //Issue: ShotConfig's ACtor does not update when changed. It only properly updates after BranchCam Editor is reopened.
+
+            var focusTarget = GameObject.Find(node.NodeConvodata.ShotConfig.actor);
             var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
 
-            //TODO: Adjust the rotation of each object individually.
-            Quaternion adjustedRotation = objsToRender[0].transform.rotation * Quaternion.Euler(0, 180, 0);
-            Pose actorPose = new Pose(Vector3.zero, adjustedRotation);
+            Pose actorPose = new Pose(Vector3.zero, GetRotation(focusTarget.transform.position));
 
             CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
             Pose camPose = CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
 
             var inSceneActorPos = GameObject.Find(node.NodeConvodata.ShotConfig.actor).transform.position;
-            var relativeVector = inSceneActorPos - camPose.position; 
+            var relativeVector = new Vector3(inSceneActorPos.x - camPose.position.x, 0, inSceneActorPos.z - camPose.position.z);
+
             var finalPose = new Pose(actorPose.position + relativeVector + new Vector3(0, camPose.position.y, 0), camPose.rotation);
 
             SetCamera(finalPose);
@@ -80,7 +80,16 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             CachedRenderTexture = previewRenderTexture;
         }
 
-      
+        public Quaternion GetRotation(Vector3 pos)
+        {
+            Vector3 midPoint = CameraCalculator.CalculateMidPoint();
+            Vector3 direction = pos - midPoint;
+
+            direction.y = 0;
+
+            return Quaternion.LookRotation(direction);
+        }
+
         private void DrawCustomObjectPreview(GameObject objToRender, Pose actorPose)
         {
             if (objToRender == null)
@@ -89,7 +98,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return;
             }
 
-            Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation.normalized, Vector3.one);
+            //Issue: DrawMesh does NOT set the rotation based on the parameter rather it forces the object to LookAt the direction.
+            //This means rotation in scene view affects renderview when it should not.
+            Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation, Vector3.one);
 
             PreviewRenderUtility.DrawMesh(GetMesh(objToRender), customMatrix, GetMaterial(objToRender), 0);
         }
