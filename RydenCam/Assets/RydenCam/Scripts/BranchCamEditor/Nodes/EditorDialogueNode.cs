@@ -146,6 +146,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 ActorIndex = indexx;
                 Sel_ActorID = EditorController.Instance.ActorsInScene[ActorIndex].ActorID;
                 NodeConvodata.Actor = EditorController.Instance.ActorsInScene.Where(x => x.ActorID == Sel_ActorID).FirstOrDefault();
+                NodeConvodata.ShotConfig.actor = NodeConvodata.Actor.ActorName;
             }
 
             //ID associated with the Actor no longer exists but Dialgoue contains an actor
