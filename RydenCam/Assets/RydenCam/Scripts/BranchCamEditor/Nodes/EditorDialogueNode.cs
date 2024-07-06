@@ -10,6 +10,8 @@ using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Serialization.Saveables;
+using RydenCam.BranchCamEditor.PreviewRender;
+
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
@@ -144,6 +146,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 ActorIndex = indexx;
                 Sel_ActorID = EditorController.Instance.ActorsInScene[ActorIndex].ActorID;
                 NodeConvodata.Actor = EditorController.Instance.ActorsInScene.Where(x => x.ActorID == Sel_ActorID).FirstOrDefault();
+                NodeConvodata.ShotConfig.actor = NodeConvodata.Actor.ActorName;
             }
 
             //ID associated with the Actor no longer exists but Dialgoue contains an actor
@@ -186,9 +189,8 @@ namespace RydenCam.BranchCamEditor.Nodes
             EditorGUILayout.Space();
             EditorGUILayout.EndScrollView();
 
-            //GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
+            GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
             DrawUICamCompOptions(NodeConvodata);
-
         }
 
 

@@ -2,6 +2,7 @@
 using UnityEngine;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
+using RydenCam.BranchCamEditor.Extensions;
 
 namespace RydenCam.BranchCamEditor.BranchCam
 {
@@ -39,6 +40,23 @@ namespace RydenCam.BranchCamEditor.BranchCam
             GoalDistance = goal_d;
             GoalAngle = goal_a;
             GoalCustomType = customtype;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is CamShotConfig))
+                return false;
+
+            CamShotConfig other = (CamShotConfig)obj;
+
+                return GoalType == other.GoalType &&
+                       GoalDistance == other.GoalDistance &&
+                       GoalAngle == other.GoalAngle &&
+                       GoalCustomType == other.GoalCustomType &&
+                       oppositeActor == other.oppositeActor &&
+                       actor == other.actor &&
+                       CustomCamPos.IsEqual(other.CustomCamPos) &&
+                       LocalRelativeActorPos.IsEqual(other.LocalRelativeActorPos);
         }
     }
 }

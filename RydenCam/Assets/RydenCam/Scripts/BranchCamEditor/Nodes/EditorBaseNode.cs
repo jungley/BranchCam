@@ -258,46 +258,6 @@ namespace RydenCam.BranchCamEditor.Nodes
                 }
 
             }
-
-            //Custom Camera Preview Area
-            /*
-            if (nodeConvodata.ShotConfig.GoalType == CameraGoal.Custom && customCamHasBeenSet(nodeConvodata))
-            {
-                GUIStyle panelstyle_campreview;
-                Texture2D previewCamTex = new Texture2D(1, 1);
-                for (int j = 0; j < 1; j++)
-                {
-                    for (int jj = 0; jj < 1; jj++)
-                    {
-                        previewCamTex.SetPixel(jj, j, new Color(0.3f, 0.3f, 0.3f));
-                    }
-                }
-                previewCamTex.Apply();
-                panelstyle_campreview = new GUIStyle();
-                panelstyle_campreview.normal.background = previewCamTex;
-
-
-                using (var horizontalScope2 = new GUILayout.HorizontalScope(panelstyle_campreview, GUILayout.Width(EditorGUIUtility.currentViewWidth), GUILayout.Height(60)))
-                {
-                    int xPos = 25;
-                    int yPos = 650;
-                    int Width = 340;
-                    int Height = 200;
-
-                    Camera camera = GameObject.FindGameObjectWithTag(BranchConstants.CustomCamera)?.GetComponent<Camera>();
-                    RenderTexture renderTexture = new RenderTexture(1024, 768, (int)RenderTextureFormat.ARGB32);
-
-                    if (camera != null)
-                    {
-                        camera.targetTexture = renderTexture;
-                        camera.Render();
-                    }
-
-                    GUI.DrawTexture(new Rect(xPos, yPos - 15, Width + 35, Height + 100), previewCamTex);
-                    GUI.DrawTexture(new Rect(xPos, yPos, Width, Height), renderTexture);
-                }
-            }
-            */
         }
 #endif
 

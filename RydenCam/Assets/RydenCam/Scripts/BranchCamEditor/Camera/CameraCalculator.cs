@@ -1,8 +1,11 @@
-﻿using RydenCam.BranchCamEditor.Controllers;
+﻿using Cinemachine.Utility;
+using Ink.Parsed;
+using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.Common;
 using RydenCam.SequenceData;
-
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.BranchCam
@@ -16,12 +19,20 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public Vector3 MidPoint;
 
         public CameraSettings CamSettings { get; set; }
-        public SequenceController Controller { get; set; }
+        List<Transform> ActorsInScene
+        {
+            get
+            {
+                return EditorController.Instance.ActorsInScene
+                   .Where(item => item.ActorGO != null)
+                   .Select(item => item.ActorGO.transform)
+                   .ToList();
+            }
+        }
 
-        public CameraCalculator(SequenceController controller)
+        public CameraCalculator()
         {
             CamSettings = new CameraSettings();
-            Controller = controller;
         }
 
 
@@ -107,6 +118,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             camPos = cam.transform.position;
             camRot = cam.transform.rotation;
             DestroyTempCamCalcObject(cam);
+
             return new Pose(camPos, camRot);
         }
 
@@ -173,14 +185,14 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public Vector3 CalculateMidPoint()
         {
             Vector3 vecCounter = Vector3.zero;
-            foreach (ActorInfo actor in Controller.ActorsInScene)
+            foreach (var actor in ActorsInScene)
             {
-                vecCounter.x += actor.ActorGO.transform.position.x;
-                vecCounter.y += actor.ActorGO.transform.position.y;
-                vecCounter.z += actor.ActorGO.transform.position.z;
+                vecCounter.x += actor.position.x;
+                vecCounter.y += actor.position.y;
+                vecCounter.z += actor.position.z;
             }
 
-            return vecCounter / Controller.ActorsInScene.Count;
+            return vecCounter / ActorsInScene.Count;
         }
 
 
@@ -190,12 +202,12 @@ namespace RydenCam.BranchCamEditor.BranchCam
         {
             CameraSide = camSide;
 
-            if (Controller.ActorsInScene.Count == 1)
+            if (ActorsInScene.Count == 1)
             {
-                markerLeft = markerRight = ChosenSideMarker = Controller.ActorsInScene[0].ActorGO.transform.position;
+                markerLeft = markerRight = ChosenSideMarker = ActorsInScene[0].position;
             }
 
-            if (Controller.ActorsInScene.Count >= 2)
+            if (ActorsInScene.Count >= 2)
             {
                 //Find the Centroid/MidPoint
                 //Vector3 smallest = Vector3.zero;
@@ -206,16 +218,16 @@ namespace RydenCam.BranchCamEditor.BranchCam
                 float maxDist = 0;
                 Vector3 pointa = Vector3.zero;
                 Vector3 pointb = Vector3.zero;
-                for (int j = 0; j < Controller.ActorsInScene.Count - 1; j++)
+                for (int j = 0; j < ActorsInScene.Count - 1; j++)
                 {
-                    for (int u = 1; u < Controller.ActorsInScene.Count; u++)
+                    for (int u = 1; u < ActorsInScene.Count; u++)
                     {
-                        float tmpDist = Vector3.Distance(Controller.ActorsInScene[j].ActorGO.transform.position, Controller.ActorsInScene[u].ActorGO.transform.position);
+                        float tmpDist = Vector3.Distance(ActorsInScene[j].position, ActorsInScene[u].position);
                         if (tmpDist > maxDist)
                         {
                             maxDist = tmpDist;
-                            pointa = Controller.ActorsInScene[j].ActorGO.transform.position;
-                            pointb = Controller.ActorsInScene[u].ActorGO.transform.position;
+                            pointa = ActorsInScene[j].position;
+                            pointb = ActorsInScene[u].position;
                         }
                     }
                 }

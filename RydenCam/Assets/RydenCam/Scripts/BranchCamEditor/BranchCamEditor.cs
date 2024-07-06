@@ -8,6 +8,7 @@ using RydenCam.Common;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 using System.IO;
+using RydenCam.BranchCamEditor.PreviewRender;
 
 namespace RydenCam.BranchCamEditor
 {
@@ -237,6 +238,7 @@ namespace RydenCam.BranchCamEditor
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
+
         void OnPlayModeStateChanged(PlayModeStateChange state)
         {
             if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.ExitingPlayMode)
@@ -359,6 +361,7 @@ namespace RydenCam.BranchCamEditor
 
             //Draw Each Node
             Color saved = GUI.backgroundColor;
+            DialoguePreview dialoguePreviewWindow = new DialoguePreview();
             BeginWindows();
 
             for (int i = 0; i < NodeManager.Instance.Length; i++)
@@ -378,6 +381,10 @@ namespace RydenCam.BranchCamEditor
                 NodeManager.Instance.GetNode(i).windowRect =
                     GUI.Window(i, NodeManager.Instance.GetNode(i).windowRect,
                     DrawNodeWindow, NodeManager.Instance.GetNode(i).windowTitle);
+
+
+                //Draw Preview Window next to node
+                dialoguePreviewWindow.DrawPreviewWindow(nodeCur);
             }
 
             EndWindows();

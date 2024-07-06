@@ -33,7 +33,7 @@ namespace RydenCam.BranchCamEditor.Controllers
         {
             dialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
             cameraBrain = dcameraBrain;
-            CamCalculator = new CameraCalculator(this);
+            CamCalculator = new CameraCalculator();
             UIView = new InGameDialogUIView(this);
         }
 
