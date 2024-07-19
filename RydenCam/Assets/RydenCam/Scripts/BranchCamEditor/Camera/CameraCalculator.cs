@@ -4,6 +4,7 @@ using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.Common;
 using RydenCam.SequenceData;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,6 +20,8 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public Vector3 MidPoint;
 
         public CameraSettings CamSettings { get; set; }
+
+        public bool IsPreviewWindow { get; set; }
         List<Transform> ActorsInScene
         {
             get
@@ -30,9 +33,10 @@ namespace RydenCam.BranchCamEditor.BranchCam
             }
         }
 
-        public CameraCalculator()
+        public CameraCalculator(bool isPreviewWindow = false)
         {
             CamSettings = new CameraSettings();
+            IsPreviewWindow = isPreviewWindow;
         }
 
 
@@ -81,17 +85,11 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
         private Pose CalculatePortrait(CamShotConfig shot)
         {
-            GameObject targetObj = GameObject.Find(shot.actor);
 
-            if (targetObj == null)
-            {
-                Debug.Log("CANNOT FIND ACTOR in CameraShot Constructor");
-                return new Pose();
-            }
-
-            Vector3 targPos = targetObj.transform.position;
-            Vector3 camPos = targPos;
-            Vector3 forwardN = targetObj.transform.forward.normalized;
+            TargetManager targetManager = new TargetManager(IsPreviewWindow);
+            Vector3 targetPos = targetManager.GetTargetPosition(shot);
+            Vector3 camPos = targetPos;
+            Vector3 forwardN = targetManager.GetForwardDirection(shot);
             float distance = CamSettings.GetDistance(shot);
             float angleHeight = CamSettings.GetAngle(shot);
             float biasX = CamSettings.DefaultBiasX;
@@ -101,15 +99,15 @@ namespace RydenCam.BranchCamEditor.BranchCam
             GameObject cam = new GameObject();
             cam.transform.position = camPos;
 
-            cam.transform.RotateAround(targPos, Vector3.up, CamSettings.DefaultOrbitAngle);
+            cam.transform.RotateAround(targetPos, Vector3.up, CamSettings.DefaultOrbitAngle);
             Vector3 option1 = cam.transform.position;
             cam.transform.position = camPos;
-            cam.transform.RotateAround(targPos, Vector3.up, -CamSettings.DefaultOrbitAngle);
+            cam.transform.RotateAround(targetPos, Vector3.up, -CamSettings.DefaultOrbitAngle);
             Vector3 option2 = cam.transform.position;
 
             //sidemarker here
             camPos = ChosenSideMarker.GetClosest(option1, option2);
-            Quaternion camRot = Quaternion.LookRotation(targPos - camPos);
+            Quaternion camRot = Quaternion.LookRotation(targetPos - camPos);
 
             //Offset Calculation
             cam.transform.position = camPos;
@@ -262,5 +260,56 @@ namespace RydenCam.BranchCamEditor.BranchCam
                 UnityEngine.Object.DestroyImmediate(cam);
         }
     }
+
+    public class TargetManager
+    {
+        private bool isPreviewWindow { get; set; }
+
+        public TargetManager(bool isWindow)
+        {
+            isPreviewWindow = isWindow;
+        }
+
+        public Vector3 GetTargetPosition(CamShotConfig shot)
+        {
+            if(isPreviewWindow)
+            {
+                return Vector3.zero;
+            }
+            else
+            {
+                GameObject targetObj = GameObject.Find(shot.actor);
+
+                if (targetObj == null)
+                {
+                    Debug.Log("Cannot find the actor based on the actor name");
+                    throw new NullReferenceException();
+                }
+
+                return targetObj.transform.position;
+            }
+        }
+
+        public Vector3 GetForwardDirection(CamShotConfig shot)
+        {
+
+            if (isPreviewWindow)
+            {
+                return new Vector3(0, 0, 1);
+            }
+            else
+            {
+                GameObject targetObj = GameObject.Find(shot.actor);
+                if (targetObj == null)
+                {
+                    Debug.Log("Cannot find the actor based on the actor name");
+                    throw new NullReferenceException();
+                }
+                return targetObj.transform.forward.normalized;
+            }
+        }
+
+    }
+
 }
 

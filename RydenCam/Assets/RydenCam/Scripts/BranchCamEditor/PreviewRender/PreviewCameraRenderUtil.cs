@@ -28,12 +28,13 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
 
         public CameraCalculator CameraCalculator;
-   
+
+        public bool isPreviewWindow { get; set; }
 
         public PreviewCameraRenderUtil(CamShotConfig shot)
         {
             CachedShot = shot;
-            CameraCalculator = new CameraCalculator();
+            CameraCalculator = new CameraCalculator(isPreviewWindow: true);
             InitializeUnityRenderUtility();
         }
 
@@ -49,22 +50,29 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     
         internal void DrawSavePreview(Rect windowRect, IPositionalNode node)
         {
-            //Issue: ShotConfig's ACtor does not update when changed. It only properly updates after BranchCam Editor is reopened.
+            //Potential Steps
+            //Access Actor GameObjects from the node.NodeConvodata.ShotConfig
+            //
 
             var focusTarget = GameObject.Find(node.NodeConvodata.ShotConfig.actor);
             var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
 
-            Pose actorPose = new Pose(Vector3.zero, GetRotation(focusTarget.transform.position));
+            Pose actorPose = new Pose(Vector3.zero, Quaternion.identity);//GetRotation(focusTarget.transform.position));
 
             CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
             Pose camPose = CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
 
-            var inSceneActorPos = GameObject.Find(node.NodeConvodata.ShotConfig.actor).transform.position;
-            var relativeVector = new Vector3(inSceneActorPos.x - camPose.position.x, 0, inSceneActorPos.z - camPose.position.z);
 
-            var finalPose = new Pose(actorPose.position + relativeVector + new Vector3(0, camPose.position.y, 0), camPose.rotation);
+            //
+            //var inSceneActorPos = GameObject.Find(node.NodeConvodata.ShotConfig.actor).transform.position;
+            //var inSceneActorPos = new Vector3(0, 0, 0);
+            //var relativeVector = new Vector3(inSceneActorPos.x - camPose.position.x, 0, inSceneActorPos.z - camPose.position.z);
 
-            SetCamera(finalPose);
+            //var finalPose = new Pose(actorPose.position + relativeVector + new Vector3(0, camPose.position.y, 0), camPose.rotation);
+
+            SetCamera(camPose);
+
+            //SetCamera(finalPose);
 
             PreviewRenderUtility.BeginStaticPreview(windowRect);
 
