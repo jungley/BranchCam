@@ -49,14 +49,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     
         internal void DrawSavePreview(Rect windowRect, IPositionalNode node)
         {
-            //Issue: ShotConfig's ACtor does not update when changed. It only properly updates after BranchCam Editor is reopened.
 
             var focusTarget = GameObject.Find(node.NodeConvodata.ShotConfig.actor);
             var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
 
             Pose actorPose = new Pose(Vector3.zero, GetRotation(focusTarget.transform.position));
-
-            CameraCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
             Pose camPose = CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
 
             var inSceneActorPos = GameObject.Find(node.NodeConvodata.ShotConfig.actor).transform.position;

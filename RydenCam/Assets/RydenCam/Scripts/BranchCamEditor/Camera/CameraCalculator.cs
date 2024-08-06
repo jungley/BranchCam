@@ -2,6 +2,7 @@
 using Ink.Parsed;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Extensions;
+using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System.Collections.Generic;
@@ -12,11 +13,6 @@ namespace RydenCam.BranchCamEditor.BranchCam
 {
     public class CameraCalculator
     {
-        public Side CameraSide;
-        public Vector3 ChosenSideMarker;
-        public Vector3 markerRight;
-        public Vector3 markerLeft;
-        public Vector3 MidPoint;
 
         public CameraSettings CamSettings { get; set; }
         List<Transform> ActorsInScene
@@ -36,8 +32,6 @@ namespace RydenCam.BranchCamEditor.BranchCam
         }
 
 
-        //TODO Find out WHY weird if statement thing has to be called before this.
-        //Probably for height calculations
         public Pose CalculatePlacement(CamShotConfig shot)
         {
 
@@ -79,48 +73,80 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return new Pose();
         }
 
+
         private Pose CalculatePortrait(CamShotConfig shot)
         {
-            GameObject targetObj = GameObject.Find(shot.actor);
-
-            if (targetObj == null)
-            {
-                Debug.Log("CANNOT FIND ACTOR in CameraShot Constructor");
-                return new Pose();
-            }
-
-            Vector3 targPos = targetObj.transform.position;
-            Vector3 camPos = targPos;
-            Vector3 forwardN = targetObj.transform.forward.normalized;
+            // Retrieve shot parameters
+            Vector3 targPos = GetPositionFromShot(shot.actor);
+            Vector3 forwardN = GetForwardDirectionFromShot(shot.actor);
             float distance = CamSettings.GetDistance(shot);
             float angleHeight = CamSettings.GetAngle(shot);
             float biasX = CamSettings.DefaultBiasX;
-            camPos += forwardN * distance;
-            camPos = new Vector3(camPos.x, camPos.y + angleHeight, camPos.z);
+            float orbitAngle = CamSettings.DefaultOrbitAngle;
 
-            GameObject cam = new GameObject();
-            cam.transform.position = camPos;
+            // Calculate initial camera position
+            Vector3 camPos = targPos + forwardN * distance;
+            camPos.y += angleHeight;
 
-            cam.transform.RotateAround(targPos, Vector3.up, CamSettings.DefaultOrbitAngle);
-            Vector3 option1 = cam.transform.position;
-            cam.transform.position = camPos;
-            cam.transform.RotateAround(targPos, Vector3.up, -CamSettings.DefaultOrbitAngle);
-            Vector3 option2 = cam.transform.position;
+            // Compute two possible camera positions based on orbit angle
+            Vector3 option1 = CalculateOrbitPosition(targPos, camPos, orbitAngle);
+            Vector3 option2 = CalculateOrbitPosition(targPos, camPos, -orbitAngle);
 
-            //sidemarker here
+            Vector3 ChosenSideMarker = SetSide(ActorsInScene.Select(x => x.position).ToList());
             camPos = ChosenSideMarker.GetClosest(option1, option2);
+
+            // Calculate camera rotation
             Quaternion camRot = Quaternion.LookRotation(targPos - camPos);
 
-            //Offset Calculation
-            cam.transform.position = camPos;
-            cam.transform.rotation = camRot;
-            cam.transform.position += cam.transform.right * CamSettings.DefaultBiasX;
-            camPos = cam.transform.position;
-            camRot = cam.transform.rotation;
-            DestroyTempCamCalcObject(cam);
+            // Apply bias
+            camPos += camRot * Vector3.right * biasX;
 
             return new Pose(camPos, camRot);
         }
+
+        // Helper function to calculate orbit position around a target
+        private Vector3 CalculateOrbitPosition(Vector3 targetPos, Vector3 camPos, float angle)
+        {
+            Vector3 direction = camPos - targetPos;
+            float distance = direction.magnitude;
+            direction.Normalize();
+
+            // Rotation matrix for Y-axis rotation
+            float cosAngle = Mathf.Cos(angle * Mathf.Deg2Rad);
+            float sinAngle = Mathf.Sin(angle * Mathf.Deg2Rad);
+
+            // Rotate the direction vector
+            Vector3 rotatedDirection = new Vector3(
+                cosAngle * direction.x - sinAngle * direction.z,
+                direction.y,
+                sinAngle * direction.x + cosAngle * direction.z
+            );
+
+            return targetPos + rotatedDirection * distance;
+        }
+
+        // Placeholder functions to simulate shot parameters retrieval
+        private Vector3 GetPositionFromShot(string actorName)
+        {
+            GameObject targetObj = GameObject.Find(actorName);
+            return targetObj.transform.position;    
+
+            // Replace with actual logic to get actor position
+            //TODO
+            //return Vector3.zero;
+        }
+
+        private Vector3 GetForwardDirectionFromShot(string actorName)
+        {
+            GameObject targetObj = GameObject.Find(actorName);
+            Vector3 forwardN = targetObj.transform.forward.normalized;
+            return forwardN;
+
+            // Replace with actual logic to get actor forward direction
+            //TODO
+            //return Vector3.forward;
+        }
+
 
         private Pose CalculateOverShoulder(CamShotConfig shot)
         {
@@ -143,6 +169,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             Vector3 rightN = targetObj_Opp.transform.right.normalized;
             Vector3 option1 = camPos + rightN * CamSettings.GetDistance(shot);
             Vector3 option2 = camPos - rightN * CamSettings.GetDistance(shot);
+            Vector3 ChosenSideMarker = SetSide(ActorsInScene.Select(x => x.position).ToList());
             camPos = ChosenSideMarker.GetClosest(option1, option2);
 
             camPos = new Vector3(camPos.x, camPos.y + angleHeight, camPos.z);
@@ -173,6 +200,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             Vector3 option1 = MidPoint + PDir1 * (actorDistance + CamSettings.GetDistance(shot));
             Vector3 option2 = MidPoint + PDir2 * (actorDistance + CamSettings.GetDistance(shot));
 
+            Vector3 ChosenSideMarker = SetSide(ActorsInScene.Select(x => x.position).ToList());
             Vector3 camPos = ChosenSideMarker.GetClosest(option1, option2);
             float angleHeight = CamSettings.GetAngle(shot);
             camPos = new Vector3(camPos.x, camPos.y + angleHeight, camPos.z);
@@ -195,64 +223,43 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return vecCounter / ActorsInScene.Count;
         }
 
-
-        //Sets the sides marker objects for camerashot calculation
-        //Knows which side to orient on
-        public void SetSide(Side camSide)
+        public Vector3 SetSide(List<Vector3> actorPositions)
         {
-            CameraSide = camSide;
 
-            if (ActorsInScene.Count == 1)
+            Side camSide = NodeManager.Instance.StartNode.CameraSide;
+
+            if (actorPositions.Count == 1)
             {
-                markerLeft = markerRight = ChosenSideMarker = ActorsInScene[0].position;
+                return actorPositions[0];
+            }
+            else if (actorPositions.Count == 2)
+            {
+                Vector3 posA = actorPositions[0];
+                Vector3 posB = actorPositions[1];
+
+                Vector3 midpoint = (posA + posB) / 2;
+
+                Vector3 direction = (posB - posA).normalized;
+
+                Vector3 rightDir = Quaternion.AngleAxis(90, Vector3.up) * direction;
+                Vector3 leftDir = Quaternion.AngleAxis(-90, Vector3.up) * direction;
+
+                Vector3 markerRight = midpoint + (rightDir * 10);
+                Vector3 markerLeft = midpoint + (leftDir * 10);
+
+                markerRight.y = posA.y;
+                markerLeft.y = posA.y;
+
+                // Select the appropriate marker based on the camera side
+                return (camSide == Side.Right) ? markerRight : markerLeft;
             }
 
-            if (ActorsInScene.Count >= 2)
-            {
-                //Find the Centroid/MidPoint
-                //Vector3 smallest = Vector3.zero;
-                //Vector3 biggest = Vector3.zero;
-                MidPoint = CalculateMidPoint();
-
-                //Brute Force Find furthest distnace
-                float maxDist = 0;
-                Vector3 pointa = Vector3.zero;
-                Vector3 pointb = Vector3.zero;
-                for (int j = 0; j < ActorsInScene.Count - 1; j++)
-                {
-                    for (int u = 1; u < ActorsInScene.Count; u++)
-                    {
-                        float tmpDist = Vector3.Distance(ActorsInScene[j].position, ActorsInScene[u].position);
-                        if (tmpDist > maxDist)
-                        {
-                            maxDist = tmpDist;
-                            pointa = ActorsInScene[j].position;
-                            pointb = ActorsInScene[u].position;
-                        }
-                    }
-                }
-                Vector3 actorADirN = (pointa - pointb).normalized;
-                Vector3 PDirRight = Quaternion.AngleAxis(90, Vector3.up) * actorADirN;
-                Vector3 PDirLeft = Quaternion.AngleAxis(-90, Vector3.up) * actorADirN;
-
-
-                markerRight = MidPoint + (PDirRight * 10);
-                markerLeft = MidPoint + (PDirLeft * 10);
-
-                //Patch
-                markerRight.y = pointa.y;
-                markerLeft.y = pointa.y;
-
-                ChosenSideMarker = (CameraSide == Side.Right) ? markerRight : markerLeft;
-
-               //var right = GameObject.Instantiate(new GameObject("markerRIGHT"));
-               //right.transform.position = markerRight;
-
-                //var left = GameObject.Instantiate(new GameObject("markerLeft"));
-               // left.transform.position = markerLeft;
-
-            }
+            return Vector2.zero;
         }
+
+
+
+
 
         private void DestroyTempCamCalcObject(GameObject cam)
         {

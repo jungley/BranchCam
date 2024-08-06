@@ -43,7 +43,6 @@ namespace RydenCam.BranchCamEditor.Controllers
             CurrentNode = NodeManager.Instance.StartNode;
             SetPreDefinedActorPositions(CurrentNode as EditorStartNode);
             ActorsLookAtEachOther();
-            CamCalculator.SetSide(NodeManager.Instance.StartNode.CameraSide);
             SetDepthOfField(depthEnabled: true);
             PreviousDialogue = new Stack<string>();
             DialogueIsRunning = true;
