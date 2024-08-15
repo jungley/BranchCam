@@ -22,16 +22,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         public PreviewRenderUtility PreviewRenderUtility { get; set; }
         public Texture2D CachedRenderTexture { get; set; }
 
-        public CameraCalculator CameraCalculator;
-   
-
         public PreviewCameraRenderUtil()
-        {
-            CameraCalculator = new CameraCalculator();
-            InitializeUnityRenderUtility();
-        }
-
-        public void InitializeUnityRenderUtility()
         {
             PreviewRenderUtility = new PreviewRenderUtility();
 
