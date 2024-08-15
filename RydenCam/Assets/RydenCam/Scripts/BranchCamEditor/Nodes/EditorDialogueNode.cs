@@ -12,7 +12,6 @@ using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Serialization.Saveables;
 using RydenCam.BranchCamEditor.PreviewRender;
 
-
 namespace RydenCam.BranchCamEditor.Nodes
 {
     [ExecuteAlways]
@@ -56,7 +55,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             //Add 1 Dialogue
             AddDialogue();
-
+            
             //Add Single Default Shot
             NodeConvodata.ShotConfig = new CamShotConfig(NodeConvodata.Actor.ActorName, CameraGoal.Portrait, CameraDistance.Mid, CameraAngle.EyeLevel, CustomCameraType.None);
         }
@@ -131,6 +130,7 @@ namespace RydenCam.BranchCamEditor.Nodes
         }
 
 #if UNITY_EDITOR
+
         public override void DrawForInspector()
         {
             base.DrawForInspector();
@@ -147,6 +147,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 Sel_ActorID = EditorController.Instance.ActorsInScene[ActorIndex].ActorID;
                 NodeConvodata.Actor = EditorController.Instance.ActorsInScene.Where(x => x.ActorID == Sel_ActorID).FirstOrDefault();
                 NodeConvodata.ShotConfig.actor = NodeConvodata.Actor.ActorName;
+                OnPropertyChanged?.Invoke(this);
             }
 
             //ID associated with the Actor no longer exists but Dialgoue contains an actor

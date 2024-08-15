@@ -15,7 +15,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
     [ExecuteAlways]
     [System.Serializable]
-    public abstract class EditorBaseNode: INode
+    public abstract class EditorBaseNode : INode
     {
         //windowRect contains the location of the node
         public Rect windowRect;
@@ -39,7 +39,7 @@ namespace RydenCam.BranchCamEditor.Nodes
         {
             get
             {
-                if(_headerTexture == null)
+                if (_headerTexture == null)
                 {
                     _headerTexture = new Texture2D(1, 1);
                     _headerTexture.SetPixel(1, 1, nodeColor);
@@ -57,7 +57,7 @@ namespace RydenCam.BranchCamEditor.Nodes
         public static string customCamLock_nodeId;
 
         public virtual NodeType TypeOfNode => NodeType.None;
-
+        public Action<EditorBaseNode> OnPropertyChanged;
         public virtual void DrawForInspector()
         {
             GUI.DrawTextureWithTexCoords(new Rect(0, 35, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
@@ -118,6 +118,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             if (nodeConvodata.ShotConfig.GoalType != selected_goal)
             {
                 nodeConvodata.ShotConfig.GoalType =selected_goal;
+                OnPropertyChanged?.Invoke(this);
             }
 
 
@@ -151,6 +152,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 if (nodeConvodata.ShotConfig.GoalDistance != (CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist))
                 {
                     nodeConvodata.ShotConfig.GoalDistance = ((CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist));
+                    OnPropertyChanged?.Invoke(this);
                 }
                 GUILayout.EndHorizontal();
 
@@ -163,6 +165,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 if (nodeConvodata.ShotConfig.GoalAngle != (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle)) 
                 {
                     nodeConvodata.ShotConfig.GoalAngle = ((CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle));
+                    OnPropertyChanged?.Invoke(this);
                 }
                 GUILayout.EndHorizontal();
             }

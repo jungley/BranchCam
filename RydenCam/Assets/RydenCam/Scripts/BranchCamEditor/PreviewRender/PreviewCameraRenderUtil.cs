@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.BranchCam;
+using UnityEditor.Experimental.GraphView;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
@@ -19,25 +20,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     public class PreviewCameraRenderUtil  
     {
         public PreviewRenderUtility PreviewRenderUtility { get; set; }
-        public Texture CachedRenderTexture { get; set; }
-        public CamShotConfig CachedShot { get; set; }
-
-        //May not need the 2 cached Meshs stuff after saving Texture in Dictionary
-        public List<GameObject> cachedChildrenWithMeshes = new List<GameObject>();
-        public Dictionary<GameObject, Mesh> cachedMeshes = new Dictionary<GameObject, Mesh>();
-
-
-        public CameraCalculator CameraCalculator;
-   
-
-        public PreviewCameraRenderUtil(CamShotConfig shot)
-        {
-            CachedShot = shot;
-            CameraCalculator = new CameraCalculator();
-            InitializeUnityRenderUtility();
-        }
-
-        public void InitializeUnityRenderUtility()
+        public Texture2D CachedRenderTexture { get; set; }
+        public PreviewCameraRenderUtil()
         {
             PreviewRenderUtility = new PreviewRenderUtility();
 
@@ -47,153 +31,55 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             PreviewRenderUtility.camera.farClipPlane = 20;
         }
     
-        internal void DrawSavePreview(Rect windowRect, IPositionalNode node)
+        internal void DrawSavePreview(Rect windowRect, Pose camPose, Pose objPose, (Mesh mesh, Material mat)[] meshMats)
         {
+           // Pose actorPose = new Pose(Vector3.zero, GetRotation(actorPosition));
 
-            var focusTarget = GameObject.Find(node.NodeConvodata.ShotConfig.actor);
-            var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
-
-            Pose actorPose = new Pose(Vector3.zero, GetRotation(focusTarget.transform.position));
-            Pose camPose = CameraCalculator.CalculatePlacement(node.NodeConvodata.ShotConfig);
-
-            var inSceneActorPos = GameObject.Find(node.NodeConvodata.ShotConfig.actor).transform.position;
-            var relativeVector = new Vector3(inSceneActorPos.x - camPose.position.x, 0, inSceneActorPos.z - camPose.position.z);
-
-            var finalPose = new Pose(actorPose.position + relativeVector + new Vector3(0, camPose.position.y, 0), camPose.rotation);
-
-            SetCamera(finalPose);
+            SetCameraPose(camPose);
 
             PreviewRenderUtility.BeginStaticPreview(windowRect);
 
-            foreach (var obj in objsToRender)
+            foreach(var meshMat in meshMats)
             {
-                DrawCustomObjectPreview(obj, actorPose);
+                DrawCustomObjectPreview(meshMat.mesh, meshMat.mat, objPose);
             }
 
             PreviewRenderUtility.Render();
-            Texture previewRenderTexture = PreviewRenderUtility.EndStaticPreview();
+            Texture2D previewRenderTexture = PreviewRenderUtility.EndStaticPreview();
             GUI.DrawTexture(windowRect, previewRenderTexture);
-
             CachedRenderTexture = previewRenderTexture;
         }
 
-        public Quaternion GetRotation(Vector3 pos)
+        private void DrawCustomObjectPreview(Mesh meshToRender, Material material, Pose actorPose)
         {
-            Vector3 midPoint = CameraCalculator.CalculateMidPoint();
-            Vector3 direction = pos - midPoint;
-
-            direction.y = 0;
-
-            return Quaternion.LookRotation(direction);
-        }
-
-        private void DrawCustomObjectPreview(GameObject objToRender, Pose actorPose)
-        {
-            if (objToRender == null)
+            if (meshToRender == null)
             {
-                BranchLog.Log("Gameobject to render is null.");
+                BranchLog.Log("Mesh to render is null.");
                 return;
             }
 
             //Issue: DrawMesh does NOT set the rotation based on the parameter rather it forces the object to LookAt the direction.
             //This means rotation in scene view affects renderview when it should not.
             Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation, Vector3.one);
-
-            PreviewRenderUtility.DrawMesh(GetMesh(objToRender), customMatrix, GetMaterial(objToRender), 0);
+            // Use the copied mesh in the preview
+            PreviewRenderUtility.DrawMesh(meshToRender, customMatrix, material, 0);
         }
 
-        private Material GetMaterial(GameObject obj)
+        void SetCameraPose(Pose camPose)
         {
-            if (obj.GetComponent<SkinnedMeshRenderer>() != null) return obj.GetComponent<SkinnedMeshRenderer>().sharedMaterial;
-
-            if (obj.GetComponent<Renderer>() != null) return obj.GetComponent<Renderer>().sharedMaterial;
-
-            BranchLog.Log("No Renderer or Skinned Renderer found on " + obj);
-            return null;
-        }
-        private Mesh GetMesh(GameObject obj)
-        {
-            if (obj.GetComponent<SkinnedMeshRenderer>() != null) return GetCachedMesh(obj);
-
-            if (obj.GetComponent<MeshFilter>() != null) return obj.GetComponent<MeshFilter>().sharedMesh;
-
-
-            BranchLog.Log("No Mesh or Skinned Mesh found on " + obj);
-            return null;
+            // Set the camera's position and rotation.
+            PreviewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
         }
 
 
-        private Mesh GetCachedMesh(GameObject keyObject)
+        public void Dispose()
         {
-            if (keyObject == null)
+            if (PreviewRenderUtility != null)
             {
-                BranchLog.Log ("GameObject is null. Cannot retrieve cached mesh.");
-                return null;
-            }
-
-            // Check if the mesh is already cached
-            if (cachedMeshes.TryGetValue(keyObject, out Mesh cachedMesh)) return cachedMesh;
-
-            var skinnedRenderer = keyObject.GetComponent<SkinnedMeshRenderer>();
-
-            // Create a new Mesh and bake it
-            Mesh newMesh = new Mesh();
-            skinnedRenderer.BakeMesh(newMesh);
-
-            // Cache the new mesh
-            cachedMeshes[keyObject] = newMesh;
-
-            return newMesh;
-        }
-
-        private GameObject[] GetChildrenWithMeshes(Transform actorParent)
-        {
-            //if (cachedChildrenWithMeshes.TryGetValue(actorParent, out GameObject[] cachedObjects))
-            if(cachedChildrenWithMeshes.Any())
-            {
-                return cachedChildrenWithMeshes.ToArray();
-            }
-            else
-            {
-                var meshChildren = new List<GameObject>();
-
-                // Define a local function for recursive traversal
-                void FindMeshChildren(Transform parent)
-                {
-                    foreach (Transform child in parent)
-                    {
-                        // Check if the child has a MeshRenderer or SkinnedMeshRenderer
-                        if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
-                        {
-                            meshChildren.Add(child.gameObject);
-                        }
-
-                        // Recursively search through all children
-                        FindMeshChildren(child);
-                    }
-                }
-
-                // Start recursive traversal from the actor's transform
-                FindMeshChildren(actorParent.transform);
-
-                //cachedChildrenWithMeshes[actorParent] = meshChildren.ToArray();
-                cachedChildrenWithMeshes = meshChildren;
-
-                return meshChildren.ToArray();
+                PreviewRenderUtility.Cleanup();
+                PreviewRenderUtility = null;
             }
         }
-
-        void SetCamera(Pose camPose)
-        {
-            Quaternion finalCameraRotation()
-            {
-                Vector3 euler = camPose.rotation.eulerAngles;
-                //flip the camera around to face the actor.
-                euler.y += 180f;
-                return Quaternion.Euler(euler);
-            }
-
-            PreviewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, finalCameraRotation());
-        }
+       
     }
 }
