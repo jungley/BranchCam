@@ -41,6 +41,7 @@ namespace RydenCam.BranchCamEditor
         static float panY = 0;
         private Rect lastEditorWindowPos;
         bool IsDrawingHandle = false;
+        static bool isDirty;
         ConnectionPoint handlePoint;
         static Texture2D _targetTextureInspector { get; set; }
         static Texture2D TargetTextureInspector
@@ -84,6 +85,8 @@ namespace RydenCam.BranchCamEditor
         private static GUIStyle inspectorText;
         private static bool initHasBeenCalled;
 
+        static DialoguePreview dialoguePreviewWindow;
+
         [MenuItem(BranchConstants.MainWindowName)]
         public static void OpenWindow()
         {
@@ -116,6 +119,14 @@ namespace RydenCam.BranchCamEditor
                 LoadFile.LoadSaveables();
             }
 
+            dialoguePreviewWindow = DialoguePreview.CreateAndPopulateMeshes(NodeManager.Instance.GetList().Where(x => x is IPositionalNode).ToArray());
+
+            for (int i = 0; i < NodeManager.Instance.Length; i++)
+            {
+                NodeManager.Instance.GetNode(i).OnPropertyChanged += editor.MarkForRedraw;
+            }
+
+            editor.MarkForRedraw();
         }
 
 
@@ -247,7 +258,6 @@ namespace RydenCam.BranchCamEditor
             }
         }
 
-
         void OnGUI()
         {
 
@@ -361,31 +371,10 @@ namespace RydenCam.BranchCamEditor
 
             //Draw Each Node
             Color saved = GUI.backgroundColor;
-            DialoguePreview dialoguePreviewWindow = new DialoguePreview();
             BeginWindows();
 
-            for (int i = 0; i < NodeManager.Instance.Length; i++)
-            {
-                EditorBaseNode nodeCur = NodeManager.Instance.GetNode(i);
-                GUI.backgroundColor = Color.gray;
-
-                if (nodeCur == ActiveNode && ActiveNode != null)
-                {
-                    Color tempColor = GUI.backgroundColor;
-                    tempColor.a = 0.75f;
-                    GUI.backgroundColor = tempColor;
-                    GUI.DrawTextureWithTexCoords(ActiveNode.windowRect, highlightTex, new Rect(0, 0, 1, 1.0f));
-                }
-
-                //Drawing each node
-                NodeManager.Instance.GetNode(i).windowRect =
-                    GUI.Window(i, NodeManager.Instance.GetNode(i).windowRect,
-                    DrawNodeWindow, NodeManager.Instance.GetNode(i).windowTitle);
-
-
-                //Draw Preview Window next to node
-                dialoguePreviewWindow.DrawPreviewWindow(nodeCur);
-            }
+            DrawNodes();
+            DrawPreviewWindows();
 
             EndWindows();
             GUI.backgroundColor = saved;
@@ -499,6 +488,45 @@ namespace RydenCam.BranchCamEditor
 
         }
 
+        private void DrawNodes()
+        {
+            //Draws all base nodes.
+            for (int i = 0; i < NodeManager.Instance.Length; i++)
+            {
+                EditorBaseNode nodeCur = NodeManager.Instance.GetNode(i);
+                GUI.backgroundColor = Color.gray;
+
+                if (nodeCur == ActiveNode && ActiveNode != null)
+                {
+                    Color tempColor = GUI.backgroundColor;
+                    tempColor.a = 0.75f;
+                    GUI.backgroundColor = tempColor;
+                    GUI.DrawTextureWithTexCoords(ActiveNode.windowRect, highlightTex, new Rect(0, 0, 1, 1.0f));
+                }
+
+                //Drawing each node
+                NodeManager.Instance.GetNode(i).windowRect =
+                    GUI.Window(i, NodeManager.Instance.GetNode(i).windowRect,
+                    DrawNodeWindow, NodeManager.Instance.GetNode(i).windowTitle);
+            }
+        }
+
+        private void DrawPreviewWindows()
+        {
+            //draws the preview windows next to the nodes.
+            if (isDirty)
+            {
+                Debug.Log("Redrawing.");
+                dialoguePreviewWindow.DrawPreviewWindows(NodeManager.Instance.GetList().ToArray());
+            }
+            else
+            {
+                dialoguePreviewWindow.DrawCachedWindows(NodeManager.Instance.GetList().ToArray());
+            }
+
+            isDirty = false;
+        }
+
         private void HandleFileDropdownOption(string option)
         {
             switch (option)
@@ -596,6 +624,7 @@ namespace RydenCam.BranchCamEditor
                     EditorBaseNode dialogueNode = new EditorDialogueNode(mousePos);
                     NodeManager.Instance.AddNode(dialogueNode);
                     ActiveNode = dialogueNode;
+                    dialogueNode.OnPropertyChanged += MarkForRedraw;
                     break;
                 case ("decisionNode"):
                     EditorBaseNode decisionNode = new EditorDecisionNode(mousePos);
@@ -608,7 +637,11 @@ namespace RydenCam.BranchCamEditor
                     ActiveNode = actionNode;
                     break;
             }
+
+            MarkForRedraw();
         }
+
+        void MarkForRedraw() => isDirty = true;
 
         public static void OnClickRemoveConnection(Connection connection)
         {
