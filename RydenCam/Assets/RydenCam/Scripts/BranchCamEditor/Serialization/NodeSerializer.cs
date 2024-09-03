@@ -99,8 +99,8 @@ namespace RydenCam.BranchCamEditor.Serialization
                                         EditorBaseNode node_OUT = NodeManager.Instance.FindNode(savenode.OUT_connTo[y]);
                                         if (node_OUT != null)
                                         {
-                                            node.PointOut[y].connectedTo = node_OUT.PointIn;
-                                            node_OUT.PointIn.connectedTo = node.PointOut[y];
+                                            node.PointOut[y].ConnectedTo = node_OUT.PointIn;
+                                            node_OUT.PointIn.ConnectedTo = node.PointOut[y];
                                             ConnectionManager.Instance.AddConnection(node.PointOut[y], node_OUT.PointIn, EditorBaseNode.OnClickRemoveConnection);
                                         }
                                     }

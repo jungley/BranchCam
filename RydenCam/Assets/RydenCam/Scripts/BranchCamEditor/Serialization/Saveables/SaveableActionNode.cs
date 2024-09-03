@@ -30,15 +30,15 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Serialization.Saveables
             methodInfoConatiners = node.methodContainers;
 
             IN_connTo = new List<string>();
-            if (node.PointIn.connectedTo != null)
+            if (node.PointIn.ConnectedTo != null)
             {
-                IN_connTo.Add(node.PointIn.connectedTo.node.node_id);
+                IN_connTo.Add(node.PointIn.ConnectedTo.node.node_id);
             }
 
-            if (node.PointOut[0].connectedTo != null)
+            if (node.PointOut[0].ConnectedTo != null)
             {
                 OUT_connTo = new List<string>();
-                OUT_connTo.Add(node.PointOut[0].connectedTo.node.node_id);
+                OUT_connTo.Add(node.PointOut[0].ConnectedTo.node.node_id);
             }
         }
     }

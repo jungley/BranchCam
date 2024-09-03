@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using RydenCam.Common;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Nodes.Connections
 {
@@ -9,11 +10,23 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
     [System.Serializable]
     public class ConnectionPoint
     {
+
+        public NodeCC Node { get; set; }
+
         public ConnectionPointType type;
         public EditorBaseNode node;
-        public ConnectionPoint connectedTo;
-        public Rect pointBounds;
-        private Color pointColor = new Color(0, 0.8f, 0, 1);
+        public ConnectionPoint ConnectedTo;
+        public Rect Bounds;
+        public Color Color = new Color(0, 0.8f, 0, 1);
+
+
+        public ConnectionPoint(NodeCC node, ConnectionPointType ty)
+        {
+            Node = node;
+            type = ty;
+        }
+
+
 
         public ConnectionPoint(EditorBaseNode node, ConnectionPointType ty)
         {
@@ -23,24 +36,24 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
             if (ty == ConnectionPointType.In)
             {
                 this.type = ConnectionPointType.In;
-                pointBounds = new Rect((node.nodeWidth / 2 - 10), 0, 20, 18);
+                Bounds = new Rect((node.nodeWidth / 2 - 10), 0, 20, 18);
             }
             else if (ty == ConnectionPointType.Out)
             {
                 this.type = ConnectionPointType.Out;
-                pointBounds = new Rect((node.nodeWidth / 2 - 10), node.nodeHeight - 16, 20, 18);
+                Bounds = new Rect((node.nodeWidth / 2 - 10), node.nodeHeight - 16, 20, 18);
             }
         }
 
         public void ClearPointer()
         {
-            connectedTo = null;
+            ConnectedTo = null;
         }
 
         public Vector2 getGlobalPoint()
         {
-            float globalXPos = (node.windowRect.x) + pointBounds.center.x;
-            float globalYPos = (node.windowRect.y) + pointBounds.center.y;
+            float globalXPos = (node.windowRect.x) + Bounds.center.x;
+            float globalYPos = (node.windowRect.y) + Bounds.center.y;
             return new Vector2(globalXPos, globalYPos);
         }
 
@@ -48,22 +61,22 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public void Draw(Color col)
         {
             Handles.color = col;
-            Handles.DrawSolidDisc(pointBounds.center, new Vector3(0, 0, 1), 7.0f);
+            Handles.DrawSolidDisc(Bounds.center, new Vector3(0, 0, 1), 7.0f);
 
-            if (connectedTo != null)
+            if (ConnectedTo != null)
             {
-                Handles.DrawWireDisc(pointBounds.center, new Vector3(0, 0, 1), 10.0f);
+                Handles.DrawWireDisc(Bounds.center, new Vector3(0, 0, 1), 10.0f);
             }
         }
 
         public void Draw()
         {
-            Handles.color = pointColor;
-            Handles.DrawSolidDisc(pointBounds.center, new Vector3(0, 0, 1), 7.0f);
+            Handles.color = Color;
+            Handles.DrawSolidDisc(Bounds.center, new Vector3(0, 0, 1), 7.0f);
 
-            if (connectedTo != null)
+            if (ConnectedTo != null)
             {
-                Handles.DrawWireDisc(pointBounds.center, new Vector3(0, 0, 1), 10.0f);
+                Handles.DrawWireDisc(Bounds.center, new Vector3(0, 0, 1), 10.0f);
             }
         }
 
@@ -71,16 +84,16 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public void Draw(int num)
         {
 
-            Handles.color = pointColor;//Color.black;//pointColor;
-            Handles.DrawSolidDisc(pointBounds.center, new Vector3(0, 0, 1), 7.0f);
+            Handles.color = Color;//Color.black;//pointColor;
+            Handles.DrawSolidDisc(Bounds.center, new Vector3(0, 0, 1), 7.0f);
 
-            if (connectedTo != null)
+            if (ConnectedTo != null)
             {
-                Handles.color = pointColor;
-                Handles.DrawWireDisc(pointBounds.center, new Vector3(0, 0, 1), 10.0f);
-                Handles.color = pointColor; //Color.black;
+                Handles.color = Color;
+                Handles.DrawWireDisc(Bounds.center, new Vector3(0, 0, 1), 10.0f);
+                Handles.color = Color; //Color.black;
             }
-            Vector3 pos = pointBounds.center;
+            Vector3 pos = Bounds.center;
             pos = new Vector3(pos.x - 3, pos.y - 12, pos.z);
 
             GUIStyle style = new GUIStyle();

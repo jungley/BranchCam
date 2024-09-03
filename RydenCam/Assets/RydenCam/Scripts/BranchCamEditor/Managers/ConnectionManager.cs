@@ -47,23 +47,23 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public void Remove(Connection connection)
         {
-            connection.Point_OUT.connectedTo = null;
-            connection.Point_IN.connectedTo = null;
+            connection.Point_OUT.ConnectedTo = null;
+            connection.Point_IN.ConnectedTo = null;
             connectionList.Remove(connection);
         }
 
         public bool IsOutConnected(ConnectionPoint A, ConnectionPoint B)
         {
-            return (A.type == ConnectionPointType.Out && A.connectedTo != null) ||
-                   (B.type == ConnectionPointType.Out && B.connectedTo != null);
+            return (A.type == ConnectionPointType.Out && A.ConnectedTo != null) ||
+                   (B.type == ConnectionPointType.Out && B.ConnectedTo != null);
         }
 
         public void Remove(ConnectionPoint A, ConnectionPoint B)
         {
-            try { A.connectedTo.connectedTo = null; }
+            try { A.ConnectedTo.ConnectedTo = null; }
             catch (Exception) { }
 
-            try { B.connectedTo.connectedTo = null; }
+            try { B.ConnectedTo.ConnectedTo = null; }
             catch (Exception) { }
 
             connectionList.RemoveAll(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B));

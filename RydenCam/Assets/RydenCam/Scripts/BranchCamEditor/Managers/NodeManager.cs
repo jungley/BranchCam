@@ -4,6 +4,8 @@ using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System.Linq;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using System.Collections.ObjectModel;
 
 namespace RydenCam.BranchCamEditor.Managers
 {    
@@ -24,11 +26,44 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
+        public List<ActorInfo> ActorsInScene()
+        {
+            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
+            return startNode?.ActorsInScene ?? new List<ActorInfo>();
+        }
+
+        public ObservableCollection<NodeCC> Nodes { get; set; }
+
+        public void Clear() => instance = new NodeManager();
+
+        public void RemoveNode(NodeCC node)
+        {
+            if (node.TypeOfNode == NodeType.StartNode)
+            {
+                BranchCamEditor.startNodeAdded = false;
+                
+            }
+            Nodes.Remove(node);
+            
+        }
+
+        public void AddNode(NodeCC node) => Nodes.Add(node);
+        public NodeCC GetNodeCC(int index) => Nodes[index];
+
+        private NodeManager()
+        {
+            nodes = new List<EditorBaseNode>();
+            Nodes = new ObservableCollection<NodeCC>();
+        }
+
+
+        ////////////////////////////////////////////////////////////////////////////
+
+
         private List<EditorBaseNode> nodes;
         public int Length => nodes.Count;
         public EditorStartNode StartNode => nodes.Find(n => n.TypeOfNode == NodeType.StartNode) as EditorStartNode;
         public List<EditorBaseNode> GetList() => nodes;
-        public void Clear() => instance = new NodeManager();
         public void RemoveNode(EditorBaseNode node)
         {
             if (node.TypeOfNode == NodeType.StartNode)
@@ -61,10 +96,7 @@ namespace RydenCam.BranchCamEditor.Managers
                 return true;
             }
         }
-        private NodeManager()
-        {
-            nodes = new List<EditorBaseNode>();
-        }
+
 
         //This is for when the user clicks off or selects another node.
         //If the other node is also a node that uses custom camera, it will not use the position of the previously
@@ -81,6 +113,10 @@ namespace RydenCam.BranchCamEditor.Managers
             
         }
 
+
+        //Check on this?
+        //When NodeManager is updated,
+        //The ActorManger should be updated via decorator pattern?
 
         public void ReplaceActorInfo(string previousActorName, ActorInfo newActorInfo)
         {

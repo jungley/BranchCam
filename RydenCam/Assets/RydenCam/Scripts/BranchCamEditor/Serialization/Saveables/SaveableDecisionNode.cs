@@ -32,18 +32,18 @@ namespace RydenCam.BranchCamEditor.Serialization.Saveables
             ShowPreviousDialog = node.ShowPreviousDialog;
 
             IN_connTo = new List<string>();
-            if (node.PointIn.connectedTo != null)
+            if (node.PointIn.ConnectedTo != null)
             {
-                IN_connTo.Add(node.PointIn.connectedTo.node.node_id);
+                IN_connTo.Add(node.PointIn.ConnectedTo.node.node_id);
             }
 
             //Loop Through out points
             OUT_connTo = new List<string>();
             for (int i = 0; i < DecisionOptions.Count; i++)
             {
-                if (node.PointOut[i].connectedTo != null)
+                if (node.PointOut[i].ConnectedTo != null)
                 {
-                    OUT_connTo.Add(node.PointOut[i].connectedTo.node.node_id);
+                    OUT_connTo.Add(node.PointOut[i].ConnectedTo.node.node_id);
                 }
                 else
                 {

@@ -10,6 +10,8 @@ namespace RydenCam.SequenceData
     {
         public string ActorID;
         public string ActorName;
+
+        public bool PreDefinedStartPositionEnabled;
         public Pose PreDefinedStartPosition;
         public Pose OriginalPositionAtStartOfDialogue;
 
@@ -18,7 +20,9 @@ namespace RydenCam.SequenceData
         {
             get
             {
-                if (_actorGO == null && !string.IsNullOrEmpty(ActorName))
+                if (_actorGO == null 
+                    && !string.IsNullOrEmpty(ActorName) 
+                    && ActorName != BranchConstants.UnAssignedActor)
                 {
                     _actorGO = GameObject.Find(ActorName);
                 }
@@ -27,6 +31,7 @@ namespace RydenCam.SequenceData
             set
             {
                 _actorGO = value;
+                ActorName = value?.name ?? BranchConstants.UnAssignedActor;
             }
         }
 

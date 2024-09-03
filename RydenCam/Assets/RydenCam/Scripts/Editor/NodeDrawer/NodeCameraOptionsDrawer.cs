@@ -1,100 +1,39 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Linq;
-using UnityEngine;
-using UnityEditor;
-using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes.Connections;
-using RydenCam.SequenceData;
-using RydenCam.Common;
+﻿using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Controllers;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.Common;
+using RydenCam.SequenceData;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
 
-namespace RydenCam.BranchCamEditor.Nodes
+namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-
-
-    [ExecuteAlways]
-    [System.Serializable]
-    public abstract class EditorBaseNode: INode
+    //Used In Dialogue and Decision Nodes
+    //The View for the Camera Options on nodes
+    public class NodeCameraOptionsDrawer
     {
-        //windowRect contains the location of the node
-        public Rect windowRect;
-        public string windowTitle = "";
-        public float nodeWidth;
-        public float nodeHeight;
-        protected GUIStyle labelStyleHead_Panel;
-        protected GUIStyle labelStyleHead_Node;
-        protected GUIStyle inspectorText;
-        protected GUIStyle inspectorTextBold;
 
-        public bool isCustomGlobal = false;
+        private GUIStyle inspectorText { get; set; }
+        private GUIStyle labelStyleHead_Panel { get; set; }
 
-        public string Sel_ActorID;
-        public GameObject SetCustomCameraPosition = null;
 
-        public Color nodeColor;
+        private GameObject SetCustomCameraPosition { get; set; }
+        public string node_id { get; set; }
 
-        private Texture2D _headerTexture { get; set; }
-        public Texture2D HeaderTexture
-        {
-            get
-            {
-                if(_headerTexture == null)
-                {
-                    _headerTexture = new Texture2D(1, 1);
-                    _headerTexture.SetPixel(1, 1, nodeColor);
-                    _headerTexture.Apply();
-                }
-
-                return _headerTexture;
-            }
-        }
-
-        public ConnectionPoint PointIn;
-        public List<ConnectionPoint> PointOut;
-
-        public string node_id;
         public static string customCamLock_nodeId;
-
-        public virtual NodeType TypeOfNode => NodeType.None;
-
-        public virtual void DrawForInspector()
+    
+        public NodeCameraOptionsDrawer(GUIStyle _inspectorText, GUIStyle _labelStyleHead_Panel)
         {
-            GUI.DrawTextureWithTexCoords(new Rect(0, 35, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
-        }
-        public abstract bool isOverPoint(Vector2 mousePos);
-        public abstract ConnectionPoint getConPoint(Vector2 mousePos);
-        public abstract void DrawContent();
-
-        public EditorBaseNode()
-        {
-            //Instantiate Styles common a across all nodes
-            labelStyleHead_Panel = new GUIStyle();
-            labelStyleHead_Panel.normal.textColor = Color.white;
-            labelStyleHead_Panel.fontStyle = FontStyle.Bold;
-            labelStyleHead_Panel.fontSize = 15;
-
-            labelStyleHead_Node = new GUIStyle();
-            labelStyleHead_Node.normal.textColor = Color.white;
-            labelStyleHead_Node.fontStyle = FontStyle.Bold;
-            labelStyleHead_Node.fontSize = 15;
-
-            nodeColor = Color.gray;
-
-            inspectorText = new GUIStyle();
-            inspectorText.normal.textColor = Color.white;
-
-            inspectorTextBold = new GUIStyle();
-            inspectorTextBold.normal.textColor = Color.white;
-            inspectorTextBold.fontStyle = FontStyle.Bold;
-
-            //Add Node to RuntimeDictionary
-            Guid guidVal = Guid.NewGuid();
-            node_id = guidVal.ToString();
+            inspectorText = _inspectorText;
+            labelStyleHead_Panel = _labelStyleHead_Panel;
         }
 
-#if UNITY_EDITOR
-        public void DrawUICamCompOptions(ConversationData nodeConvodata)
+        public void DrawUICamCompOptions(ConversationData nodeConvodata, INodeCommand command)
         {
             EditorGUILayout.Space();
             EditorGUILayout.Space();
@@ -111,13 +50,13 @@ namespace RydenCam.BranchCamEditor.Nodes
             //DROPDOWN FOR TYPE 
             EditorGUILayout.LabelField("Type", inspectorText, GUILayout.Width(50));
             GUILayout.BeginHorizontal("box");
-            CameraGoal selected_goal = (CameraGoal) EditorGUILayout.EnumPopup(nodeConvodata.ShotConfig.GoalType, GUILayout.Width(140));
+            CameraGoal selected_goal = (CameraGoal)EditorGUILayout.EnumPopup(nodeConvodata.ShotConfig.GoalType, GUILayout.Width(140));
             //check if it's been updated
 
 
             if (nodeConvodata.ShotConfig.GoalType != selected_goal)
             {
-                nodeConvodata.ShotConfig.GoalType =selected_goal;
+                nodeConvodata.ShotConfig.GoalType = selected_goal;
             }
 
 
@@ -160,7 +99,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 index_angle = EditorGUILayout.Popup(index_angle, options_Angle.ToArray(), GUILayout.Width(140));
                 if (index_angle == -1) { index_angle = 0; }
                 //check if it's been updated
-                if (nodeConvodata.ShotConfig.GoalAngle != (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle)) 
+                if (nodeConvodata.ShotConfig.GoalAngle != (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle))
                 {
                     nodeConvodata.ShotConfig.GoalAngle = ((CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle));
                 }
@@ -187,9 +126,10 @@ namespace RydenCam.BranchCamEditor.Nodes
 
                 //Set Camera Position if it has not already been set
                 //If user clicks from one custom node to another custom node, camera needs to be updated
+                /*
                 if (customCamLock_nodeId != node_id)
                 {
-                    if(customCamHasBeenSet(nodeConvodata))
+                    if (customCamHasBeenSet(nodeConvodata))
                     {
                         SetCustomCameraPosition = ResetPosition(nodeConvodata);
                         /*
@@ -198,7 +138,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                             PlaceCustomCam(nodeConvodata);
                         }
                         SetCustomCameraPosition = ResetPosition(nodeConvodata);
-                        */
+                        
                     }
                     else
                     {
@@ -206,6 +146,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                     }
                     customCamLock_nodeId = node_id;
                 }
+                */
 
 
                 //Custom Camera Buttons
@@ -215,23 +156,25 @@ namespace RydenCam.BranchCamEditor.Nodes
                     {
                         if (GUILayout.Button("ReCreate Custom Camera", GUILayout.Width(170), GUILayout.Height(30)))
                         {
-                            SetCustomCameraPosition = PlaceCustomCam(nodeConvodata);
+                            //SetCustomCameraPosition = PlaceCustomCam(nodeConvodata);
                         }
                     }
                     else
                     {
                         if (GUILayout.Button("Create Custom Camera", GUILayout.Width(170), GUILayout.Height(30)))
                         {
-                            SetCustomCameraPosition = PlaceCustomCam(nodeConvodata);
+                            //SetCustomCameraPosition = PlaceCustomCam(nodeConvodata);
                         }
                     }
                 }
-                
+
                 else if (GUILayout.Button("Clear Camera", GUILayout.Width(170), GUILayout.Height(30)))
                 {
+                    /*
                     DestroyCustomCamera();
                     nodeConvodata.ShotConfig.CustomCamPos = null;
                     nodeConvodata.ShotConfig.CustomCamRot = null;
+                    */
                 }
 
                 //Update Camera Position
@@ -241,7 +184,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                     SetCustomCameraPosition = (GameObject)EditorGUILayout.ObjectField(SetCustomCameraPosition, typeof(GameObject), true);
                     if (SetCustomCameraPosition != null)
                     {
-                        NodeManager.Instance.EnsureUniqueCustomCameraSelection(this);
+                        //NodeManager.Instance.EnsureUniqueCustomCameraSelection(this);
                         nodeConvodata.ShotConfig.CustomCamPos = SetCustomCameraPosition.transform.position;
                         nodeConvodata.ShotConfig.CustomCamRot = SetCustomCameraPosition.transform.rotation;
                         GameObject target = GameObject.Find(nodeConvodata.Actor.ActorName);
@@ -258,80 +201,6 @@ namespace RydenCam.BranchCamEditor.Nodes
                 }
 
             }
-        }
-#endif
-
-
-        public bool customCamHasBeenSet(ConversationData nodeConvodata)
-        {
-            return nodeConvodata.ShotConfig.CustomCamPos != null && nodeConvodata.ShotConfig.CustomCamRot != null;
-        }
-
-        public void PlaceCamera(ConversationData nodeConvodata, GameObject obj)
-        {
-            if (obj is GameObject gameObjectRef)
-            {
-                if (nodeConvodata.ShotConfig.GoalCustomType == CustomCameraType.Local)
-                {
-                    //Local
-                    GameObject target = GameObject.Find(nodeConvodata.Actor.ActorName);
-                    Vector3 pos_result = target.transform.position - nodeConvodata.ShotConfig.LocalRelativeActorPos;
-                    gameObjectRef.transform.position = nodeConvodata.ShotConfig.CustomCamPos.Value + pos_result;
-                    gameObjectRef.transform.rotation = nodeConvodata.ShotConfig.CustomCamRot.Value;
-                }
-                else if(nodeConvodata.ShotConfig.GoalCustomType == CustomCameraType.Global || nodeConvodata.ShotConfig.GoalCustomType == CustomCameraType.None)
-                {
-                    //Global
-                    gameObjectRef.transform.position = (nodeConvodata.ShotConfig.CustomCamPos != null) ? nodeConvodata.ShotConfig.CustomCamPos.Value : Vector3.zero;
-                    gameObjectRef.transform.rotation = (nodeConvodata.ShotConfig.CustomCamRot != null) ? nodeConvodata.ShotConfig.CustomCamRot.Value : Quaternion.identity;
-                }
-            }
-        }
-
-        public GameObject PlaceCustomCam(ConversationData nodeConvodata)
-        {
-#if UNITY_EDITOR
-            //Instantiate the CustomCamera Prefab
-            UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath(BranchConstants.CamPrefabPath, typeof(GameObject));
-            UnityEngine.Object obj = PrefabUtility.InstantiatePrefab(prefab);
-            GameObject cameraObject = (GameObject)obj;
-
-            //Place the Camera
-            PlaceCamera(nodeConvodata, cameraObject);
-            Selection.activeObject = cameraObject;
-            return cameraObject;
-#else
-            return null;
-#endif
-
-        }
-
-        public GameObject ResetPosition(ConversationData nodeConvodata)
-        {
-            GameObject camReference = GameObject.Find(BranchConstants.CustomCamera);
-            PlaceCamera(nodeConvodata, camReference);
-            return camReference;
-        }
-
-        public void DestroyCustomCamera()
-        {
-            GameObject obj = GameObject.Find(BranchConstants.CustomCamera);
-            if(obj != null)  GameObject.DestroyImmediate(obj);
-        }
-
-        public bool containsPoint(ConnectionPoint point)
-        {
-            return (point == PointIn || PointOut.Contains(point));
-        }
-
-        public static void OnClickRemoveConnection(Connection connection)
-        {
-            ConnectionManager.Instance.Remove(connection);
-        }
-
-        public virtual EditorBaseNode GetNextNode()
-        {
-            return PointOut[0]?.ConnectedTo?.node;
         }
     }
 }

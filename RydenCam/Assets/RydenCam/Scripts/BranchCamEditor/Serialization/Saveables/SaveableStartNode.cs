@@ -51,10 +51,10 @@ namespace RydenCam.BranchCamEditor.Serialization
             startPositionsEnabled = node.StartPositionsEnabled;
             returnToOriginalPositions = node.ReturnToOriginalPositions;
 
-            if (node.PointOut[0].connectedTo != null)
+            if (node.PointOut[0].ConnectedTo != null)
             {
                 OUT_connTo = new List<string>();
-                OUT_connTo.Add(node.PointOut[0].connectedTo.node.node_id);
+                OUT_connTo.Add(node.PointOut[0].ConnectedTo.node.node_id);
             }
         }
     }

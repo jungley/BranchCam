@@ -219,8 +219,8 @@ namespace RydenCam.BranchCamEditor
                                 {
                                     ConnectionManager.Instance.Remove(fromPoint, handlePoint);
                                 }
-                                fromPoint.connectedTo = handlePoint;
-                                handlePoint.connectedTo = fromPoint;
+                                fromPoint.ConnectedTo = handlePoint;
+                                handlePoint.ConnectedTo = fromPoint;
                                 ConnectionManager.Instance.AddConnection(fromPoint, handlePoint, OnClickRemoveConnection);
                             }
                         }
@@ -381,6 +381,7 @@ namespace RydenCam.BranchCamEditor
                 NodeManager.Instance.GetNode(i).windowRect =
                     GUI.Window(i, NodeManager.Instance.GetNode(i).windowRect,
                     DrawNodeWindow, NodeManager.Instance.GetNode(i).windowTitle);
+
 
 
                 //Draw Preview Window next to node

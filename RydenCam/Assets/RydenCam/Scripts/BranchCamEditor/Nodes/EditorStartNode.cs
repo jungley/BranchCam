@@ -136,7 +136,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(predefinedPositionsLabel, labelStyleHead_Node, GUILayout.Width(250));
                 GUILayout.Space(50);
-                StartPositionsEnabled = EditorGUILayout.Toggle(StartPositionsEnabled, GUILayout.Width(20f), GUILayout.Height(20f));
+                StartPositionsEnabled = EditorGUILayout.Toggle(StartPositionsEnabled, GUILayout.Width(60f), GUILayout.Height(60f));
 
                 GUILayout.EndHorizontal();
 
@@ -186,13 +186,13 @@ namespace RydenCam.BranchCamEditor.Nodes
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Look at each other", GUILayout.Height(40f));
-                    OverrideRotation = EditorGUILayout.Toggle(OverrideRotation, GUILayout.Width(20f), GUILayout.Height(40f));
+                    OverrideRotation = EditorGUILayout.Toggle(OverrideRotation, GUILayout.Width(60f), GUILayout.Height(60f));
                     GUILayout.EndHorizontal();
                     EditorGUILayout.Space(5f);
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Return to original positions\nwhen conversation ends", GUILayout.Height(40f));
-                    ReturnToOriginalPositions = EditorGUILayout.Toggle(ReturnToOriginalPositions, GUILayout.Width(20f), GUILayout.Height(40f));
+                    ReturnToOriginalPositions = EditorGUILayout.Toggle(ReturnToOriginalPositions, GUILayout.Width(60f), GUILayout.Height(60f));
                     GUILayout.EndHorizontal();
                    
                     EditorGUIUtility.labelWidth = originalVal;
@@ -220,7 +220,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             float yPoint = windowRect.y - mousePos.y;
 
             Vector2 localPoint = new Vector2(mousePos.x - windowRect.x, mousePos.y - windowRect.y);
-            return PointOut[0].pointBounds.Contains(localPoint);
+            return PointOut[0].Bounds.Contains(localPoint);
         }
 
         public override ConnectionPoint getConPoint(Vector2 mousePos) => PointOut[0];

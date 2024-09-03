@@ -73,7 +73,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
         public EditorBaseNode MakeDecision(int choiceIndex)
         {
-            return PointOut[choiceIndex].connectedTo?.node;
+            return PointOut[choiceIndex].ConnectedTo?.node;
         }
 
 
@@ -178,13 +178,13 @@ namespace RydenCam.BranchCamEditor.Nodes
             Vector2 localPoint = new Vector2(xPoint, yPoint);
             for (int i = 0; i < PointOut.Count; i++)
             {
-                if (PointOut[i].pointBounds.Contains(localPoint))
+                if (PointOut[i].Bounds.Contains(localPoint))
                 {
                     return true;
                 }
             }
 
-            return (PointIn.pointBounds.Contains(localPoint));
+            return (PointIn.Bounds.Contains(localPoint));
         }
 
         public override ConnectionPoint getConPoint(Vector2 mousePos)
@@ -195,14 +195,14 @@ namespace RydenCam.BranchCamEditor.Nodes
             float yPoint = mousePos.y - windowRect.y;
 
             Vector2 localPoint = new Vector2(xPoint, yPoint);
-            if (PointIn.pointBounds.Contains(localPoint))
+            if (PointIn.Bounds.Contains(localPoint))
             {
                 return PointIn;
             }
 
             for (int i = 0; i < PointOut.Count; i++)
             {
-                if (PointOut[i].pointBounds.Contains(localPoint))
+                if (PointOut[i].Bounds.Contains(localPoint))
                 {
                     return PointOut[i];
                 }
@@ -231,7 +231,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             for (int i = 0; i < dotCount; i++)
             {
-                PointOut[i].pointBounds = new Rect((startPos), nodeHeight - 16, 20, 18);
+                PointOut[i].Bounds = new Rect((startPos), nodeHeight - 16, 20, 18);
                 startPos += spacing;
             }
         }
