@@ -132,10 +132,6 @@ namespace RydenCam.BranchCamEditor.Nodes
                     MonoBehaviour[] components = gameObject.GetComponents<MonoBehaviour>();
                     foreach (MonoBehaviour component in components)
                     {
-                        var result00 = component.GetType();
-                        var result01 = component.GetType().GetMethods();
-
-
                         MethodInfo[] methods = component.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
                         string[] methodNames = methods.Select(x => x.Name).ToArray();
 

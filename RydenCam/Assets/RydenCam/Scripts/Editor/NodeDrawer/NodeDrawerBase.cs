@@ -65,7 +65,9 @@ namespace Assets.RydenCam.Scripts.Editor
         {
             Node = node;
 
-            //Instantiate Styles common a across all nodes
+            nodeColor = Color.gray;
+
+            //Styles used in Nodes
             labelStyleHead_Panel = new GUIStyle();
             labelStyleHead_Panel.normal.textColor = Color.white;
             labelStyleHead_Panel.fontStyle = FontStyle.Bold;
@@ -76,12 +78,10 @@ namespace Assets.RydenCam.Scripts.Editor
             labelStyleHead_Node.fontStyle = FontStyle.Bold;
             labelStyleHead_Node.fontSize = 15;
 
-            //Textarea
+            //Styles used in inspector
             textareaStyle = new GUIStyle(EditorStyles.textArea);
             textareaStyle.wordWrap = true;
             textareaStyle.margin = new RectOffset(20, 0, 0, 0);
-
-            nodeColor = Color.gray;
 
             inspectorText = new GUIStyle();
             inspectorText.normal.textColor = Color.white;
