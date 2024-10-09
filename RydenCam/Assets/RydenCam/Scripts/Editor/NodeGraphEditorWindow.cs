@@ -16,6 +16,7 @@ using RydenCam.BranchCamEditor.Managers;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using RydenCam.BranchCamEditor.Nodes.Connections;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -95,14 +96,26 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawRibbon();
 
+        DrawConnectionCurve();
+
         HandleInputClicks();
 
         DrawNodes();
+
+        ConnectionManager.Instance.DrawConnections();
 
         DrawInspector();
 
         GUI.EndGroup();
 
+    }
+
+    private void OnInspectorUpdate()
+    {
+        if(viewModel.IsDrawingHandle)
+        {
+            Repaint();
+        }
     }
 
     private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -282,25 +295,128 @@ public class NodeGraphEditorWindow : EditorWindow
     private void HandleInputClicks()
     {
         Event e = Event.current;
+        Vector2 mousePos = e.mousePosition;
 
         if (e.type == EventType.MouseDown && e.button == 1) //Right Click
         {
-            ShowContextMenu(e.mousePosition);
+            ShowContextMenu(mousePos);
             e.Use();
         }
 
         if (e.button == 0 && e.type == EventType.MouseDown) //Left Click
         {
 
-            foreach (var nodeDrawer in NodeDrawers)
+            // Check if any node contains the mouse position
+            var selectedNodeDrawer = NodeDrawers
+                .FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(e.mousePosition));
+
+            if (selectedNodeDrawer == null)
             {
-                if(nodeDrawer.windowRect.Contains(e.mousePosition))
+                viewModel.SelectedConnectionPoint = null;
+                viewModel.IsDrawingHandle = false;
+                return;
+            }
+
+            // Set the active node
+            viewModel.ActiveNode = selectedNodeDrawer.Node;
+
+            HandleConnectionPointSelected(e.mousePosition);
+        }
+    }
+
+
+    public static void OnClickRemoveConnection(Connection connection)
+    {
+        ConnectionManager.Instance.Remove(connection);
+    }
+
+    //mayve move to viewModel?
+    public void HandleConnectionPointSelected(Vector2 mousePos)
+    {
+        ConnectionPoint selectedPoint = ActiveNodeDrawView.GetHandlePoint(mousePos);
+        if(selectedPoint != null)
+        {
+            //Clicked on the connection point start to draw Handle
+            if (!viewModel.IsDrawingHandle)
+            {
+                viewModel.SelectedConnectionPoint = selectedPoint;
+                viewModel.IsDrawingHandle = true;
+                return;
+            }
+            //Already Drawing a curve, point been selected now a second one is
+            else
+            {
+                ConnectionPoint fromPoint = ActiveNodeDrawView.GetHandlePoint(mousePos);
+                //Opposite type and not of of the current node
+
+                if ((fromPoint.Type != viewModel?.SelectedConnectionPoint.Type) && !ActiveNodeDrawView.Node.ContainsPoint(viewModel?.SelectedConnectionPoint))
                 {
-                    viewModel.ActiveNode = nodeDrawer.Node;
+                    //Remove Connections
+                    if (ConnectionManager.Instance.IsOutConnected(fromPoint, viewModel.SelectedConnectionPoint))
+                    {
+                        ConnectionManager.Instance.Remove(fromPoint, viewModel.SelectedConnectionPoint);
+                    }
+                    fromPoint.ConnectedTo = viewModel.SelectedConnectionPoint;
+
+                    viewModel.SelectedConnectionPoint.ConnectedTo = fromPoint;
+
+                    ConnectionManager.Instance.AddConnection(fromPoint, viewModel.SelectedConnectionPoint, OnClickRemoveConnection);
+                    viewModel.IsDrawingHandle = false;
                 }
             }
         }
     }
+
+
+    private void DrawConnectionCurve()
+    {
+        Event e = Event.current;
+        Vector2 mousePos = e.mousePosition;
+
+        if (viewModel.IsDrawingHandle)
+        {
+            Vector2 hpoint = viewModel.SelectedConnectionPoint.GetGlobalPoint();
+            Vector3 startPos = new Vector3(hpoint.x, hpoint.y, 0);
+            Vector3 endPos = new Vector3(mousePos.x, mousePos.y, 0);
+
+            //Goto Curve
+            //If making line above the point
+            if (viewModel.SelectedConnectionPoint.Type == ConnectionPointType.Out
+                && hpoint.y > endPos.y)
+            {
+                Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
+                float arc;
+                float dist = Vector3.Distance(endPos, startPos);
+                if (startPos.x <= endPos.x)
+                {
+                    arc = -600.0f * Mathf.Clamp01(dist / 250.0f);
+                }
+                else
+                {
+                    arc = 600.0f * Mathf.Clamp01(dist / 250.0f);
+                }
+                center.x += arc;
+                Vector3[] vector3array = new Vector3[] { startPos, center, endPos };
+                vector3array = Curver.MakeSmoothCurve(vector3array, 90.0f);
+                Handles.color = Color.green;
+                Handles.DrawAAPolyLine(5.0f, vector3array);
+            }
+            else
+            {
+                Handles.DrawBezier(startPos, endPos, startPos, endPos, Color.green, null, 5);
+                Handles.color = Color.green;
+
+                //Calculate rotation from out point to in point 
+                float angle = Mathf.Atan2(endPos.y - startPos.y, endPos.x - startPos.x) * 180 / Mathf.PI;
+                angle -= 90;
+                GUIUtility.RotateAroundPivot(angle, endPos);
+                GUI.DrawTexture(new Rect(endPos.x - 10, endPos.y, 20, 20), arrowImage, ScaleMode.StretchToFill, true, 20.0F);
+                GUIUtility.RotateAroundPivot(-angle, endPos);
+            }
+        }
+    }
+
+
 
 
     private void ShowContextMenu(Vector2 mousePosition)
@@ -315,7 +431,7 @@ public class NodeGraphEditorWindow : EditorWindow
             });
         }
         //Needs to Add an Actor
-        else if(!NodeManager.Instance.ActorsInScene().Any())//(EditorController.Instance.ActorsInScene.Count == 0)
+        else if(!NodeManager.Instance.ActorsInScene().Any())
         {
             menu.AddItem(new GUIContent("Must add an actor in the Start Node"), false, () => { });
         }
@@ -372,5 +488,46 @@ public class NodeGraphEditorWindow : EditorWindow
         Handles.color = Color.white;
         Handles.EndGUI();
 
+    }
+}
+
+//CURVE CLASS FROM
+//https://answers.unity.com/questions/392606/line-drawing-how-can-i-interpolate-between-points.html
+public static class Curver
+{
+    //arrayToCurve is original Vector3 array, smoothness is the number of interpolations. 
+    public static Vector3[] MakeSmoothCurve(Vector3[] arrayToCurve, float smoothness)
+    {
+        List<Vector3> points;
+        List<Vector3> curvedPoints;
+        int pointsLength = 0;
+        int curvedLength = 0;
+
+        if (smoothness < 1.0f) smoothness = 1.0f;
+
+        pointsLength = arrayToCurve.Length;
+
+        curvedLength = (pointsLength * Mathf.RoundToInt(smoothness)) - 1;
+        curvedPoints = new List<Vector3>(curvedLength);
+
+        float t = 0.0f;
+        for (int pointInTimeOnCurve = 0; pointInTimeOnCurve < curvedLength + 1; pointInTimeOnCurve++)
+        {
+            t = Mathf.InverseLerp(0, curvedLength, pointInTimeOnCurve);
+
+            points = new List<Vector3>(arrayToCurve);
+
+            for (int j = pointsLength - 1; j > 0; j--)
+            {
+                for (int i = 0; i < j; i++)
+                {
+                    points[i] = (1 - t) * points[i] + t * points[i + 1];
+                }
+            }
+
+            curvedPoints.Add(points[0]);
+        }
+
+        return (curvedPoints.ToArray());
     }
 }

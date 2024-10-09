@@ -27,7 +27,8 @@ namespace Assets.RydenCam.Scripts.Editor
 
         protected GUIStyle labelStyle { get; set; }
 
-        public Rect windowRect { get; set; }
+        public Rect WindowRect { get; set; }
+
 
         private Texture2D _headerTexture { get; set; }
         protected Texture2D HeaderTexture
@@ -37,7 +38,7 @@ namespace Assets.RydenCam.Scripts.Editor
                 if (_headerTexture == null)
                 {
                     _headerTexture = new Texture2D(1, 1);
-                    _headerTexture.SetPixel(1, 1, nodeColor);
+                    _headerTexture.SetPixel(1, 1, NodeColor);
                     _headerTexture.Apply();
                 }
 
@@ -52,10 +53,10 @@ namespace Assets.RydenCam.Scripts.Editor
 
         protected GUIStyle textareaStyle { get; set; }
 
-        public float nodeWidth { get; set; }
-        public virtual float nodeHeight { get; set; }
+       // public float NodeWidth { get; set; }
+       // public virtual float NodeHeight { get; set; }
 
-        public Color nodeColor { get; set; }
+        public Color NodeColor { get; set; }
 
         public int WindowId { get; set; }
 
@@ -65,7 +66,7 @@ namespace Assets.RydenCam.Scripts.Editor
         {
             Node = node;
 
-            nodeColor = Color.gray;
+            NodeColor = Color.gray;
 
             //Styles used in Nodes
             labelStyleHead_Panel = new GUIStyle();
@@ -96,9 +97,36 @@ namespace Assets.RydenCam.Scripts.Editor
         public abstract void DrawNodeInspector();
 
 
-        protected void DrawUserHandledConnection(NodeCC node)
+        public bool IsOverPoint(Vector2 mousePos)
         {
+            bool isOverPoint = WindowRect.Contains(mousePos);
+            return isOverPoint;
+        }
 
+        public ConnectionPoint GetHandlePoint(Vector2 mousePos)
+        {
+            //Outside the bounds of the node
+            if(!WindowRect.Contains(mousePos))
+            {
+                return null;
+            }
+
+            Vector2 localPoint = new Vector2(mousePos.x - WindowRect.x, mousePos.y - WindowRect.y);
+
+            if (Node.PointIn != null && Node.PointIn.LocalBounds.Contains(localPoint))
+            {
+                return Node.PointIn;
+            }
+            
+            foreach(var point in Node.PointOut)
+            {
+                if(point.LocalBounds.Contains(localPoint))
+                {
+                    return point;
+                }
+            }
+
+            return null;
         }
 
 
@@ -122,7 +150,7 @@ namespace Assets.RydenCam.Scripts.Editor
             //Draw In Point
             if (Node.PointIn != null)
             {
-                Rect pointBoundsIn = new Rect((nodeWidth / 2 - 10), 0, widthConnectionPoint, heightConnectionPoint);
+                Rect pointBoundsIn = new Rect((Node.NodeWidth / 2 - 10), 0, widthConnectionPoint, heightConnectionPoint);
                 DrawPoint(pointBoundsIn, Node.PointIn.Color, Node.PointIn.ConnectedTo != null);
             }
 
@@ -132,9 +160,8 @@ namespace Assets.RydenCam.Scripts.Editor
 
         protected virtual void DrawOutPoint()
         {
-            Rect pointBoundsOut = new Rect((nodeWidth / 2 - 10), nodeHeight - 16, widthConnectionPoint, heightConnectionPoint);
+            Rect pointBoundsOut = new Rect((Node.NodeWidth / 2 - 10), Node.NodeHeight - 16, widthConnectionPoint, heightConnectionPoint);
             DrawPoint(pointBoundsOut, Node.PointOut.FirstOrDefault().Color, Node.PointOut.FirstOrDefault().ConnectedTo != null);
         }
-
     }
 }

@@ -45,9 +45,9 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
 #if UNITY_EDITOR
         public void DrawGotoCurve()
         {
-            Vector2 result_01 = Point_IN.getGlobalPoint();
+            Vector2 result_01 = Point_IN.GetGlobalPoint();
             Vector3 startPos = new Vector3(result_01.x, result_01.y, 0);
-            Vector2 result_02 = Point_OUT.getGlobalPoint();
+            Vector2 result_02 = Point_OUT.GetGlobalPoint();
             Vector3 endPos = new Vector3(result_02.x, result_02.y, 0);
             Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
             float arc;
@@ -95,8 +95,8 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         //Draws the Connection
         public void Draw()
         {
-            Vector2 inGlobalPoint = Point_IN.getGlobalPoint();
-            Vector2 outGlobalPoint = Point_OUT.getGlobalPoint();
+            Vector2 inGlobalPoint = Point_IN.GetGlobalPoint();
+            Vector2 outGlobalPoint = Point_OUT.GetGlobalPoint();
             Vector3 startPos = new Vector3(inGlobalPoint.x, inGlobalPoint.y, 0);
             Vector3 endPos = new Vector3(outGlobalPoint.x, outGlobalPoint.y, 0);
 
@@ -113,7 +113,7 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
             }
 
             // Draw arrow pointers based on connection point types
-            if (Point_IN.type == ConnectionPointType.Out)
+            if (Point_IN.Type == ConnectionPointType.Out)
             {
                 DrawArrowPointer(startPos, endPos);
             }
@@ -128,7 +128,7 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
 
         private bool ShouldDrawGotoCurve(Vector2 inPoint, Vector2 outPoint)
         {
-            return inPoint.y < outPoint.y && Point_OUT.type == ConnectionPointType.Out && Point_IN.type == ConnectionPointType.In;
+            return inPoint.y < outPoint.y && Point_OUT.Type == ConnectionPointType.Out && Point_IN.Type == ConnectionPointType.In;
         }
 
         private void CheckAndHandleClickToRemoveConnection(Vector2 inGlobalPoint, Vector2 outGlobalPoint)

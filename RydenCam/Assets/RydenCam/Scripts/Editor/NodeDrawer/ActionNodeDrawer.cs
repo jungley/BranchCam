@@ -28,27 +28,25 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             selectedGameActionDatas = node.GameActionDatas;
 
-            nodeWidth = 200;
-            nodeHeight = 70; // Needs to dynamically change
 
-            windowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight);
+            WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
             ColorUtility.TryParseHtmlString("#FE1010", out Color colorref);
-            nodeColor = colorref;
+            NodeColor = colorref;
         }
 
         public override void DrawNode(int index)
         {
             GUI.backgroundColor = Color.gray;
 
-            windowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight),
+            WindowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight),
                 (windowId) =>
                 {
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25f), HeaderTexture, new Rect(0, 0, 1, 1));
-                    EditorGUI.LabelField(new Rect(4, 4, nodeWidth, nodeHeight), "Action", labelStyleHead_Node);
+                    EditorGUI.LabelField(new Rect(4, 4, node.NodeWidth, node.NodeHeight), "Action", labelStyleHead_Node);
 
 
-                    Rect deleteButtonRect = new Rect(nodeWidth - 20, 0, 20, 20);
+                    Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                     if (GUI.Button(deleteButtonRect, "X"))
                     {
                         command.RemoveNode(node);
@@ -60,7 +58,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 }, "");
 
-            Node.EditorPosition = new Vector2(windowRect.x, windowRect.y);
+            Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
 
         }
 

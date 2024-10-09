@@ -80,6 +80,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public void RemoveNode(NodeCC node)
         {
             NodeManager.Instance.RemoveNode(node);
+            ConnectionManager.Instance.RemoveAssocConnec(node);
         }
     }
 }

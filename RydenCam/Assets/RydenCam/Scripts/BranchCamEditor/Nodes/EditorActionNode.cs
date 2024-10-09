@@ -38,9 +38,9 @@ namespace RydenCam.BranchCamEditor.Nodes
             ColorUtility.TryParseHtmlString("#FE1010", out nodeColor);
 
             //Instantiate ConnectionPoints
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            //PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+            //PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
         }
 
         public override void DrawContent()
@@ -80,9 +80,10 @@ namespace RydenCam.BranchCamEditor.Nodes
             float yPoint = mousePos.y - windowRect.y;
 
             Vector2 localPoint = new Vector2(xPoint, yPoint);
+            return false;
 
             //If mouseposition is over point
-            return (PointIn.Bounds.Contains(localPoint) || PointOut[0].Bounds.Contains(localPoint));
+            //return (PointIn.Bounds.Contains(localPoint) || PointOut[0].Bounds.Contains(localPoint));
         }
 
 
@@ -226,13 +227,15 @@ namespace RydenCam.BranchCamEditor.Nodes
         }
 
         public override ConnectionPoint getConPoint(Vector2 mousePos)
-        {
+        {    
             //Convert mousepos to local over the window rect
             //Detect Out ConnectionPoint
             float xPoint = windowRect.x - mousePos.x;
             float yPoint = windowRect.y - mousePos.y;
             Vector2 localPoint = new Vector2(mousePos.x - windowRect.x, mousePos.y - windowRect.y);
 
+            return null;
+            /*
             if (PointIn.Bounds.Contains(localPoint))
             {
                 return PointIn;
@@ -246,6 +249,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 BranchLog.Log("This shouldnt have happened");
                 return null;
             }
+            */
         }
 
         [Serializable]
@@ -285,9 +289,9 @@ namespace RydenCam.BranchCamEditor.Nodes
             ColorUtility.TryParseHtmlString("#FE1010", out nodeColor);
 
             //Instantiate ConnectionPoints
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            //PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+            //PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
         }
     }
 }

@@ -16,6 +16,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public override NodeType TypeOfNode => NodeType.DecisionNode;
         public ConversationData NodeConvodata { get; set; }
 
+        public override float NodeHeight => DecisionOptions.Count > 2 ? DecisionOptions.Count * 25 + 65 : 120;
+
         public List<string> DecisionOptions { get; set; }
 
         public DecisionNode(Vector2 position) : base(position)

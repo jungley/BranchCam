@@ -54,7 +54,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             if (node.PointOut[0].ConnectedTo != null)
             {
                 OUT_connTo = new List<string>();
-                OUT_connTo.Add(node.PointOut[0].ConnectedTo.node.node_id);
+                //OUT_connTo.Add(node.PointOut[0].ConnectedTo.node.node_id);
             }
         }
     }

@@ -14,13 +14,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
     internal class DecisionNodeDrawer : NodeDrawerBase
     {
-
         private DecisionNode node  { get; set; }
         private DecisionNodeCommand command { get; set; }
 
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
-        public override float nodeHeight => node.DecisionOptions.Count > 2 ? node.DecisionOptions.Count * 25 + 65 : 120;
 
         private int ActorIndex { get; set; }
         public bool ShowPreviousDialog { get; set; }
@@ -38,14 +36,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(inspectorText, labelStyleHead_Panel);
 
-            //Size
-            nodeHeight = 150;
-            nodeWidth = 200;
-            //Set the WindowRect
-            windowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight);
+            WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
             ColorUtility.TryParseHtmlString("#990099", out Color colorref);
-            nodeColor = colorref;
+            NodeColor = colorref;
 
             decisionOptionNumber = new GUIStyle(labelStyleHead_Node);
             decisionOptionNumber.fontSize = 13;
@@ -56,11 +50,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         {
             GUI.backgroundColor = Color.gray;
 
-            windowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight),
+            WindowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight),
                 (windowId) =>
                  {
                      GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
-                     EditorGUI.LabelField(new Rect(4, 4, nodeWidth, nodeHeight), "Decision", labelStyleHead_Node);
+                     EditorGUI.LabelField(new Rect(4, 4, node.NodeWidth, node.NodeHeight), "Decision", labelStyleHead_Node);
 
                      EditorGUILayout.LabelField(node.NodeConvodata.Actor == null
                         ? BranchConstants.UnAssignedActor
@@ -81,7 +75,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                      }
 
 
-                     Rect deleteButtonRect = new Rect(nodeWidth - 20, 0, 20, 20);
+                     Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                      if (GUI.Button(deleteButtonRect, "X"))
                      {
                          command.RemoveNode(node);
@@ -93,7 +87,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                  }, "");
 
-            Node.EditorPosition = new Vector2(windowRect.x, windowRect.y);
+            Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
 
         public override void DrawNodeInspector()
@@ -151,19 +145,21 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         }
 
+        //Draws and recalculates the spacing of the decision out points based on
+        //the adding or removing of decision options
         protected override void DrawOutPoint()
         {
             int dotCount = Node.PointOut.Count;
-            float lineLength = nodeWidth - 35;
+            float lineLength = node.NodeWidth - 35;
             float spacing = dotCount > 1 ? lineLength / (dotCount + 1) : 0;
             float startPos = (lineLength - (dotCount - 1) * spacing) / 2;
-            float yPos = nodeHeight - 20;
+            float yPos = node.NodeHeight - 20;
 
             for (int i = 0; i < dotCount; i++)
             {
                 float xPos = startPos + i * spacing + widthConnectionPoint / 2;
                 Rect bounds = new Rect(xPos, yPos, widthConnectionPoint, heightConnectionPoint);
-                Node.PointOut[i].Bounds = bounds;
+                Node.PointOut[i].LocalBounds = bounds;
 
                 DrawPoint(bounds, Node.PointOut[i].Color, Node.PointOut[i].ConnectedTo != null);
 

@@ -26,6 +26,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public List<Pose> OriginalPositions;
         public List<Pose> SetStartPositions;
 
+        public override float NodeHeight => 70;
+
         //Scene Information
         public string UnitySceneName { get; set; }
         public string SequenceName { get; set; }

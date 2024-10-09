@@ -61,7 +61,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             //declare decision size
             DecisionOptions = new List<string>();
             PointOut = new List<ConnectionPoint>();
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            //PointIn = new ConnectionPoint(this, ConnectionPointType.In);
 
             //Add 2 Decisons by Default
             addDecision();
@@ -73,7 +73,8 @@ namespace RydenCam.BranchCamEditor.Nodes
 
         public EditorBaseNode MakeDecision(int choiceIndex)
         {
-            return PointOut[choiceIndex].ConnectedTo?.node;
+            return null;
+            //return PointOut[choiceIndex].ConnectedTo?.node;
         }
 
 
@@ -178,13 +179,14 @@ namespace RydenCam.BranchCamEditor.Nodes
             Vector2 localPoint = new Vector2(xPoint, yPoint);
             for (int i = 0; i < PointOut.Count; i++)
             {
-                if (PointOut[i].Bounds.Contains(localPoint))
-                {
-                    return true;
-                }
+               // if (PointOut[i].Bounds.Contains(localPoint))
+               // {
+                //    return true;
+               // }
             }
+            return false ;
 
-            return (PointIn.Bounds.Contains(localPoint));
+            //return (PointIn.Bounds.Contains(localPoint));
         }
 
         public override ConnectionPoint getConPoint(Vector2 mousePos)
@@ -195,17 +197,17 @@ namespace RydenCam.BranchCamEditor.Nodes
             float yPoint = mousePos.y - windowRect.y;
 
             Vector2 localPoint = new Vector2(xPoint, yPoint);
-            if (PointIn.Bounds.Contains(localPoint))
-            {
-                return PointIn;
-            }
+            //if (PointIn.Bounds.Contains(localPoint))
+           // {
+            //    return PointIn;
+           // }
 
             for (int i = 0; i < PointOut.Count; i++)
             {
-                if (PointOut[i].Bounds.Contains(localPoint))
-                {
-                    return PointOut[i];
-                }
+                //if (PointOut[i].Bounds.Contains(localPoint))
+               // {
+               //     return PointOut[i];
+               // }
             }
 
             //Did not find anything 
@@ -231,7 +233,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             for (int i = 0; i < dotCount; i++)
             {
-                PointOut[i].Bounds = new Rect((startPos), nodeHeight - 16, 20, 18);
+                //PointOut[i].Bounds = new Rect((startPos), nodeHeight - 16, 20, 18);
                 startPos += spacing;
             }
         }
@@ -239,7 +241,7 @@ namespace RydenCam.BranchCamEditor.Nodes
         public void addDecision()
         {
             DecisionOptions.Add("");
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+            //PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
             adjustOutLocations();
         }
 
@@ -321,11 +323,11 @@ namespace RydenCam.BranchCamEditor.Nodes
             PointOut = new List<ConnectionPoint>();
             for (int i = 0; i < DecisionOptions.Count; i++)
             {
-                PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+                //PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
             }
             adjustOutLocations();
 
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            //PointIn = new ConnectionPoint(this, ConnectionPointType.In);
 
             //Enum.TryParse(savenode.goal_type, out CameraGoal saveNode_goal_type);
             //Enum.TryParse(savenode.goal_customtype, out CustomCameraType saveNode_custom_type);

@@ -50,9 +50,9 @@ namespace RydenCam.BranchCamEditor.Nodes
             windowRect = new Rect(mousePos.x, mousePos.y, nodeWidth, nodeHeight);
 
             //Instantiate ConnectionPoints
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            //PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+           // PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
 
             //Add 1 Dialogue
             AddDialogue();
@@ -84,9 +84,9 @@ namespace RydenCam.BranchCamEditor.Nodes
             ActorIndex = EditorController.Instance.ActorsInScene.FindIndex(x => x.ActorID == Sel_ActorID);
 
             //Instantiate ConnectionPoints
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            //PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+            //PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
 
             //Set Camera Info
             if (savenode.goal_type == CameraGoal.Custom)
@@ -108,7 +108,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
         public bool ReachedLastDialogueText(int currentIndex) => currentIndex == NodeConvodata.DialogTextList.Count - 1;
 
-        public override EditorBaseNode GetNextNode() => PointOut[0]?.ConnectedTo?.node;
+        public override EditorBaseNode GetNextNode() => null;//PointOut[0]?.ConnectedTo?.Node;
         
 
         public void AddDialogue() => NodeConvodata.DialogTextList.Add(string.Empty);
@@ -245,7 +245,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             Vector2 localPoint = new Vector2(xPoint, yPoint);
 
             //If mouseposition is over point
-            return (PointIn.Bounds.Contains(localPoint) || PointOut[0].Bounds.Contains(localPoint));
+            return (PointIn.LocalBounds.Contains(localPoint) || PointOut[0].LocalBounds.Contains(localPoint));
         }
 
 
@@ -258,11 +258,11 @@ namespace RydenCam.BranchCamEditor.Nodes
             float yPoint = windowRect.y - mousePos.y;
             Vector2 localPoint = new Vector2(mousePos.x - windowRect.x, mousePos.y - windowRect.y);
 
-            if (PointIn.Bounds.Contains(localPoint))
+            if (PointIn.LocalBounds.Contains(localPoint))
             {
                 return PointIn;
             }
-            else if (PointOut[0].Bounds.Contains(localPoint))
+            else if (PointOut[0].LocalBounds.Contains(localPoint))
             {
                 return PointOut[0];
             }

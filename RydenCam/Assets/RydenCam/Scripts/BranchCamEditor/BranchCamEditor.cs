@@ -212,7 +212,7 @@ namespace RydenCam.BranchCamEditor
                         {
                             ConnectionPoint fromPoint = ActiveNode.getConPoint(mousePos);
                             //Opposite type and not of of the current node
-                            if ((fromPoint.type != handlePoint.type) && !ActiveNode.containsPoint(handlePoint))
+                            if ((fromPoint.Type != handlePoint.Type) && !ActiveNode.containsPoint(handlePoint))
                             {
                                 //Remove Connections
                                 if (ConnectionManager.Instance.IsOutConnected(fromPoint, handlePoint))
@@ -266,13 +266,13 @@ namespace RydenCam.BranchCamEditor
 
             if (IsDrawingHandle)
             {
-                Vector2 hpoint = handlePoint.getGlobalPoint();
+                Vector2 hpoint = Vector2.zero;
                 Vector3 startPos = new Vector3(hpoint.x, hpoint.y, 0);
                 Vector3 endPos = new Vector3(mousePos.x, mousePos.y, 0);
 
                 //Goto Curve
                 //If making line above the point
-                if (handlePoint.type == ConnectionPointType.Out
+                if (handlePoint.Type == ConnectionPointType.Out
                     && hpoint.y > endPos.y)
                 {
                     Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
@@ -573,7 +573,7 @@ namespace RydenCam.BranchCamEditor
             Node.DrawContent();
             if (GUI.Button(deleteButtonRect, "X"))
             {
-                ConnectionManager.Instance.RemoveAssocConnec(Node);
+                //ConnectionManager.Instance.RemoveAssocConnec(Node);
                 NodeManager.Instance.RemoveNode(Node);
                 ActiveNode = null;
             }

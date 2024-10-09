@@ -13,6 +13,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
     {
         //Ideally move this out of Node?
         public Vector2 EditorPosition { get; set; }
+        public virtual float NodeWidth { get; set; } = 200;
+        public virtual float NodeHeight { get; set; }
         public int WindowId { get; set; }
 
         public virtual NodeType TypeOfNode { get; set; }
@@ -29,6 +31,12 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             WindowId = new System.Random().Next(int.MinValue, int.MaxValue);
 
             EditorPosition = position;
+        }
+
+        //RS TODO - Check this
+        public bool ContainsPoint(ConnectionPoint point)
+        {
+            return (point == PointIn || PointOut.Contains(point));
         }
 
     }

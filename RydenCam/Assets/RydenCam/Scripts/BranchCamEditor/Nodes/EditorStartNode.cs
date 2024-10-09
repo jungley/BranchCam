@@ -44,7 +44,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             //Out Point
             PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+            //PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
 
         }
 
@@ -60,7 +60,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             ReturnToOriginalPositions = stnode.returnToOriginalPositions;
             EditorController.Instance.ActorsInScene = stnode.ActorsInScene;
             PointOut = new List<ConnectionPoint>();
-            PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
+           // PointOut.Add(new ConnectionPoint(this, ConnectionPointType.Out));
 #if UNITY_EDITOR
             labelStyle = new GUIStyle();
             labelStyle.fontStyle = FontStyle.Bold;
@@ -220,7 +220,8 @@ namespace RydenCam.BranchCamEditor.Nodes
             float yPoint = windowRect.y - mousePos.y;
 
             Vector2 localPoint = new Vector2(mousePos.x - windowRect.x, mousePos.y - windowRect.y);
-            return PointOut[0].Bounds.Contains(localPoint);
+            //return PointOut[0].Bounds.Contains(localPoint);
+            return false;
         }
 
         public override ConnectionPoint getConPoint(Vector2 mousePos) => PointOut[0];

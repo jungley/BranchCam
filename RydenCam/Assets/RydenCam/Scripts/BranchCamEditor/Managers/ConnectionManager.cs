@@ -4,6 +4,7 @@ using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Managers
 {
@@ -38,8 +39,8 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public void AddConnection(ConnectionPoint fromPoint, ConnectionPoint handlePoint, Action<Connection> action)
         {
-            var pointIN = fromPoint.type == ConnectionPointType.In ? fromPoint : handlePoint.type == ConnectionPointType.In ? handlePoint : null;
-            var pointOUT = fromPoint.type == ConnectionPointType.Out ? fromPoint : handlePoint.type == ConnectionPointType.Out ? handlePoint : null;
+            var pointIN = fromPoint.Type == ConnectionPointType.In ? fromPoint : handlePoint.Type == ConnectionPointType.In ? handlePoint : null;
+            var pointOUT = fromPoint.Type == ConnectionPointType.Out ? fromPoint : handlePoint.Type == ConnectionPointType.Out ? handlePoint : null;
 
             Connection newConnection = new Connection(pointIN, pointOUT, action);
             connectionList.Add(newConnection);
@@ -54,8 +55,8 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public bool IsOutConnected(ConnectionPoint A, ConnectionPoint B)
         {
-            return (A.type == ConnectionPointType.Out && A.ConnectedTo != null) ||
-                   (B.type == ConnectionPointType.Out && B.ConnectedTo != null);
+            return (A.Type == ConnectionPointType.Out && A.ConnectedTo != null) ||
+                   (B.Type == ConnectionPointType.Out && B.ConnectedTo != null);
         }
 
         public void Remove(ConnectionPoint A, ConnectionPoint B)
@@ -81,7 +82,7 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
-        public void RemoveAssocConnec(EditorBaseNode node)
+        public void RemoveAssocConnec(NodeCC node)
         {
             List<ConnectionPoint> delPointList = new List<ConnectionPoint> { node.PointIn };
             delPointList.AddRange(node.PointOut);

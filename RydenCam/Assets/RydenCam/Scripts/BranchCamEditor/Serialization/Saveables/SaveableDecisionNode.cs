@@ -34,7 +34,7 @@ namespace RydenCam.BranchCamEditor.Serialization.Saveables
             IN_connTo = new List<string>();
             if (node.PointIn.ConnectedTo != null)
             {
-                IN_connTo.Add(node.PointIn.ConnectedTo.node.node_id);
+                //IN_connTo.Add(node.PointIn.ConnectedTo.node.node_id);
             }
 
             //Loop Through out points
@@ -43,7 +43,7 @@ namespace RydenCam.BranchCamEditor.Serialization.Saveables
             {
                 if (node.PointOut[i].ConnectedTo != null)
                 {
-                    OUT_connTo.Add(node.PointOut[i].ConnectedTo.node.node_id);
+                    //OUT_connTo.Add(node.PointOut[i].ConnectedTo.node.node_id);
                 }
                 else
                 {

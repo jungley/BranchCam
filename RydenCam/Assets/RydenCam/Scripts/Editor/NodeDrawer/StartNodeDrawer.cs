@@ -19,36 +19,32 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             startNode = node as StartNode;
             startCommand = new StartNodeCommand(node);
 
-            //Editor Window Properties
-            nodeWidth = 200;
-            nodeHeight = 70;
-
             labelStyle = new GUIStyle();
             labelStyle.fontStyle = FontStyle.Bold;
             labelStyle.fontSize = 10;
 
-            windowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight);
+            WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
             ColorUtility.TryParseHtmlString("#009900", out Color colorref);
-            nodeColor = colorref;
+            NodeColor = colorref;
         }
 
         public override void DrawNode(int index)
         {
             GUI.backgroundColor = Color.gray;
 
-            windowRect =
-                GUI.Window(index, windowRect,
+            WindowRect =
+                GUI.Window(index, WindowRect,
                     (windowId) =>
                     {
 
                         GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
-                        EditorGUI.LabelField(new Rect(4, 4, nodeWidth, nodeHeight), "Start", labelStyleHead_Node);
+                        EditorGUI.LabelField(new Rect(4, 4, Node.NodeWidth, Node.NodeHeight), "Start", labelStyleHead_Node);
 
                         //Draws Points as Well
                         EditorGUILayout.LabelField(startNode.SequenceName, labelStyleHead_Node);
 
-                        Rect deleteButtonRect = new Rect(nodeWidth - 20, 0, 20, 20);
+                        Rect deleteButtonRect = new Rect(Node.NodeWidth - 20, 0, 20, 20);
 
                         if (GUI.Button(deleteButtonRect, "X"))
                         {
@@ -61,7 +57,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                     }, "");
 
-            Node.EditorPosition = new Vector2(windowRect.x, windowRect.y);
+            Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
 
         public override void DrawNodeInspector()

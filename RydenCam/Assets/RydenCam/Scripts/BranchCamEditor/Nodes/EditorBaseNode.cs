@@ -331,7 +331,8 @@ namespace RydenCam.BranchCamEditor.Nodes
 
         public virtual EditorBaseNode GetNextNode()
         {
-            return PointOut[0]?.ConnectedTo?.node;
+            return null;
+           // return PointOut[0]?.ConnectedTo?.node;
         }
     }
 }

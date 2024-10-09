@@ -3,6 +3,7 @@ using Assets.RydenCam.Scripts.Editor.NodeDrawer;
 using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Common;
 using System.Collections.ObjectModel;
@@ -22,6 +23,11 @@ public class NodeGraphViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(ActiveNode));
         }
     }
+
+    public bool IsDrawingHandle { get; set; }
+
+    public ConnectionPoint SelectedConnectionPoint { get; set; }
+
     public event PropertyChangedEventHandler PropertyChanged;
 
 

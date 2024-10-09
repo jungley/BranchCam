@@ -28,13 +28,13 @@ namespace RydenCam.BranchCamEditor.Serialization.Saveables
             IN_connTo = new List<string>();
             if (node.PointIn.ConnectedTo != null)
             {
-                IN_connTo.Add(node.PointIn.ConnectedTo.node.node_id);
+                //IN_connTo.Add(node.PointIn.ConnectedTo.node.node_id);
             }
 
             if (node.PointOut[0].ConnectedTo != null)
             {
                 OUT_connTo = new List<string>();
-                OUT_connTo.Add(node.PointOut[0].ConnectedTo.node.node_id);
+                //OUT_connTo.Add(node.PointOut[0].ConnectedTo.node.node_id);
             }
 
             //Saving Camera Info Here

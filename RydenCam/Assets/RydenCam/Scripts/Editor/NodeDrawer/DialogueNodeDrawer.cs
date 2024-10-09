@@ -19,7 +19,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private Vector2 scrollPosInspector { get; set; }
         private int ActorIndex { get; set; }
 
-        public override float nodeHeight => node.NodeConvodata.DialogTextList.Count > 2 ? node.NodeConvodata.DialogTextList.Count* 20 + 75 : 120;
 
         public DialogueNodeDrawer(NodeCC _node): base(_node)
         {
@@ -29,43 +28,42 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(inspectorText, labelStyleHead_Panel);
 
             //Editor Window Properties
-            nodeWidth = 200;
 
             //Text
             decisionTextArea = new GUIStyle(EditorStyles.textArea);
             decisionTextArea.wordWrap = true;
             decisionTextArea.margin = new RectOffset(-20, 0, 0, 0);
 
-            windowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight);
+            WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
             ColorUtility.TryParseHtmlString("#1700FF", out Color colorref);
-            nodeColor = colorref;
+            NodeColor = colorref;
         }
 
         public override void DrawNode(int index)
         {
             GUI.backgroundColor = Color.gray;
 
-            windowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, nodeWidth, nodeHeight),
+            WindowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight),
                 (windowId) =>
                 {
                   
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
-                    EditorGUI.LabelField(new Rect(4, 4, nodeWidth, nodeHeight), "Dialogue", labelStyleHead_Node);
+                    EditorGUI.LabelField(new Rect(4, 4, node.NodeWidth, node.NodeHeight), "Dialogue", labelStyleHead_Node);
 
                     EditorGUILayout.LabelField(node.NodeConvodata.Actor == null 
                         ? BranchConstants.UnAssignedActor 
                         : node.NodeConvodata.Actor.ActorName, 
-                        labelStyleHead_Node);
+                        labelStyleHead_Node); 
 
 
                     for (int i = 0; i < node.NodeConvodata.DialogTextList.Count; i++)
                     {
-                        node.NodeConvodata.DialogTextList[i] = EditorGUILayout.TextArea(node.NodeConvodata.DialogTextList[i], GUILayout.Width(nodeWidth- 10), GUILayout.Height(20));
+                        node.NodeConvodata.DialogTextList[i] = EditorGUILayout.TextArea(node.NodeConvodata.DialogTextList[i], GUILayout.Width(node.NodeWidth- 10), GUILayout.Height(20));
                     }
 
 
-                    Rect deleteButtonRect = new Rect(nodeWidth - 20, 0, 20, 20);
+                    Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                     if (GUI.Button(deleteButtonRect, "X"))
                     {
                         command.RemoveNode(node);
@@ -77,7 +75,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 }, "");
 
-            Node.EditorPosition = new Vector2(windowRect.x, windowRect.y);
+            Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
 
         public override void DrawNodeInspector()

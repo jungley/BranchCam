@@ -13,36 +13,30 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
 
         public NodeCC Node { get; set; }
 
-        public ConnectionPointType type;
-        public EditorBaseNode node;
+        public ConnectionPointType Type;
         public ConnectionPoint ConnectedTo;
-        public Rect Bounds;
+        public Rect LocalBounds { get; set; }
         public Color Color = new Color(0, 0.8f, 0, 1);
 
 
-        public ConnectionPoint(NodeCC node, ConnectionPointType ty)
+
+
+        public ConnectionPoint(NodeCC node, ConnectionPointType type)
         {
             Node = node;
-            type = ty;
-        }
-
-
-
-        public ConnectionPoint(EditorBaseNode node, ConnectionPointType ty)
-        {
-            System.Guid guidVal = System.Guid.NewGuid();
-
-            this.node = node;
-            if (ty == ConnectionPointType.In)
+            Type = type;
+            // Determine the local bounds based on the type of connection point
+            if (type == ConnectionPointType.In)
             {
-                this.type = ConnectionPointType.In;
-                Bounds = new Rect((node.nodeWidth / 2 - 10), 0, 20, 18);
+                // For input connection points (In), position the bounds at the top center of the node
+                LocalBounds = new Rect((node.NodeWidth / 2 - 10), 0, 20, 18);
             }
-            else if (ty == ConnectionPointType.Out)
+            else if (type == ConnectionPointType.Out)
             {
-                this.type = ConnectionPointType.Out;
-                Bounds = new Rect((node.nodeWidth / 2 - 10), node.nodeHeight - 16, 20, 18);
+                // For output connection points (Out), position the bounds at the bottom center of the node
+                LocalBounds = new Rect((node.NodeWidth / 2 - 10), node.NodeHeight - 16, 20, 18);
             }
+
         }
 
         public void ClearPointer()
@@ -50,10 +44,10 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
             ConnectedTo = null;
         }
 
-        public Vector2 getGlobalPoint()
+        public Vector2 GetGlobalPoint()
         {
-            float globalXPos = (node.windowRect.x) + Bounds.center.x;
-            float globalYPos = (node.windowRect.y) + Bounds.center.y;
+            float globalXPos = (Node.EditorPosition.x) + LocalBounds.center.x;
+            float globalYPos = (Node.EditorPosition.y) + LocalBounds.center.y;
             return new Vector2(globalXPos, globalYPos);
         }
 
@@ -61,22 +55,22 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public void Draw(Color col)
         {
             Handles.color = col;
-            Handles.DrawSolidDisc(Bounds.center, new Vector3(0, 0, 1), 7.0f);
+            Handles.DrawSolidDisc(LocalBounds.center, new Vector3(0, 0, 1), 7.0f);
 
             if (ConnectedTo != null)
             {
-                Handles.DrawWireDisc(Bounds.center, new Vector3(0, 0, 1), 10.0f);
+                Handles.DrawWireDisc(LocalBounds.center, new Vector3(0, 0, 1), 10.0f);
             }
         }
 
         public void Draw()
         {
             Handles.color = Color;
-            Handles.DrawSolidDisc(Bounds.center, new Vector3(0, 0, 1), 7.0f);
+            Handles.DrawSolidDisc(LocalBounds.center, new Vector3(0, 0, 1), 7.0f);
 
             if (ConnectedTo != null)
             {
-                Handles.DrawWireDisc(Bounds.center, new Vector3(0, 0, 1), 10.0f);
+                Handles.DrawWireDisc(LocalBounds.center, new Vector3(0, 0, 1), 10.0f);
             }
         }
 
@@ -85,15 +79,15 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         {
 
             Handles.color = Color;//Color.black;//pointColor;
-            Handles.DrawSolidDisc(Bounds.center, new Vector3(0, 0, 1), 7.0f);
+            Handles.DrawSolidDisc(LocalBounds.center, new Vector3(0, 0, 1), 7.0f);
 
             if (ConnectedTo != null)
             {
                 Handles.color = Color;
-                Handles.DrawWireDisc(Bounds.center, new Vector3(0, 0, 1), 10.0f);
+                Handles.DrawWireDisc(LocalBounds.center, new Vector3(0, 0, 1), 10.0f);
                 Handles.color = Color; //Color.black;
             }
-            Vector3 pos = Bounds.center;
+            Vector3 pos = LocalBounds.center;
             pos = new Vector3(pos.x - 3, pos.y - 12, pos.z);
 
             GUIStyle style = new GUIStyle();

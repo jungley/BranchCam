@@ -17,6 +17,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public override NodeType TypeOfNode => NodeType.DialogueNode;
         public ConversationData NodeConvodata { get; set; }
 
+        public override float NodeHeight => NodeConvodata?.DialogTextList.Count > 2 ? NodeConvodata.DialogTextList.Count * 20 + 75 : 120;
+
         public DialogueNode(Vector2 position) : base(position)
         {
             PointIn = new ConnectionPoint(this, ConnectionPointType.In);
