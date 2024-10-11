@@ -88,13 +88,15 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
 
     public class ActionNode : NodeCC
     {
-        public override NodeType TypeOfNode => NodeType.ActionNode;
+
         public override float NodeHeight => 70; //needs to eventually dynamically change?
+
 
         public List<GameActionData> GameActionDatas { get; set; }
 
         public ActionNode(Vector2 position) : base(position)
         {
+            TypeOfNode = NodeType.ActionNode;
             GameActionDatas = new List<GameActionData>();
 
             PointIn = new ConnectionPoint(this, ConnectionPointType.In);

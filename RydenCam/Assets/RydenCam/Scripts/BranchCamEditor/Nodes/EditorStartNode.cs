@@ -68,7 +68,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             windowRect = stnode.windowRect;
             SequenceName = stnode.SequenceName;
             ColorUtility.TryParseHtmlString("#009900", out nodeColor);
-            BranchCamEditor.startNodeAdded = true;
+            //BranchCamEditor.startNodeAdded = true;
 #endif
         }
 

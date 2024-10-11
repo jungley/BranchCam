@@ -6,12 +6,11 @@ using RydenCam.SequenceData;
 using System.Linq;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace RydenCam.BranchCamEditor.Managers
 {    
-    [System.Serializable]
-    [ExecuteAlways]
-    public class NodeManager
+    public class NodeManager : INotifyPropertyChanged
     {
         private static NodeManager instance;
         public static NodeManager Instance
@@ -26,43 +25,81 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
+        private NodeManager()
+        {
+            Nodes = new ObservableCollection<NodeCC>();
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public ObservableCollection<NodeCC> Nodes { get; set; }
+
+        private NodeCC activeNode { get; set; }
+        public NodeCC ActiveNode
+        {
+            get => activeNode;
+            set
+            {
+                activeNode = value;
+                OnPropertyChanged(nameof(ActiveNode));
+            }
+        }
+
+        public static bool StartNodeAdded { get; set; }
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public List<ActorInfo> ActorsInScene()
         {
             var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
             return startNode?.ActorsInScene ?? new List<ActorInfo>();
         }
 
-        public ObservableCollection<NodeCC> Nodes { get; set; }
+        public void ClearActorsInScene()
+        {
+            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
+            if(startNode != null) startNode.ActorsInScene = new List<ActorInfo>();
+        }
 
-        public void Clear() => instance = new NodeManager();
+
+        public void Clear()
+        {
+            Nodes.Clear();
+            ActiveNode = null;
+            StartNodeAdded = false;
+        }
 
         public void RemoveNode(NodeCC node)
         {
             if (node.TypeOfNode == NodeType.StartNode)
             {
-                BranchCamEditor.startNodeAdded = false;
-                
+                StartNodeAdded = false;
             }
             Nodes.Remove(node);
-            
         }
 
-        public void AddNode(NodeCC node) => Nodes.Add(node);
         public NodeCC GetNodeCC(int index) => Nodes[index];
 
-        private NodeManager()
-        {
-            nodes = new List<EditorBaseNode>();
-            Nodes = new ObservableCollection<NodeCC>();
-        }
+        public NodeCC FindNode(string id) => Nodes.ToList().Find(n => n.NodeId == id);
 
         public int Length => Nodes.Count;
+
+        public string GetSequenceName()
+        {
+            StartNode startNodeRef = Nodes.OfType<StartNode>().FirstOrDefault();
+            return string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
+        }
 
 
         ////////////////////////////////////////////////////////////////////////////
 
 
         private List<EditorBaseNode> nodes;
+
+
         //public int Length => nodes.Count;
         public EditorStartNode StartNode => nodes.Find(n => n.TypeOfNode == NodeType.StartNode) as EditorStartNode;
         public List<EditorBaseNode> GetList() => nodes;
@@ -70,22 +107,15 @@ namespace RydenCam.BranchCamEditor.Managers
         {
             if (node.TypeOfNode == NodeType.StartNode)
             {
-                BranchCamEditor.startNodeAdded = false;
+                //BranchCamEditor.startNodeAdded = false;
             }
             nodes.Remove(node);
         }
 
         public void AddNode(EditorBaseNode node) => nodes.Add(node);
         public EditorBaseNode GetNode(int index) => nodes[index];
-        public EditorBaseNode FindNode(string id) => nodes.Find(n => n.node_id == id);
 
-        public string GetSequenceName()
-        {
-            EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
-            string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
 
-            return name;
-        }
         public bool IsValidSequence()
         {
             if (Length == 0)

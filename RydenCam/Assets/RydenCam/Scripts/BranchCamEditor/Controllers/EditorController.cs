@@ -40,7 +40,7 @@ namespace RydenCam.BranchCamEditor.Controllers
             NodeManager.Instance.Clear();
             ConnectionManager.Instance.Clear();
 #if UNITY_EDITOR
-            BranchCamEditor.startNodeAdded = false;
+            //BranchCamEditor.startNodeAdded = false;
             BranchCamEditor.ActiveNode = null;
 #endif
         }

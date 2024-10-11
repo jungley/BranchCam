@@ -1,27 +1,31 @@
 ﻿using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using RydenCam.SequenceData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamCC
 {
+    [System.Serializable]
     public class DecisionNode : NodeCC, ITalkable
     {
+        //Field needed for Saving/Deserizalzing class as JSON
+        public ConversationData NodeConvodataField;
 
-        public override NodeType TypeOfNode => NodeType.DecisionNode;
-        public ConversationData NodeConvodata { get; set; }
+        public ConversationData NodeConvodata 
+        { 
+            get { return NodeConvodataField; } 
+            set {  NodeConvodataField = value; }
+        }
+
+        public List<string> DecisionOptions;
 
         public override float NodeHeight => DecisionOptions.Count > 2 ? DecisionOptions.Count * 25 + 65 : 120;
 
-        public List<string> DecisionOptions { get; set; }
 
         public DecisionNode(Vector2 position) : base(position)
         {
+            TypeOfNode = NodeType.DecisionNode;
             DecisionOptions = new List<string>() { "" };
             PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };

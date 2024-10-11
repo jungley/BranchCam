@@ -3,17 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Assets.RydenCam.Scripts.Editor;
-using Assets.RydenCam.Scripts.BranchCamCC;
-using UnityEngine.UIElements;
 using Assets.RydenCam.Scripts.Editor.NodeDrawer;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.Serialization;
-using RydenCam.BranchCamEditor.Controllers;
 using System.Linq;
-using System.Threading;
 using RydenCam.BranchCamEditor.Managers;
-using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using RydenCam.BranchCamEditor.Nodes.Connections;
@@ -71,6 +66,8 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
+    static bool resourcesInitalized { get; set; } = false;
+
     List<NodeDrawerBase> NodeDrawers { get; set; }
 
 
@@ -90,6 +87,12 @@ public class NodeGraphEditorWindow : EditorWindow
 
     void OnGUI()
     {
+        if(!resourcesInitalized)
+        {
+            InitializeStaticResources();
+        }
+
+
         GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
 
         DrawGrid(gridSpacing: 20f, gridOpacity: 0.5f, gridColor: Color.white);
@@ -118,11 +121,11 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+    public void OnActiveNodeUpdated(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(viewModel.ActiveNode))
+        if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
-            ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(viewModel.ActiveNode);
+            ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(NodeManager.Instance.ActiveNode);
         }
     }
 
@@ -172,6 +175,8 @@ public class NodeGraphEditorWindow : EditorWindow
 
         panelstyle_button = new GUIStyle();
         panelstyle_button.normal.background = targetTextureButtonHeader;
+
+        resourcesInitalized = true;
     }
 
 
@@ -180,9 +185,10 @@ public class NodeGraphEditorWindow : EditorWindow
     {
         //Event Handlers
         viewModel = new NodeGraphViewModel();
-        viewModel.Nodes.CollectionChanged += OnNodesChanged;
-        viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        
+
+        NodeManager.Instance.Nodes.CollectionChanged += OnNodesChanged;
+        NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
+
         //Draw Nodes
         UpdateNodeDrawers();
     }
@@ -190,8 +196,8 @@ public class NodeGraphEditorWindow : EditorWindow
     // Called when the window is disabled or closed
     private void OnDisable()
     {
-        viewModel.Nodes.CollectionChanged -= OnNodesChanged;
-        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        NodeManager.Instance.Nodes.CollectionChanged -= OnNodesChanged;
+        NodeManager.Instance.PropertyChanged -= OnActiveNodeUpdated;
     }
     
 
@@ -202,7 +208,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
     private void UpdateNodeDrawers()
     {
-        NodeDrawers = viewModel.Nodes.Select(node => NodeDrawerFactory.CreateNodeDrawer(node)).ToList();
+        NodeDrawers = NodeManager.Instance.Nodes.Select(node => NodeDrawerFactory.CreateNodeDrawer(node)).ToList();
     }
 
     private void DrawInspector()
@@ -210,7 +216,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         using (var verticalScope = new GUILayout.VerticalScope(panelstyle_inspector, GUILayout.Width(250), GUILayout.Height(this.position.height)))
         {
-            if (viewModel.ActiveNode == null)
+            if (ActiveNodeDrawView == null)
             {
                 GUILayout.Label("Right click to add a node", inspectorText, GUILayout.Width(90));
             }
@@ -249,6 +255,7 @@ public class NodeGraphEditorWindow : EditorWindow
                     case "New":
                         viewModel.NewFile();
                         showDropdown = false;
+                        UpdateNodeDrawers();
                         break;
                     case "Save As":
                         viewModel.SaveAs();
@@ -256,6 +263,7 @@ public class NodeGraphEditorWindow : EditorWindow
                         break;
                     default:
                         break;
+
                 }
             }
 
@@ -276,6 +284,7 @@ public class NodeGraphEditorWindow : EditorWindow
             if (GUILayout.Button("Load", GUILayout.Width(65), GUILayout.Height(30)))
             {
                 viewModel.Load();
+                UpdateNodeDrawers();
             }
 
             if (GUILayout.Button("Inkle Script View", GUILayout.Width(120), GUILayout.Height(30)))
@@ -286,6 +295,8 @@ public class NodeGraphEditorWindow : EditorWindow
             if (GUILayout.Button("Locate Global Settings", GUILayout.Width(140), GUILayout.Height(30)))
             {
                 viewModel.LocateGlobalSettings();
+
+                
             }
         }
     }
@@ -314,11 +325,12 @@ public class NodeGraphEditorWindow : EditorWindow
             {
                 viewModel.SelectedConnectionPoint = null;
                 viewModel.IsDrawingHandle = false;
+                Repaint();
                 return;
             }
 
             // Set the active node
-            viewModel.ActiveNode = selectedNodeDrawer.Node;
+            NodeManager.Instance.ActiveNode = selectedNodeDrawer.Node;
 
             HandleConnectionPointSelected(e.mousePosition);
         }
@@ -333,7 +345,7 @@ public class NodeGraphEditorWindow : EditorWindow
     //mayve move to viewModel?
     public void HandleConnectionPointSelected(Vector2 mousePos)
     {
-        ConnectionPoint selectedPoint = ActiveNodeDrawView.GetHandlePoint(mousePos);
+        ConnectionPoint selectedPoint = ActiveNodeDrawView?.GetHandlePoint(mousePos);
         if(selectedPoint != null)
         {
             //Clicked on the connection point start to draw Handle
@@ -423,7 +435,7 @@ public class NodeGraphEditorWindow : EditorWindow
     {
         GenericMenu menu = new GenericMenu();
 
-        if (!StartNodeDrawer.StartNodeAdded)
+        if (!NodeManager.StartNodeAdded)
         {
             menu.AddItem(new GUIContent("Add Start Node"), false, () => 
             {

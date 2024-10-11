@@ -38,6 +38,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         {
             NodeManager.Instance.RemoveNode(node);
             ConnectionManager.Instance.RemoveAssocConnec(node);
+            NodeManager.Instance.ActiveNode = null;
         }
     }
 }

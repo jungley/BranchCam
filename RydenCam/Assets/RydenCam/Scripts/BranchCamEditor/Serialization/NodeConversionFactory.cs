@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
+    /*
     //Combine move code from NodeSerializer to here?
     public class NodeConversionFactory
     {
@@ -51,4 +52,5 @@ namespace RydenCam.BranchCamEditor.Serialization
             return null;
         }
     }
+    */
 }

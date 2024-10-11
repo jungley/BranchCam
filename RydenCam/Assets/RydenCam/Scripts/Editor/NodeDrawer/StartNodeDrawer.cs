@@ -10,7 +10,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
     public class StartNodeDrawer : NodeDrawerBase
     {
-        public static bool StartNodeAdded { get; set; }
         private StartNode startNode { get; set; }
         private StartNodeCommand startCommand { get; set; }
 
@@ -41,7 +40,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                         GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
                         EditorGUI.LabelField(new Rect(4, 4, Node.NodeWidth, Node.NodeHeight), "Start", labelStyleHead_Node);
 
-                        //Draws Points as Well
                         EditorGUILayout.LabelField(startNode.SequenceName, labelStyleHead_Node);
 
                         Rect deleteButtonRect = new Rect(Node.NodeWidth - 20, 0, 20, 20);

@@ -14,6 +14,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         public static NodeDrawerBase CreateNodeDrawer(NodeCC node)
         {
+            if (node == null) return null;
+
             switch(node.TypeOfNode)
             {
                 case NodeType.StartNode:
@@ -22,7 +24,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     return new DialogueNodeDrawer(node);
                 case NodeType.DecisionNode:
                     return new DecisionNodeDrawer(node);
-                case NodeType.ActionNode: 
+                case NodeType.ActionNode:
                     return new ActionNodeDrawer(node);
                 default:
                     throw new ArgumentException("Unsupported node type " + node.TypeOfNode.ToString());

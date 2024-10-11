@@ -1,13 +1,7 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
-using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
-using RydenCam.Common;
 using RydenCam.SequenceData;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -117,6 +111,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         {
             NodeManager.Instance.RemoveNode(node);
             ConnectionManager.Instance.RemoveAssocConnec(node);
+            NodeManager.Instance.ActiveNode = null;
+
         }
     }
 }

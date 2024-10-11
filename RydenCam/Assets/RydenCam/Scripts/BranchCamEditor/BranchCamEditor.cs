@@ -36,7 +36,7 @@ namespace RydenCam.BranchCamEditor
         private Vector2 mousePos;
         private static Rect InspectorPanelArea;
         private static Rect ButtonPanelArea;
-        public static bool startNodeAdded = false;
+        //public static bool startNodeAdded = false;
         static float panX = 0;
         static float panY = 0;
         private Rect lastEditorWindowPos;
@@ -334,7 +334,7 @@ namespace RydenCam.BranchCamEditor
                     if (!clickedOnWindow)
                     {
                         GenericMenu menu = new GenericMenu();
-                        if (!startNodeAdded)
+                        if (true)
                         {
                             menu.AddItem(new GUIContent("Add Start Node"), false, ContextCallback, "startNode");
                         }
@@ -591,7 +591,7 @@ namespace RydenCam.BranchCamEditor
                     EditorBaseNode startNode = new EditorStartNode(mousePos);
                     NodeManager.Instance.AddNode(startNode);
                     ActiveNode = startNode;
-                    startNodeAdded = true;
+                    //startNodeAdded = true;
                     break;
                 case ("dialogueNode"):
                     EditorBaseNode dialogueNode = new EditorDialogueNode(mousePos);

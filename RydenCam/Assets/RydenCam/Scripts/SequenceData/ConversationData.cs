@@ -20,11 +20,8 @@ namespace RydenCam.SequenceData
     [ExecuteAlways]
     public class ConversationData
     {
-        [SerializeField]
         public List<string> DialogTextList;
-        [SerializeField]
         public ActorInfo Actor;
-        [SerializeField]
         public CamShotConfig ShotConfig;
         public ConversationData(ActorInfo actor, List<string> dialog = null)
         {
@@ -35,7 +32,7 @@ namespace RydenCam.SequenceData
         public ConversationData()
         {
             Actor = NodeManager.Instance.ActorsInScene().FirstOrDefault();
-            ShotConfig  = new CamShotConfig(Actor.ActorName, CameraGoal.Portrait, CameraDistance.Mid, CameraAngle.EyeLevel, CustomCameraType.None);
+            ShotConfig  = new CamShotConfig(Actor != null ? Actor.ActorName : string.Empty, CameraGoal.Portrait, CameraDistance.Mid, CameraAngle.EyeLevel, CustomCameraType.None);
             DialogTextList = new List<string> { string.Empty };
         }
     }

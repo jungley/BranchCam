@@ -1,38 +1,19 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.Serialization.Saveables;
-using Newtonsoft.Json;
-using RydenCam.BranchCamEditor.Controllers;
+﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes;
-using RydenCam.BranchCamEditor.Serialization.Saveables;
 using RydenCam.Common;
-using RydenCam.SequenceData;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
-using static RydenCam.BranchCamEditor.Nodes.EditorActionNode;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
-
-    [System.Serializable]
-    public class SimpleNodeData
-    {
-        [SerializeField]
-        public NodeType typeOfNode;
-    }
-
-
-    //COMBINE WITH NodeConversionFactory
     public static class NodeSerializer
     {
-        public static List<EditorBaseNode> DeserializeNodes(string directoryPath)
+        public static List<NodeCC> DeserializeNodes(string directoryPath)
         {
-            List<EditorBaseNode> editorNodes = new List<EditorBaseNode>();
+            List<NodeCC> deserializedNodes = new List<NodeCC>();
             if (Directory.Exists(directoryPath))
             {
                 string assetFileName = Directory.GetFiles(directoryPath, "*.json").FirstOrDefault();
@@ -43,33 +24,31 @@ namespace RydenCam.BranchCamEditor.Serialization
                 {
                     try
                     {
-                        List<Saveable> deserializedNodes = new List<Saveable>();
-
                         string jsonContent = File.ReadAllText(assetFilePath);
                         SaveDataContainer dataContainer = JsonUtility.FromJson<SaveDataContainer>(jsonContent);
 
-                        foreach(string nodeJsonContent in dataContainer.JsonList)
+                        foreach(var nodeJsonContent in dataContainer.JsonList)
                         {
-                            SimpleNodeData save = JsonUtility.FromJson<SimpleNodeData>(nodeJsonContent);
-                            switch(save.typeOfNode)
+                            switch(nodeJsonContent.NodeType)
                             {
                                 case NodeType.StartNode:
-                                    SaveableStartNode startnode = JsonUtility.FromJson<SaveableStartNode>(nodeJsonContent);
+                                    StartNode startnode = JsonUtility.FromJson<StartNode>(nodeJsonContent.JsonString);
                                     deserializedNodes.Add(startnode);
+                                    NodeManager.StartNodeAdded = true;
                                     break;
 
                                 case NodeType.DialogueNode:
-                                    SaveableDialogueNode dianode = JsonUtility.FromJson<SaveableDialogueNode>(nodeJsonContent);
+                                    DialogueNode dianode = JsonUtility.FromJson<DialogueNode>(nodeJsonContent.JsonString);
                                     deserializedNodes.Add(dianode);
                                     break;
 
                                 case NodeType.DecisionNode:
-                                    SaveableDecisionNode decnode = JsonUtility.FromJson<SaveableDecisionNode>(nodeJsonContent);
+                                    DecisionNode decnode = JsonUtility.FromJson<DecisionNode>(nodeJsonContent.JsonString);
                                     deserializedNodes.Add(decnode);
                                     break;
 
                                 case NodeType.ActionNode:
-                                    SaveableActionNode actionNode = JsonUtility.FromJson<SaveableActionNode>(nodeJsonContent);
+                                    ActionNode actionNode = JsonUtility.FromJson<ActionNode>(nodeJsonContent.JsonString);
                                     deserializedNodes.Add(actionNode);
                                     break;
 
@@ -78,35 +57,27 @@ namespace RydenCam.BranchCamEditor.Serialization
                             }
                         }
 
-                        NodeConversionFactory editorNodeFactory = new NodeConversionFactory();
-
-                        editorNodes = deserializedNodes?.Select(savenode => editorNodeFactory.CreateEditorNode(savenode)).ToList();
-
-                        if (editorNodes != null)
+                        //Associate Connections
+                        foreach(var deserializedNode in deserializedNodes)
                         {
-                            editorNodes.ForEach(node => NodeManager.Instance.AddNode(node));
 
-                            //Associate Connections
-                            for (int i = 0; i < deserializedNodes.Count; i++)
+                            //Check out Connection
+                            if (deserializedNode.PointOut.Count != 0)
                             {
-                                EditorBaseNode node = editorNodes[i];
-                                Saveable savenode = deserializedNodes[i];
-                                //Check out Connection
-                                if (savenode.OUT_connTo.Count != 0)
+                                for (int y = 0; y < deserializedNode.PointOut.Count; y++)
                                 {
-                                    for (int y = 0; y < savenode.OUT_connTo.Count; y++)
+                                    NodeCC node_OUT = NodeManager.Instance.FindNode(deserializedNode.PointOut[y].Node?.NodeId);
+                                    if (node_OUT != null)
                                     {
-                                        EditorBaseNode node_OUT = NodeManager.Instance.FindNode(savenode.OUT_connTo[y]);
-                                        if (node_OUT != null)
-                                        {
-                                            node.PointOut[y].ConnectedTo = node_OUT.PointIn;
-                                            node_OUT.PointIn.ConnectedTo = node.PointOut[y];
-                                            ConnectionManager.Instance.AddConnection(node.PointOut[y], node_OUT.PointIn, EditorBaseNode.OnClickRemoveConnection);
-                                        }
+                                        deserializedNode.PointOut[y].ConnectedTo = node_OUT.PointIn;
+                                        node_OUT.PointIn.ConnectedTo = deserializedNode.PointOut[y];
+                                        ConnectionManager.Instance.AddConnection(deserializedNode.PointOut[y], node_OUT.PointIn, NodeCC.OnClickRemoveConnection);
                                     }
                                 }
                             }
                         }
+                        
+
                     }
                     catch (Exception e)
                     {
@@ -115,14 +86,7 @@ namespace RydenCam.BranchCamEditor.Serialization
                 }
             }
 
-            return editorNodes;
-        }
-
-        public static List<Saveable> SerializeNodes(List<EditorBaseNode> nodeList)
-        {
-            NodeConversionFactory saveNodeFactory = new NodeConversionFactory();
-            List<Saveable> serializedNodes = nodeList.Select(node => saveNodeFactory.CreateSaveNode(node)).ToList();
-            return serializedNodes;
+            return deserializedNodes;
         }
     }
 }

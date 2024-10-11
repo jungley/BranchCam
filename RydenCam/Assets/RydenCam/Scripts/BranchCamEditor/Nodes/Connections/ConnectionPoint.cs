@@ -11,15 +11,11 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
     public class ConnectionPoint
     {
 
-        public NodeCC Node { get; set; }
-
-        public ConnectionPointType Type;
-        public ConnectionPoint ConnectedTo;
-        public Rect LocalBounds { get; set; }
-        public Color Color = new Color(0, 0.8f, 0, 1);
-
-
-
+        public NodeCC Node;
+        [SerializeField] public ConnectionPointType Type;
+        [SerializeField] public ConnectionPoint ConnectedTo;
+        [SerializeField] public Rect LocalBounds;
+        [SerializeField] public Color Color = new Color(0, 0.8f, 0, 1);
 
         public ConnectionPoint(NodeCC node, ConnectionPointType type)
         {
@@ -36,6 +32,7 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
                 // For output connection points (Out), position the bounds at the bottom center of the node
                 LocalBounds = new Rect((node.NodeWidth / 2 - 10), node.NodeHeight - 16, 20, 18);
             }
+           
 
         }
 

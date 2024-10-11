@@ -1,7 +1,6 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.Editor.NodeDrawer;
 using RydenCam.BranchCamEditor;
-using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Serialization;
@@ -11,39 +10,16 @@ using System.ComponentModel;
 using UnityEditor;
 using UnityEngine;
 
-public class NodeGraphViewModel : INotifyPropertyChanged
+public class NodeGraphViewModel
 {
-    private NodeCC _activeNode { get; set; }
-    public NodeCC ActiveNode
-    {
-        get => _activeNode;
-        set
-        {
-            _activeNode = value;
-            OnPropertyChanged(nameof(ActiveNode));
-        }
-    }
-
     public bool IsDrawingHandle { get; set; }
 
     public ConnectionPoint SelectedConnectionPoint { get; set; }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-
-    public ObservableCollection<NodeCC> Nodes => NodeManager.Instance.Nodes;
 
     public NodeGraphViewModel()
     {
 
     }
-
-    protected virtual void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-
 
 
     public void NewFile()
@@ -51,10 +27,8 @@ public class NodeGraphViewModel : INotifyPropertyChanged
         bool shouldReset = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset everything?", "Yes", "No");
         if (shouldReset)
         {
-            Nodes.Clear();
-
+            ResetEverything();
             BranchCamEditorPreferences.SetLastFilePath(string.Empty);
-            StartNodeDrawer.StartNodeAdded = false;
         }
     }
 
@@ -90,9 +64,18 @@ public class NodeGraphViewModel : INotifyPropertyChanged
     {
         if (LoadFile.HasDialogueFile(BranchConstants.LoadFolderPanelTitle, BranchConstants.LoadFolderPanelTitle))
         {
-            EditorController.Instance.ResetEverything();
+            ResetEverything();
             LoadFile.LoadSaveables();
         }
+    }
+
+    public void ResetEverything()
+    {
+        NodeManager.Instance.ClearActorsInScene();
+        NodeManager.Instance.Clear();
+        ConnectionManager.Instance.Clear();
+        NodeManager.StartNodeAdded = false;
+        NodeManager.Instance.ActiveNode = null;
     }
 
     private GlobalSettingsData FindGlobalSetting()
@@ -139,7 +122,7 @@ public class NodeGraphViewModel : INotifyPropertyChanged
         {
             case NodeType.StartNode:
                 newNode = new StartNode(position);
-                StartNodeDrawer.StartNodeAdded = true;
+                NodeManager.StartNodeAdded = true;
                 break;
             case NodeType.DialogueNode:
                 newNode = new DialogueNode(position);
@@ -155,7 +138,7 @@ public class NodeGraphViewModel : INotifyPropertyChanged
         }
 
         NodeManager.Instance.Nodes.Add(newNode);
-        ActiveNode = newNode;
+        NodeManager.Instance.ActiveNode = newNode;
     }
 
     public void CreateConnection(NodeCC startNode, NodeCC endNode)

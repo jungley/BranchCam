@@ -42,6 +42,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public void RemoveNode(NodeCC node)
         {
+            NodeManager.Instance.ActiveNode = null;
             NodeManager.Instance.RemoveNode(node);
             ConnectionManager.Instance.RemoveAssocConnec(node);
         }

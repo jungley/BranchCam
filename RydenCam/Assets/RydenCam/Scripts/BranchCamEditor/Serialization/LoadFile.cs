@@ -7,6 +7,7 @@ using RydenCam.Common;
 using RydenCam.BranchCamEditor.Managers;
 using System;
 using System.Linq;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -87,15 +88,15 @@ namespace RydenCam.BranchCamEditor.Serialization
 
         public static void LoadSaveables()
         {
+            NodeManager.Instance.Clear();
+
             path = BranchCamEditorPreferences.GetLastFilePath();
 
-            List<EditorBaseNode> loadedEditorNodes = NodeSerializer.DeserializeNodes(path);
-
-            NodeManager.Instance.Clear();
+            List<NodeCC> loadedEditorNodes = NodeSerializer.DeserializeNodes(path);
 
             if (loadedEditorNodes != null)
             {
-                loadedEditorNodes.ForEach(n => NodeManager.Instance.AddNode(n));
+                loadedEditorNodes.ForEach(n => NodeManager.Instance.Nodes.Add(n));  
             }
         }
 
