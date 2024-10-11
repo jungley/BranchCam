@@ -4,19 +4,6 @@ using UnityEngine;
 
 public static class Texture2DExtensions
 {
-    public static Texture2D DeepCopy(this Texture2D original)
-    {
-        // Create a new texture with the same dimensions and format as the original
-        Texture2D newTexture = new Texture2D(original.width, original.height, original.format, original.mipmapCount > 1);
-
-        // Copy the pixel data from the original texture to the new texture
-        newTexture.SetPixels(original.GetPixels());
-
-        newTexture.Apply();
-
-        return newTexture;
-    }
-
     public static bool IsTextureEmpty(this Texture2D texture)
     {
         if (texture == null)

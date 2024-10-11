@@ -59,24 +59,29 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             foreach (var node in nodes)
             {
-                if (node is not IPositionalNode dialogueNode) continue;
-                if (CachedActor.ContainsKey(node)) continue;
-
-                var focusTarget = GameObject.Find(dialogueNode.NodeConvodata.ShotConfig.actor);
-                var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
-                
-                var meshMatList = new List<(Mesh, Material)>();
-
-                foreach (var obj in objsToRender)
-                {
-                    var mesh = GetMesh(obj);
-                    var mat = GetMaterial(obj);
-
-                    meshMatList.Add((mesh, mat));
-                }
-
-                CachedActor[node] = (focusTarget, meshMatList);
+                CreateActorCache(node);
             }
+        }
+
+        void CreateActorCache(EditorBaseNode node)
+        {
+            if (node is not IPositionalNode dialogueNode) return;
+            if (CachedActor.ContainsKey(node)) return;
+
+            var focusTarget = GameObject.Find(dialogueNode.NodeConvodata.ShotConfig.actor);
+            var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
+
+            var meshMatList = new List<(Mesh, Material)>();
+
+            foreach (var obj in objsToRender)
+            {
+                var mesh = GetMesh(obj);
+                var mat = GetMaterial(obj);
+
+                meshMatList.Add((mesh, mat));
+            }
+
+            CachedActor[node] = (focusTarget, meshMatList);
         }
 
         public void DrawPreviewWindows(EditorBaseNode[] nodes)
@@ -92,8 +97,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                 if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
                 {
+                    if(!CachedActor.ContainsKey(node))CreateActorCache(node);
+
                     newUtil.DrawSavePreview(windowRect, GetCamPose(node), GetActorPose(node), CachedActor[node].meshMat.ToArray());
                     CachedTextures[node] = newUtil.CachedRenderTexture;
+
                 }
 
                 newUtil.Dispose();
