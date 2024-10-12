@@ -9,6 +9,7 @@ using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 using System.IO;
 using RydenCam.BranchCamEditor.PreviewRender;
+using System;
 
 namespace RydenCam.BranchCamEditor
 {
@@ -18,6 +19,8 @@ namespace RydenCam.BranchCamEditor
     [ExecuteAlways]
     public class BranchCamEditor : EditorWindow
     {
+        public static event Action<EditorBaseNode> OnNodePropertyChanged;
+
         private bool showDropdown = false;
 
         private static EditorBaseNode activeNode;
@@ -121,14 +124,15 @@ namespace RydenCam.BranchCamEditor
 
             dialoguePreviewWindow = DialoguePreview.CreateAndPopulateMeshes(NodeManager.Instance.GetList().Where(x => x is IPositionalNode).ToArray());
 
+            OnNodePropertyChanged += editor.MarkForRedraw;
+            
             for (int i = 0; i < NodeManager.Instance.Length; i++)
             {
-                NodeManager.Instance.GetNode(i).OnPropertyChanged += editor.MarkForRedraw;
+                NodeManager.Instance.GetNode(i).OnPropertyChanged += (evt) => { OnNodePropertyChanged?.Invoke(evt);  };
             }
 
             editor.MarkForRedraw();
         }
-
 
         static void SetHighlightTexture(Rect bounds)
         {
@@ -624,7 +628,6 @@ namespace RydenCam.BranchCamEditor
                     EditorBaseNode dialogueNode = new EditorDialogueNode(mousePos);
                     NodeManager.Instance.AddNode(dialogueNode);
                     ActiveNode = dialogueNode;
-                    dialogueNode.OnPropertyChanged += MarkForRedraw;
                     break;
                 case ("decisionNode"):
                     EditorBaseNode decisionNode = new EditorDecisionNode(mousePos);
@@ -638,10 +641,18 @@ namespace RydenCam.BranchCamEditor
                     break;
             }
 
+            RegisterNewNode(ActiveNode);
+
             MarkForRedraw();
         }
 
-        void MarkForRedraw() => isDirty = true;
+        void RegisterNewNode(EditorBaseNode node)
+        {
+            node.OnPropertyChanged += (evt) => { OnNodePropertyChanged?.Invoke(evt); };
+            OnNodePropertyChanged?.Invoke(node);
+        }
+
+        void MarkForRedraw(EditorBaseNode node = null) => isDirty = true;
 
         public static void OnClickRemoveConnection(Connection connection)
         {

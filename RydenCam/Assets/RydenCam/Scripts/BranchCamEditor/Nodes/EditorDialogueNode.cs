@@ -130,6 +130,7 @@ namespace RydenCam.BranchCamEditor.Nodes
         }
 
 #if UNITY_EDITOR
+
         public override void DrawForInspector()
         {
             base.DrawForInspector();
@@ -146,7 +147,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                 Sel_ActorID = EditorController.Instance.ActorsInScene[ActorIndex].ActorID;
                 NodeConvodata.Actor = EditorController.Instance.ActorsInScene.Where(x => x.ActorID == Sel_ActorID).FirstOrDefault();
                 NodeConvodata.ShotConfig.actor = NodeConvodata.Actor.ActorName;
-                OnPropertyChanged?.Invoke();
+                OnPropertyChanged?.Invoke(this);
             }
 
             //ID associated with the Actor no longer exists but Dialgoue contains an actor

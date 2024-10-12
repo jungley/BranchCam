@@ -49,11 +49,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             var dialoguePreview = new DialoguePreview();
             dialoguePreview.PopulateCachedMeshes(nodes);
-
+            BranchCamEditor.OnNodePropertyChanged += dialoguePreview.CreateActorCache;
             return dialoguePreview;
         }
 
-        private DialoguePreview() { }
+        private DialoguePreview() {}
 
         void PopulateCachedMeshes(EditorBaseNode[] nodes)
         {
@@ -66,7 +66,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         void CreateActorCache(EditorBaseNode node)
         {
             if (node is not IPositionalNode dialogueNode) return;
-            if (CachedActor.ContainsKey(node)) return;
 
             var focusTarget = GameObject.Find(dialogueNode.NodeConvodata.ShotConfig.actor);
             var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
@@ -101,7 +100,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                     newUtil.DrawSavePreview(windowRect, GetCamPose(node), GetActorPose(node), CachedActor[node].meshMat.ToArray());
                     CachedTextures[node] = newUtil.CachedRenderTexture;
-
                 }
 
                 newUtil.Dispose();
@@ -150,7 +148,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 //For some reason DrawPreviewWindow sometimes draws a blank texture and that gets cached. This prevents a blank texture from being drawn.
                 if (CachedTextures[node].IsTextureEmpty())
                 {
-                    Debug.Log("Empty Texture found redrawing.");
                     DrawPreviewWindows(nodes);
                     return;
                 }

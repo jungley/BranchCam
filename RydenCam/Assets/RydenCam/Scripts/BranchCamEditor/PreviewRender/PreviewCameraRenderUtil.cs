@@ -21,10 +21,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     {
         public PreviewRenderUtility PreviewRenderUtility { get; set; }
         public Texture2D CachedRenderTexture { get; set; }
-
-        Texture2D blankTexture;
-        Texture2D BlankTexture => blankTexture ??= Texture2D.grayTexture;
-
         public PreviewCameraRenderUtil()
         {
             PreviewRenderUtility = new PreviewRenderUtility();
@@ -50,13 +46,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             PreviewRenderUtility.Render();
             Texture2D previewRenderTexture = PreviewRenderUtility.EndStaticPreview();
-            GUI.DrawTexture(windowRect, previewRenderTexture);
-            CachedRenderTexture = previewRenderTexture;
-        }
-
-        internal void DrawBlankTexture(Rect windowRect)
-        {
-            Texture2D previewRenderTexture = BlankTexture;
             GUI.DrawTexture(windowRect, previewRenderTexture);
             CachedRenderTexture = previewRenderTexture;
         }
