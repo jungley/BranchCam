@@ -89,22 +89,19 @@ namespace RydenCam.BranchCamEditor.Serialization
         public static void LoadSaveables()
         {
             NodeManager.Instance.Clear();
+            ConnectionManager.Instance.Clear();
 
             path = BranchCamEditorPreferences.GetLastFilePath();
 
-            List<NodeCC> loadedEditorNodes = NodeSerializer.DeserializeNodes(path);
+            List<NodeCC> deserializedNodes = NodeSerializer.DeserializeNodes(path);
 
-            if (loadedEditorNodes != null)
-            {
-                loadedEditorNodes.ForEach(n => NodeManager.Instance.Nodes.Add(n));  
-            }
+            NodeManager.Instance.LoadNodes(deserializedNodes);
+            ConnectionManager.Instance.CreateConnections(deserializedNodes);
         }
 
         public static void SetLastFilePath()
         {
             string fullPath = EditorUtility.OpenFolderPanel("Choose a folder containing Dialogue files only", BranchConstants.DefaultDialogueFolder, "Choose a folder containing Dialogue files only");
-
-
             string projectPath = Application.dataPath;
 
             try

@@ -14,8 +14,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
     [System.Serializable]
     public abstract class NodeCC : INodeCC
     {
-        //Most properties need to be fields NOT properties in order to serialize to JSON
-
         //Ideally move this out of Node?
         public Vector2 EditorPosition;
         public float NodeWidth;
@@ -28,12 +26,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public List<ConnectionPoint> PointOut;
         public string NodeId;
 
-        //RSTODO move this?
-        public static void OnClickRemoveConnection(Connection connection)
-        {
-            ConnectionManager.Instance.Remove(connection);
-        }
-
         public NodeCC(Vector2 position)
         {
             Guid guidVal = Guid.NewGuid();
@@ -44,11 +36,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             EditorPosition = position;
         }
 
-        //RS TODO - Check this
-        public bool ContainsPoint(ConnectionPoint point)
-        {
-            return (point == PointIn || PointOut.Contains(point));
-        }
 
     }
 }

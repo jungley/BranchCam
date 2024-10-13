@@ -56,28 +56,6 @@ namespace RydenCam.BranchCamEditor.Serialization
                                     break;
                             }
                         }
-
-                        //Associate Connections
-                        foreach(var deserializedNode in deserializedNodes)
-                        {
-
-                            //Check out Connection
-                            if (deserializedNode.PointOut.Count != 0)
-                            {
-                                for (int y = 0; y < deserializedNode.PointOut.Count; y++)
-                                {
-                                    NodeCC node_OUT = NodeManager.Instance.FindNode(deserializedNode.PointOut[y].Node?.NodeId);
-                                    if (node_OUT != null)
-                                    {
-                                        deserializedNode.PointOut[y].ConnectedTo = node_OUT.PointIn;
-                                        node_OUT.PointIn.ConnectedTo = deserializedNode.PointOut[y];
-                                        ConnectionManager.Instance.AddConnection(deserializedNode.PointOut[y], node_OUT.PointIn, NodeCC.OnClickRemoveConnection);
-                                    }
-                                }
-                            }
-                        }
-                        
-
                     }
                     catch (Exception e)
                     {
@@ -85,7 +63,6 @@ namespace RydenCam.BranchCamEditor.Serialization
                     }
                 }
             }
-
             return deserializedNodes;
         }
     }

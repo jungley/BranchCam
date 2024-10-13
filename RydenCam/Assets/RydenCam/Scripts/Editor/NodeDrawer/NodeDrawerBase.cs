@@ -133,6 +133,8 @@ namespace Assets.RydenCam.Scripts.Editor
         protected int heightConnectionPoint => 18;
         protected int widthConnectionPoint => 20;
 
+
+
         
         protected void DrawPoint(Rect bounds, Color color, bool isConnected)
         {

@@ -215,13 +215,14 @@ namespace RydenCam.BranchCamEditor
                             if ((fromPoint.Type != handlePoint.Type) && !ActiveNode.containsPoint(handlePoint))
                             {
                                 //Remove Connections
-                                if (ConnectionManager.Instance.IsOutConnected(fromPoint, handlePoint))
-                                {
-                                    ConnectionManager.Instance.Remove(fromPoint, handlePoint);
-                                }
+                                //if (ConnectionManager.Instance.IsOutConnected(fromPoint, handlePoint))
+                                //{
+                                //    ConnectionManager.Instance.Remove(fromPoint, handlePoint);
+                                //}
+                                //here
                                 fromPoint.ConnectedTo = handlePoint;
                                 handlePoint.ConnectedTo = fromPoint;
-                                ConnectionManager.Instance.AddConnection(fromPoint, handlePoint, OnClickRemoveConnection);
+                                //ConnectionManager.Instance.AddConnection(fromPoint, handlePoint, OnClickRemoveConnection);
                             }
                         }
                     }
@@ -288,7 +289,7 @@ namespace RydenCam.BranchCamEditor
                     }
                     center.x += arc;
                     Vector3[] vector3array = new Vector3[] { startPos, center, endPos };
-                    vector3array = Curver.MakeSmoothCurve(vector3array, 90.0f);
+                    vector3array = null;//Curver.MakeSmoothCurve(vector3array, 90.0f);
                     Handles.color = Color.green;
                     Handles.DrawAAPolyLine(5.0f, vector3array);
                 }
@@ -364,6 +365,7 @@ namespace RydenCam.BranchCamEditor
             DialoguePreview dialoguePreviewWindow = new DialoguePreview();
             BeginWindows();
 
+            /*
             for (int i = 0; i < NodeManager.Instance.Length; i++)
             {
                 EditorBaseNode nodeCur = NodeManager.Instance.GetNode(i);
@@ -376,6 +378,7 @@ namespace RydenCam.BranchCamEditor
                     GUI.backgroundColor = tempColor;
                     GUI.DrawTextureWithTexCoords(ActiveNode.windowRect, highlightTex, new Rect(0, 0, 1, 1.0f));
                 }
+                
 
                 //Drawing each node
                 NodeManager.Instance.GetNode(i).windowRect =
@@ -387,12 +390,13 @@ namespace RydenCam.BranchCamEditor
                 //Draw Preview Window next to node
                 dialoguePreviewWindow.DrawPreviewWindow(nodeCur);
             }
+            */
 
             EndWindows();
             GUI.backgroundColor = saved;
 
             //Draw Connections
-            ConnectionManager.Instance.DrawConnections();
+            //ConnectionManager.Instance.DrawConnections();
 
             GUI.EndGroup();
 
@@ -529,7 +533,7 @@ namespace RydenCam.BranchCamEditor
 
         private void SaveAs()
         {
-            if (!NodeManager.Instance.IsValidSequence()) return;
+            //if (!NodeManager.Instance.IsValidSequence()) return;
 
             if (LoadFile.IsSavePathValid(BranchConstants.SaveAsTitle, NodeManager.Instance.GetSequenceName()))
             {
@@ -613,7 +617,7 @@ namespace RydenCam.BranchCamEditor
 
         public static void OnClickRemoveConnection(Connection connection)
         {
-            ConnectionManager.Instance.Remove(connection);
+            //ConnectionManager.Instance.Remove(connection);
         }
 
         //Make black background more efficiently

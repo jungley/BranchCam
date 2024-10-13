@@ -209,7 +209,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             //Draws Points as Well
             EditorGUILayout.LabelField(SequenceName, labelStyleHead_Node);
-            PointOut[0].Draw();
+            //PointOut[0].Draw();
 #endif
         }
         public override bool isOverPoint(Vector2 mousePos)

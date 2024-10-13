@@ -68,8 +68,8 @@ namespace RydenCam.BranchCamEditor.Nodes
             }
 
 
-            PointIn.Draw();
-            PointOut[0].Draw();
+            //PointIn.Draw();
+            //PointOut[0].Draw();
 #endif
         }
         public override bool isOverPoint(Vector2 mousePos)

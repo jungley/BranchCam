@@ -81,6 +81,10 @@ namespace RydenCam.BranchCamEditor.Managers
             Nodes.Remove(node);
         }
 
+        public void LoadNodes(List<NodeCC> nodes) => nodes.ForEach(n => { Nodes.Add(n); });
+
+        public void AddNode(NodeCC node) => Nodes.Add(node);
+
         public NodeCC GetNodeCC(int index) => Nodes[index];
 
         public NodeCC FindNode(string id) => Nodes.ToList().Find(n => n.NodeId == id);
@@ -91,6 +95,19 @@ namespace RydenCam.BranchCamEditor.Managers
         {
             StartNode startNodeRef = Nodes.OfType<StartNode>().FirstOrDefault();
             return string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
+        }
+
+        public bool IsValidSequence()
+        {
+            if (Length == 0)
+            {
+                BranchLog.Log("Cannot save an empty file!");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
 
@@ -115,19 +132,6 @@ namespace RydenCam.BranchCamEditor.Managers
         public void AddNode(EditorBaseNode node) => nodes.Add(node);
         public EditorBaseNode GetNode(int index) => nodes[index];
 
-
-        public bool IsValidSequence()
-        {
-            if (Length == 0)
-            {
-                BranchLog.Log("Cannot save an empty file!");
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
 
 
         //This is for when the user clicks off or selects another node.

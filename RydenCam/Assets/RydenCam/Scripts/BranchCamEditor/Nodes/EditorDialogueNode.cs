@@ -230,8 +230,8 @@ namespace RydenCam.BranchCamEditor.Nodes
             EditorGUILayout.EndScrollView();
 
             //Draw Points
-            PointIn.Draw();
-            PointOut[0].Draw();
+            //PointIn.Draw();
+            //PointOut[0].Draw();
         }
 #endif
 

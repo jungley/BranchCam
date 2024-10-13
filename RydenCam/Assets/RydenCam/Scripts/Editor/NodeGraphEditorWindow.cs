@@ -12,6 +12,7 @@ using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using RydenCam.BranchCamEditor.Nodes.Connections;
+using System;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -105,7 +106,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawNodes();
 
-        ConnectionManager.Instance.DrawConnections();
+        DrawConnections();
 
         DrawInspector();
 
@@ -129,9 +130,24 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
+    public void DrawConnections()
+    {
+        
+        try
+        {
+            foreach (Connection connection in ConnectionManager.Instance.Connections)
+            {
+                //RS TODO
+                //Update this so just referencing the drawers list that gets updated when Connections gets updated
+                ConnectionDrawer drawer = new ConnectionDrawer(connection);
+                drawer.Draw();
+            }
+        }
+        catch (Exception) { }
+    }
 
 
-    [MenuItem("Window/Node Graph Editor-(BranchCamCC)")]
+[MenuItem("Window/Node Graph Editor-(BranchCamCC)")]
     public static void OpenWindow()
     {
         //SetUp UI
@@ -359,18 +375,14 @@ public class NodeGraphEditorWindow : EditorWindow
             else
             {
                 ConnectionPoint fromPoint = ActiveNodeDrawView.GetHandlePoint(mousePos);
-                //Opposite type and not of of the current node
 
-                if ((fromPoint.Type != viewModel?.SelectedConnectionPoint.Type) && !ActiveNodeDrawView.Node.ContainsPoint(viewModel?.SelectedConnectionPoint))
+                if (fromPoint.Type != viewModel?.SelectedConnectionPoint.Type)
                 {
-                    //Remove Connections
+                    //Remove Connections the point its connected to is already connected.
                     if (ConnectionManager.Instance.IsOutConnected(fromPoint, viewModel.SelectedConnectionPoint))
                     {
                         ConnectionManager.Instance.Remove(fromPoint, viewModel.SelectedConnectionPoint);
                     }
-                    fromPoint.ConnectedTo = viewModel.SelectedConnectionPoint;
-
-                    viewModel.SelectedConnectionPoint.ConnectedTo = fromPoint;
 
                     ConnectionManager.Instance.AddConnection(fromPoint, viewModel.SelectedConnectionPoint, OnClickRemoveConnection);
                     viewModel.IsDrawingHandle = false;

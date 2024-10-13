@@ -151,7 +151,7 @@ namespace RydenCam.BranchCamEditor.Nodes
                     EditorGUILayout.LabelField("Choice " + (i + 1), inspectorText, GUILayout.Width(195));
                     if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(20)))
                     {
-                        ConnectionManager.Instance.Remove(PointOut[i]);
+                       // ConnectionManager.Instance.Remove(PointOut[i]);
                         PointOut.RemoveAt(i);
                         DecisionOptions.RemoveAt(i);
                         adjustOutLocations();
@@ -252,7 +252,7 @@ namespace RydenCam.BranchCamEditor.Nodes
             GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
             EditorGUI.LabelField(new Rect(4, 4, nodeWidth, nodeHeight), "Decision", labelStyleHead_Node);
 
-            PointIn.Draw();
+            //PointIn.Draw();
 
             EditorGUILayout.Space();
 
@@ -287,7 +287,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
             for (int i = 0; i < PointOut.Count; i++)
             {
-                PointOut[i].Draw((i + 1));
+                //PointOut[i].Draw((i + 1));
             }
 #endif
         }

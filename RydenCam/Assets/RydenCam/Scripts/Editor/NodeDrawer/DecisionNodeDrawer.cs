@@ -159,6 +159,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             {
                 float xPos = startPos + i * spacing + widthConnectionPoint / 2;
                 Rect bounds = new Rect(xPos, yPos, widthConnectionPoint, heightConnectionPoint);
+                
                 Node.PointOut[i].LocalBounds = bounds;
 
                 DrawPoint(bounds, Node.PointOut[i].Color, Node.PointOut[i].ConnectedTo != null);
