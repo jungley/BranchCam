@@ -18,6 +18,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             {
                 if (arrowImageLoaded == null)
                 {
+                    //RS TODO Duplicate arrowImage loading
                     arrowImageLoaded = Resources.Load("arrowImage2") as Texture2D;
                 }
                 return arrowImageLoaded;

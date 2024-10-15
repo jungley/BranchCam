@@ -17,10 +17,8 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public string NodeId;
         public string ConnectedNodeId;
 
-
-
         public Rect LocalBounds;
-        public Color Color = new Color(0, 0.8f, 0, 1);
+        public static Color Color => new Color(0, 0.8f, 0, 1);
 
         private NodeCC node { get; set; }
         public NodeCC Node 

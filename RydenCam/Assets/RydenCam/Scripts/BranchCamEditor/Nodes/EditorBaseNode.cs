@@ -326,7 +326,7 @@ namespace RydenCam.BranchCamEditor.Nodes
 
         public static void OnClickRemoveConnection(Connection connection)
         {
-            ConnectionManager.Instance.Remove(connection);
+            //ConnectionManager.Instance.RemoveConnection(connection);
         }
 
         public virtual EditorBaseNode GetNextNode()

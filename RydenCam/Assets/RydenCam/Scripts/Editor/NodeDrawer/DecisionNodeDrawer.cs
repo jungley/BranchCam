@@ -160,9 +160,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 float xPos = startPos + i * spacing + widthConnectionPoint / 2;
                 Rect bounds = new Rect(xPos, yPos, widthConnectionPoint, heightConnectionPoint);
                 
+                //RS TODO Move bounds assignment to command eventually?
                 Node.PointOut[i].LocalBounds = bounds;
 
-                DrawPoint(bounds, Node.PointOut[i].Color, Node.PointOut[i].ConnectedTo != null);
+                DrawPoint(bounds, Node.PointOut[i].ConnectedTo != null);
 
                 Rect labelRect = bounds;
                 labelRect.x += 6; // Adjust it to be at the center of the point

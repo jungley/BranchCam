@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
-using RydenCam.SequenceData;
 using RydenCam.Common;
+using RydenCam.BranchCamEditor.Managers;
 
-//here
 namespace RydenCam.BranchCamEditor.Nodes.Connections
 {
     [ExecuteAlways]
@@ -16,11 +13,10 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public ConnectionPoint Point_B;
         public Action<Connection> OnClickRemoveConnection;
 
-        public Connection(ConnectionPoint pointA, ConnectionPoint pointB, Action<Connection> OnClickRemoveConnection)
+        public Connection(ConnectionPoint pointA, ConnectionPoint pointB)
         {
             this.Point_A = pointA;
             this.Point_B = pointB;
-            this.OnClickRemoveConnection = OnClickRemoveConnection;
         }
 
         public ConnectionPoint GetInPoint()
@@ -45,10 +41,7 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
 
         public void RemoveConnection()
         {
-            if (OnClickRemoveConnection != null)
-            {
-                OnClickRemoveConnection(this);
-            }
+            ConnectionManager.Instance.RemoveConnection(this);
         }
     }
 }

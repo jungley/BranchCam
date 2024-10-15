@@ -20,7 +20,6 @@ using System;
 public class NodeGraphEditorWindow : EditorWindow
 {
     private NodeGraphViewModel viewModel;
-
     private NodeDrawerBase ActiveNodeDrawView { get; set; }
 
     //Window Properties
@@ -67,9 +66,8 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    static bool resourcesInitalized { get; set; } = false;
-
     List<NodeDrawerBase> NodeDrawers { get; set; }
+    List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
 
 
@@ -82,6 +80,7 @@ public class NodeGraphEditorWindow : EditorWindow
     //Text Style
     private static GUIStyle inspectorText;
 
+    static bool resourcesInitalized { get; set; } = false;
 
     //Ribbon Properties
     private bool showDropdown = false;
@@ -130,21 +129,7 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    public void DrawConnections()
-    {
-        
-        try
-        {
-            foreach (Connection connection in ConnectionManager.Instance.Connections)
-            {
-                //RS TODO
-                //Update this so just referencing the drawers list that gets updated when Connections gets updated
-                ConnectionDrawer drawer = new ConnectionDrawer(connection);
-                drawer.Draw();
-            }
-        }
-        catch (Exception) { }
-    }
+
 
 
 [MenuItem("Window/Node Graph Editor-(BranchCamCC)")]
@@ -204,9 +189,11 @@ public class NodeGraphEditorWindow : EditorWindow
 
         NodeManager.Instance.Nodes.CollectionChanged += OnNodesChanged;
         NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
+        ConnectionManager.Instance.Connections.CollectionChanged += OnConnectionsChanged;
 
         //Draw Nodes
         UpdateNodeDrawers();
+        UpdateConnectionDrawers();
     }
 
     // Called when the window is disabled or closed
@@ -214,12 +201,23 @@ public class NodeGraphEditorWindow : EditorWindow
     {
         NodeManager.Instance.Nodes.CollectionChanged -= OnNodesChanged;
         NodeManager.Instance.PropertyChanged -= OnActiveNodeUpdated;
+        ConnectionManager.Instance.Connections.CollectionChanged -= OnConnectionsChanged;
+    }
+
+    private void OnConnectionsChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateConnectionDrawers();
     }
     
 
     private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         UpdateNodeDrawers();
+    }
+
+    private void UpdateConnectionDrawers()
+    {
+        ConnectionDrawers = ConnectionManager.Instance.Connections.Select(connection => new ConnectionDrawer(connection)).ToList();
     }
 
     private void UpdateNodeDrawers()
@@ -251,6 +249,14 @@ public class NodeGraphEditorWindow : EditorWindow
             NodeDrawers[index]?.DrawNode( index);
         }
         EndWindows();
+    }
+
+    public void DrawConnections()
+    {
+        foreach (var connectionDrawer in ConnectionDrawers)
+        {
+            connectionDrawer.Draw();
+        }
     }
 
     private void DrawRibbon()
@@ -352,12 +358,6 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-
-    public static void OnClickRemoveConnection(Connection connection)
-    {
-        ConnectionManager.Instance.Remove(connection);
-    }
-
     //mayve move to viewModel?
     public void HandleConnectionPointSelected(Vector2 mousePos)
     {
@@ -381,17 +381,17 @@ public class NodeGraphEditorWindow : EditorWindow
                     //Remove Connections the point its connected to is already connected.
                     if (ConnectionManager.Instance.IsOutConnected(fromPoint, viewModel.SelectedConnectionPoint))
                     {
-                        ConnectionManager.Instance.Remove(fromPoint, viewModel.SelectedConnectionPoint);
+                        ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, viewModel.SelectedConnectionPoint);
                     }
 
-                    ConnectionManager.Instance.AddConnection(fromPoint, viewModel.SelectedConnectionPoint, OnClickRemoveConnection);
+                    ConnectionManager.Instance.AddConnection(fromPoint, viewModel.SelectedConnectionPoint);
                     viewModel.IsDrawingHandle = false;
                 }
             }
         }
     }
 
-
+    //RS TODO - move into ConnectionDrawer
     private void DrawConnectionCurve()
     {
         Event e = Event.current;

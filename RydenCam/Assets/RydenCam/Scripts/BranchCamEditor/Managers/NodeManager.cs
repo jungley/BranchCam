@@ -9,7 +9,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace RydenCam.BranchCamEditor.Managers
-{    
+{
+    [ExecuteAlways]
     public class NodeManager : INotifyPropertyChanged
     {
         private static NodeManager instance;
@@ -25,13 +26,18 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private NodeManager()
         {
             Nodes = new ObservableCollection<NodeCC>();
         }
 
-
-        public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<NodeCC> Nodes { get; set; }
 
         private NodeCC activeNode { get; set; }
@@ -47,10 +53,6 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public static bool StartNodeAdded { get; set; }
 
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         public List<ActorInfo> ActorsInScene()
         {

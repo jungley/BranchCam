@@ -136,9 +136,9 @@ namespace Assets.RydenCam.Scripts.Editor
 
 
         
-        protected void DrawPoint(Rect bounds, Color color, bool isConnected)
+        protected void DrawPoint(Rect bounds, bool isConnected)
         {
-            Handles.color = color;
+            Handles.color = ConnectionPoint.Color;
             Handles.DrawSolidDisc(bounds.center, Vector3.forward, 7.0f);
             if (isConnected)
             {
@@ -153,7 +153,7 @@ namespace Assets.RydenCam.Scripts.Editor
             if (Node.PointIn != null)
             {
                 Rect pointBoundsIn = new Rect((Node.NodeWidth / 2 - 10), 0, widthConnectionPoint, heightConnectionPoint);
-                DrawPoint(pointBoundsIn, Node.PointIn.Color, Node.PointIn.ConnectedTo != null);
+                DrawPoint(pointBoundsIn, Node.PointIn.ConnectedTo != null);
             }
 
             //Draw Out Point
@@ -163,7 +163,9 @@ namespace Assets.RydenCam.Scripts.Editor
         protected virtual void DrawOutPoint()
         {
             Rect pointBoundsOut = new Rect((Node.NodeWidth / 2 - 10), Node.NodeHeight - 16, widthConnectionPoint, heightConnectionPoint);
-            DrawPoint(pointBoundsOut, Node.PointOut.FirstOrDefault().Color, Node.PointOut.FirstOrDefault().ConnectedTo != null);
+            //RS TODO Move to command eventually? 
+            Node.PointOut.FirstOrDefault().LocalBounds = pointBoundsOut;
+            DrawPoint(pointBoundsOut, Node.PointOut.FirstOrDefault().ConnectedTo != null);
         }
     }
 }

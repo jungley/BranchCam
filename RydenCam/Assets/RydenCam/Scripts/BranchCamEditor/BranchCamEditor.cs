@@ -445,17 +445,19 @@ namespace RydenCam.BranchCamEditor
                     }
                     else
                     {
-                        SaveFile.SaveConversation();
+                        //SaveFile.SaveConversation();
                     }
 
                 }
                 if (GUILayout.Button("Load", GUILayout.Width(65), GUILayout.Height(30)))
                 {
+                    /*
                     if(LoadFile.HasDialogueFile(BranchConstants.LoadFolderPanelTitle, BranchConstants.LoadFolderPanelTitle))
                     {
                         EditorController.Instance.ResetEverything();
                         LoadFile.LoadSaveables();
                     }
+                    */
                 }
 
                 if (GUILayout.Button("Graph View", GUILayout.Width(85), GUILayout.Height(30)))

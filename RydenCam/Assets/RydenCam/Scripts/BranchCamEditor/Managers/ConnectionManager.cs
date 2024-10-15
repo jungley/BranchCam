@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes.Connections;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using Assets.RydenCam.Scripts.BranchCamCC;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 
 namespace RydenCam.BranchCamEditor.Managers
 {
-    [System.Serializable]
     [ExecuteAlways]
-    public class ConnectionManager
+    public class ConnectionManager : INotifyPropertyChanged
     {
-        public List<Connection> Connections;
-        
+        public ObservableCollection<Connection> Connections;
+
         private static ConnectionManager instance;
         public static ConnectionManager Instance
         {
@@ -28,57 +29,60 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private ConnectionManager()
         {
-            Connections = new List<Connection>();
-        } 
-        
+            Connections = new ObservableCollection<Connection>();
+        }
 
         public void Clear()
         {
             Connections.Clear();
         }
 
-        public void AddConnection(ConnectionPoint fromPoint, ConnectionPoint handlePoint, Action<Connection> action)
+        public void AddConnection(ConnectionPoint fromPoint, ConnectionPoint handlePoint)
         {
             if (IsOutConnected(fromPoint, handlePoint))
             {
-                Remove(fromPoint, handlePoint);
+                RemoveConnectionsFromPoints(fromPoint, handlePoint);
             }
 
             //Points Reference each other
             fromPoint.ConnectedTo = handlePoint;
             handlePoint.ConnectedTo = fromPoint;
 
-
-            Connection newConnection = new Connection(fromPoint, handlePoint, action);
+            Connection newConnection = new Connection(fromPoint, handlePoint);
             Connections.Add(newConnection);
         }
 
-        public void Remove(Connection connection)
+        public void RemoveConnection(Connection connection)
         {
             connection.Point_A.ConnectedTo = null;
             connection.Point_B.ConnectedTo = null;
-            
 
             Connections.Remove(connection);
-        }
 
-        public static void OnClickRemoveConnection(Connection connection)
-        {
-            Instance.Remove(connection);
+            reassociateConnctions(Connections);
         }
 
 
-        //RSTODO Not sure if this method is necessary with the below Remove?
-        public void Remove(ConnectionPoint A, ConnectionPoint B)
+        public void RemoveConnectionsFromPoints(ConnectionPoint A, ConnectionPoint B)
         {
             A.ConnectedTo = null;
             B.ConnectedTo = null;
 
-            Connections.RemoveAll(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B));
+            Connections.ToList().RemoveAll(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B));
+
+            reassociateConnctions(Connections);
         }
-        
+
+
 
         public void Remove(ConnectionPoint A)
         {
@@ -86,7 +90,7 @@ namespace RydenCam.BranchCamEditor.Managers
             {
                 if (connection.ContainsPoint(A))
                 {
-                    Remove(connection);
+                    RemoveConnection(connection);
                     return;
                 }
             }
@@ -109,7 +113,7 @@ namespace RydenCam.BranchCamEditor.Managers
                     {
                         if (connectedNode != null)
                         {
-                            AddConnection(pointOut, connectedNode.PointIn, OnClickRemoveConnection);
+                            AddConnection(pointOut, connectedNode.PointIn);
                         }
                     }
                 }
@@ -139,11 +143,16 @@ namespace RydenCam.BranchCamEditor.Managers
             // Remove identified connections
             foreach (var connection in connectionsToRemove)
             {
-                Remove(connection);
+                RemoveConnection(connection);
             }
-            
+
+            reassociateConnctions(Connections);
+        }
+
+        private void reassociateConnctions(ObservableCollection<Connection> Connections1)
+        {
             //Reassociate lost Connections
-            foreach(var connection in Connections)
+            foreach (var connection in Connections1)
             {
                 var pointA = connection.Point_A;
                 var pointB = connection.Point_B;
@@ -151,5 +160,7 @@ namespace RydenCam.BranchCamEditor.Managers
                 pointB.ConnectedTo = pointA;
             }
         }
+
     }
 }
+
