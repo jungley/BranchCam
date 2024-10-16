@@ -16,7 +16,7 @@ namespace RydenCam.Common
         ConditionalNode
     }
 
-    public enum ConnectionPointType { In, Out }
+    public enum ConnectionPointType { In, Out, UserHandleOnGUI }
     public enum Side { Left, Right };
     public enum CameraGoal { Portrait, OverShoulder, FrameShare, Custom };
     public enum CameraDistance { Close, Mid, Far };

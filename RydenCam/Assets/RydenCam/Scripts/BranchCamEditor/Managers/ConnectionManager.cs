@@ -77,7 +77,8 @@ namespace RydenCam.BranchCamEditor.Managers
             A.ConnectedTo = null;
             B.ConnectedTo = null;
 
-            Connections.ToList().RemoveAll(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B));
+            var connectionsToRemove = Connections.Where(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B)).ToList();
+            connectionsToRemove.ForEach(connection => Connections.Remove(connection));
 
             reassociateConnctions(Connections);
         }

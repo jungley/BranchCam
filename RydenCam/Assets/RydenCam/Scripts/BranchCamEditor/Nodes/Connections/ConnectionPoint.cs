@@ -55,6 +55,8 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
             Type = type;
 
             // Determine the local bounds based on the type of connection point
+            if (node == null) return;
+
             if (type == ConnectionPointType.In)
             {
                 // For input connection points (In), position the bounds at the top center of the node
@@ -72,11 +74,26 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
             ConnectedTo = null;
         }
 
-        public Vector2 GetGlobalPoint()
+
+        private Vector2 globalPoint { get; set; }
+        public Vector2 GlobalPoint
         {
-            float globalXPos = (Node.EditorPosition.x) + LocalBounds.center.x;
-            float globalYPos = (Node.EditorPosition.y) + LocalBounds.center.y;
-            return new Vector2(globalXPos, globalYPos);
+            get
+            {
+                if (Node != null)
+                { 
+                    float globalXPos = (Node.EditorPosition.x) + LocalBounds.center.x;
+                    float globalYPos = (Node.EditorPosition.y) + LocalBounds.center.y;
+                    globalPoint = new Vector2(globalXPos, globalYPos);
+                }
+
+                return globalPoint;
+
+            }
+            set
+            {
+                globalPoint = value;
+            }
         }
 
     }

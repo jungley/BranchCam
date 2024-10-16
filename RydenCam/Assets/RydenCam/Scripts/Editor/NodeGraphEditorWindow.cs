@@ -39,18 +39,6 @@ public class NodeGraphEditorWindow : EditorWindow
             return _tt;
         }
     }
-    static Texture2D _arrowImage { get; set; }
-    static Texture2D arrowImage
-    {
-        get
-        {
-            if(_arrowImage == null)
-            {
-                _arrowImage = Resources.Load("arrowImage2") as Texture2D;
-            }
-            return _arrowImage;
-        }
-    }
     static Texture2D _targetTextureInspector { get; set; }
     static Texture2D TargetTextureInspector
     {
@@ -99,7 +87,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawRibbon();
 
-        DrawConnectionCurve();
+        DrawUserDragConnectionCurve();
 
         HandleInputClicks();
 
@@ -217,7 +205,9 @@ public class NodeGraphEditorWindow : EditorWindow
 
     private void UpdateConnectionDrawers()
     {
-        ConnectionDrawers = ConnectionManager.Instance.Connections.Select(connection => new ConnectionDrawer(connection)).ToList();
+        ConnectionDrawers = ConnectionManager.Instance.Connections
+            .Select(connection => new ConnectionDrawer(connection))
+            .ToList();
     }
 
     private void UpdateNodeDrawers()
@@ -391,56 +381,17 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    //RS TODO - move into ConnectionDrawer
-    private void DrawConnectionCurve()
+    private void DrawUserDragConnectionCurve()
     {
-        Event e = Event.current;
-        Vector2 mousePos = e.mousePosition;
-
         if (viewModel.IsDrawingHandle)
         {
-            Vector2 hpoint = viewModel.SelectedConnectionPoint.GetGlobalPoint();
-            Vector3 startPos = new Vector3(hpoint.x, hpoint.y, 0);
-            Vector3 endPos = new Vector3(mousePos.x, mousePos.y, 0);
+            var selectedPoint = viewModel.SelectedConnectionPoint;
+            var globalPoint = Event.current.mousePosition;
 
-            //Goto Curve
-            //If making line above the point
-            if (viewModel.SelectedConnectionPoint.Type == ConnectionPointType.Out
-                && hpoint.y > endPos.y)
-            {
-                Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
-                float arc;
-                float dist = Vector3.Distance(endPos, startPos);
-                if (startPos.x <= endPos.x)
-                {
-                    arc = -600.0f * Mathf.Clamp01(dist / 250.0f);
-                }
-                else
-                {
-                    arc = 600.0f * Mathf.Clamp01(dist / 250.0f);
-                }
-                center.x += arc;
-                Vector3[] vector3array = new Vector3[] { startPos, center, endPos };
-                vector3array = Curver.MakeSmoothCurve(vector3array, 90.0f);
-                Handles.color = Color.green;
-                Handles.DrawAAPolyLine(5.0f, vector3array);
-            }
-            else
-            {
-                Handles.DrawBezier(startPos, endPos, startPos, endPos, Color.green, null, 5);
-                Handles.color = Color.green;
-
-                //Calculate rotation from out point to in point 
-                float angle = Mathf.Atan2(endPos.y - startPos.y, endPos.x - startPos.x) * 180 / Mathf.PI;
-                angle -= 90;
-                GUIUtility.RotateAroundPivot(angle, endPos);
-                GUI.DrawTexture(new Rect(endPos.x - 10, endPos.y, 20, 20), arrowImage, ScaleMode.StretchToFill, true, 20.0F);
-                GUIUtility.RotateAroundPivot(-angle, endPos);
-            }
+            var drawer = new ConnectionDrawer();
+            drawer.DrawFromUserHandle(selectedPoint, globalPoint);
         }
     }
-
-
 
 
     private void ShowContextMenu(Vector2 mousePosition)
@@ -512,46 +463,5 @@ public class NodeGraphEditorWindow : EditorWindow
         Handles.color = Color.white;
         Handles.EndGUI();
 
-    }
-}
-
-//CURVE CLASS FROM
-//https://answers.unity.com/questions/392606/line-drawing-how-can-i-interpolate-between-points.html
-public static class Curver
-{
-    //arrayToCurve is original Vector3 array, smoothness is the number of interpolations. 
-    public static Vector3[] MakeSmoothCurve(Vector3[] arrayToCurve, float smoothness)
-    {
-        List<Vector3> points;
-        List<Vector3> curvedPoints;
-        int pointsLength = 0;
-        int curvedLength = 0;
-
-        if (smoothness < 1.0f) smoothness = 1.0f;
-
-        pointsLength = arrayToCurve.Length;
-
-        curvedLength = (pointsLength * Mathf.RoundToInt(smoothness)) - 1;
-        curvedPoints = new List<Vector3>(curvedLength);
-
-        float t = 0.0f;
-        for (int pointInTimeOnCurve = 0; pointInTimeOnCurve < curvedLength + 1; pointInTimeOnCurve++)
-        {
-            t = Mathf.InverseLerp(0, curvedLength, pointInTimeOnCurve);
-
-            points = new List<Vector3>(arrayToCurve);
-
-            for (int j = pointsLength - 1; j > 0; j--)
-            {
-                for (int i = 0; i < j; i++)
-                {
-                    points[i] = (1 - t) * points[i] + t * points[i + 1];
-                }
-            }
-
-            curvedPoints.Add(points[0]);
-        }
-
-        return (curvedPoints.ToArray());
     }
 }

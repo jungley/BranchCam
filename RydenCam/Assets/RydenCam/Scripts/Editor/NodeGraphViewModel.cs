@@ -140,15 +140,4 @@ public class NodeGraphViewModel
         NodeManager.Instance.Nodes.Add(newNode);
         NodeManager.Instance.ActiveNode = newNode;
     }
-
-    public void CreateConnection(NodeCC startNode, NodeCC endNode)
-    {
-
-    }
-
-    public void RemoveConnection(NodeCC startNode, NodeCC endNode)
-    {
-
-    }
-
 }

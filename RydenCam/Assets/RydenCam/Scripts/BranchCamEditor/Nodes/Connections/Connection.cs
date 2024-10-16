@@ -33,6 +33,13 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
                 null;
         }
 
+        public ConnectionPoint GetUserHandlePoint()
+        {
+            return Point_A?.Type == ConnectionPointType.UserHandleOnGUI ? Point_A :
+                    Point_B?.Type == ConnectionPointType.UserHandleOnGUI ? Point_B :
+                null;
+        }
+
 
         public bool ContainsPoint(ConnectionPoint point)
         {
