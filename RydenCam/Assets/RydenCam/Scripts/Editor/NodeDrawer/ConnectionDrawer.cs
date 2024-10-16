@@ -17,9 +17,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             renderer = new ConnectionRenderer();
         }
 
-        public void Draw(bool isUserDrawing = false)
+        public void Draw()
         {
-            renderer.Draw(connection, isUserDrawing);
+            renderer.Draw(connection);
         }
 
         public void DrawFromUserHandle(ConnectionPoint selectedConnectionPoint, Vector2 mousePosition)
@@ -50,7 +50,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             }
         }
 
-        public void Draw(Connection connection, bool isUserDrawing)
+        public void Draw(Connection connection, bool isUserDrawing = false)
         {
             Vector2 inGlobalPoint = GetInGlobalPoint(connection, isUserDrawing);
             Vector2 outGlobalPoint = GetOutGlobalPoint(connection, isUserDrawing);
@@ -148,10 +148,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 connection.Point_B.ClearPointer();
                 connection.RemoveConnection();
             }
-            
-            
-
-            Handles.color = Color.green;
             return;
         }
 
@@ -159,6 +155,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         {
             Vector2 midpoint = (inGlobalPoint + outGlobalPoint) * 0.5f;
 
+            Handles.color = Color.green;
             if (Handles.Button(new Vector3(midpoint.x, midpoint.y, 0), Quaternion.identity, 8, 20, Handles.RectangleHandleCap))
             {
                 connection.Point_A.ClearPointer();
