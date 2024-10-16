@@ -17,7 +17,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         private GUIStyle decisionTextArea { get; set; }
         private Vector2 scrollPosInspector { get; set; }
-        private int ActorIndex { get; set; }
+        private int ActorEditorDropdownIndex { get; set; }
 
 
         public DialogueNodeDrawer(NodeCC _node): base(_node)
@@ -36,6 +36,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             ColorUtility.TryParseHtmlString("#1700FF", out Color colorref);
             NodeColor = colorref;
+
+            ActorEditorDropdownIndex = node?.NodeConvodata?.Actor?.ActorName is string actorName
+                ? NodeManager.Instance.ActorsInScene().FindIndex(actor => actor.ActorName == actorName)
+                : -1;
+
         }
 
         public override void DrawNode(int index)
@@ -82,13 +87,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             EditorGUILayout.Space();
             GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 
-            int indexx = EditorGUILayout.Popup(ActorIndex,  NodeManager.Instance.ActorsInScene().Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+            int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.ActorsInScene().Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
             EditorGUILayout.Space(20);
             //Call when changed
-            if (indexx != ActorIndex)
+            if (indexx != ActorEditorDropdownIndex)
             {
                 command.AssignNewActor(indexx);
-                ActorIndex = indexx;
+                ActorEditorDropdownIndex = indexx;
             }
 
             if (GUILayout.Button("Add Dialogue", GUILayout.Width(100), GUILayout.Height(25)))

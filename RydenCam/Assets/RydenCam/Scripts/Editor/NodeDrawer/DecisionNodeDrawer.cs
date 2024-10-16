@@ -20,7 +20,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
 
-        private int ActorIndex { get; set; }
+        private int ActorEditorDropdownIndex { get; set; }
         public bool ShowPreviousDialog { get; set; }
 
         private Vector2 scrollPosInspector { get; set; }
@@ -44,6 +44,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             decisionOptionNumber = new GUIStyle(labelStyleHead_Node);
             decisionOptionNumber.fontSize = 13;
             decisionOptionNumber.normal.textColor = Color.black;
+
+            ActorEditorDropdownIndex = node?.NodeConvodata?.Actor?.ActorName is string actorName
+                ? NodeManager.Instance.ActorsInScene().FindIndex(actor => actor.ActorName == actorName)
+                : -1;
         }
 
         public override void DrawNode(int index)
@@ -96,12 +100,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             EditorGUILayout.Space();
             GUILayout.Label("Actor", inspectorText, GUILayout.Width(150));
 
-            int indexx = EditorGUILayout.Popup(ActorIndex,  NodeManager.Instance.ActorsInScene().Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+            int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex,  NodeManager.Instance.ActorsInScene().Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
 
-            if(indexx != ActorIndex)
+            if(indexx != ActorEditorDropdownIndex)
             {
                 command.AssignNewActor(indexx);
-                ActorIndex = indexx;
+                ActorEditorDropdownIndex = indexx;
             }
 
             using (var horizontalScopeShowPreviewOption = new GUILayout.HorizontalScope())
