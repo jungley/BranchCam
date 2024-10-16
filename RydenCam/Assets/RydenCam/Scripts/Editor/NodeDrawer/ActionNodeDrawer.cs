@@ -11,7 +11,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
     internal class ActionNodeDrawer : NodeDrawerBase
     {
-
         private ActionNode node { get; set; }
         private ActionNodeCommand command { get; set; }
 
@@ -19,15 +18,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         private List<GameActionData> selectedGameActionDatas { get; set; }
 
-
-
         public ActionNodeDrawer(NodeCC _node) : base(_node)
         {
             node = _node as ActionNode;
             command = new ActionNodeCommand(_node);
 
-            selectedGameActionDatas = node.GameActionDatas;
-
+            selectedGameActionDatas = node.GameActionDatas ?? new List<GameActionData>();
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -45,6 +41,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25f), HeaderTexture, new Rect(0, 0, 1, 1));
                     EditorGUI.LabelField(new Rect(4, 4, node.NodeWidth, node.NodeHeight), "Action", labelStyleHead_Node);
 
+
+                    //Display Selected Methods
+                    foreach (GameActionData data in node.GameActionDatas)
+                    {
+                        EditorGUILayout.LabelField(data.SelectedMethodName, labelStyleHead_Node);
+                    }
 
                     Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                     if (GUI.Button(deleteButtonRect, "X"))

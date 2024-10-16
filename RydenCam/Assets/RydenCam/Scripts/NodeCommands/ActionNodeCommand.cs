@@ -29,8 +29,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             GameActionData actionData = node.GameActionDatas[actionDataIndex];
             actionData.SelectedMethodIndex = methodIndex;
             actionData.ParameterInfo = actionData.SelectedMethod.GetParameters();
+            actionData.SelectedMethodName = actionData.MethodNames[methodIndex];
             actionData.SelectedMethodArgValues = new string[actionData.ParameterInfo.Length];
-
         }
 
         public void AddCommand()

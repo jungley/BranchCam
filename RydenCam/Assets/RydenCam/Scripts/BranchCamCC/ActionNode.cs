@@ -14,14 +14,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
     [Serializable]
     public class GameActionData
     {
-        //Generic Properties
-        [SerializeField]
-        public string GameObjectName;
-
-        [JsonIgnore]
         private GameObject _gameObj;
 
-        [JsonIgnore]
         public GameObject GameObj
         {
             get
@@ -35,49 +29,57 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             set
             {
                 _gameObj = value;
-                GameObjectName = _gameObj?.name;
-                MonoBehaviours = GameObj.GetComponents<MonoBehaviour>();
-                Methods = MonoBehaviours
-                    .SelectMany(mb => mb.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
-                    .ToArray();
-
-                MethodNames = Methods
-                .Select(m => m.Name)
-                .ToList();
-
+                AssignLoadedValues();
             }
         }
 
-        [JsonIgnore]
-        public MethodInfo[] Methods { get; set; }
-        [JsonIgnore]
-        public List<string> MethodNames { get; set; }
-        [JsonIgnore]
-        public MonoBehaviour[] MonoBehaviours { get; set; }
-        [JsonIgnore]
-        public ParameterInfo[] ParameterInfo;
+        public void AssignLoadedValues()
+        {
+            if (GameObj == null) return;
 
-        //Selected Properties
+            GameObjectName = GameObj?.name;
+            MonoBehaviours = GameObj.GetComponents<MonoBehaviour>();
+            Methods = MonoBehaviours
+                .SelectMany(mb => mb.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+                .ToArray();
+            MethodNames = Methods
+            .Select(m => m.Name)
+            .ToList();
+
+            if (SelectedMethodIndex >= 0 && SelectedMethodIndex < Methods.Length)
+            {
+                ParameterInfo = Methods[SelectedMethodIndex]?.GetParameters();
+            }
+        }
+
+        public MethodInfo SelectedMethod
+        {
+            get
+            {
+                if(Methods == null || SelectedMethodIndex < 0 || SelectedMethodIndex >= Methods.Length)
+                {
+                    return null;
+                }
+                return Methods[SelectedMethodIndex];
+            }
+        }
+
+
+        public MethodInfo[] Methods { get; set; }
+        public List<string> MethodNames { get; set; }
+        public MonoBehaviour[] MonoBehaviours { get; set; }
+        public ParameterInfo[] ParameterInfo { get; set; }
+
+        //Saveable Fields
+        [SerializeField]
+        public string GameObjectName;
         [SerializeField]
         public string SelectedMethodName;
         [SerializeField]
         public int SelectedMethodIndex;
         [SerializeField]
         public string[] SelectedMethodArgValues;
-        [JsonIgnore]
-        public MethodInfo SelectedMethod
-        {
-            get
-            {
-                return (Methods == null
-                 || SelectedMethodIndex < 0
-                 || SelectedMethodIndex >= Methods.Length
-                 ) ? null 
-                 
-                 : Methods[SelectedMethodIndex];
 
-            }
-        }
 
         public GameActionData()
         {
@@ -85,14 +87,21 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         }
     }
 
-
+    [Serializable]
     public class ActionNode : NodeCC
     {
+        public override float NodeHeight
+        {
+            get
+            {
+                var namesCount = GameActionDatas.Where(x => !string.IsNullOrEmpty(x.SelectedMethodName)).Count();
+                return namesCount > 2 ? namesCount * 20 + 50: 80;
+            }
+        }
 
-        public override float NodeHeight => 70; //needs to eventually dynamically change?
 
 
-        public List<GameActionData> GameActionDatas { get; set; }
+        public List<GameActionData> GameActionDatas;
 
         public ActionNode(Vector2 position) : base(position)
         {

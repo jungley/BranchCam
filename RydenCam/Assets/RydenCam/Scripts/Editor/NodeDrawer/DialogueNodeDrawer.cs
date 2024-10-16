@@ -27,8 +27,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(inspectorText, labelStyleHead_Panel);
 
-            //Editor Window Properties
-
             //Text
             decisionTextArea = new GUIStyle(EditorStyles.textArea);
             decisionTextArea.wordWrap = true;

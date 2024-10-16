@@ -49,6 +49,7 @@ namespace RydenCam.BranchCamEditor.Serialization
 
                                 case NodeType.ActionNode:
                                     ActionNode actionNode = JsonUtility.FromJson<ActionNode>(nodeJsonContent.JsonString);
+                                    actionNode.GameActionDatas.ForEach(data => data.AssignLoadedValues());
                                     deserializedNodes.Add(actionNode);
                                     break;
 

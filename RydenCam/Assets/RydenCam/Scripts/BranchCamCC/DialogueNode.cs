@@ -12,10 +12,10 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamCC
 {
+    [System.Serializable]
     public class DialogueNode : NodeCC, ITalkable 
     {
-        //Field needed for Saving/Deserizalzing class as JSON
-
+        [SerializeField]
         public ConversationData NodeConvodataField;
 
         public ConversationData NodeConvodata
@@ -29,7 +29,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public DialogueNode(Vector2 position) : base(position)
         {
             TypeOfNode = NodeType.DialogueNode;
-            //NodeHeight = 200;
             PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out)};
             NodeConvodata = new ConversationData();
