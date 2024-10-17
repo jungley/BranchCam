@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;

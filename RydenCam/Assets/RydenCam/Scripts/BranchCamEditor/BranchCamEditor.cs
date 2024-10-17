@@ -9,17 +9,14 @@ using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 using System.IO;
 using RydenCam.BranchCamEditor.PreviewRender;
-
+/*
 namespace RydenCam.BranchCamEditor
 {
-
+    /*
 #if UNITY_EDITOR
     /* The Window that holds all the branching dialogue nodes */
-    [ExecuteAlways]
-    public class BranchCamEditor : EditorWindow
-    {
-        private bool showDropdown = false;
 
+        /*
         private static EditorBaseNode activeNode;
         public static EditorBaseNode ActiveNode
         {
@@ -33,6 +30,8 @@ namespace RydenCam.BranchCamEditor
                 }
             }
         }
+        */
+        /*
         private Vector2 mousePos;
         private static Rect InspectorPanelArea;
         private static Rect ButtonPanelArea;
@@ -139,11 +138,13 @@ namespace RydenCam.BranchCamEditor
         {
             /*------------------------------------*/
             //Background for Inspector
+            /*
             panelstyle_inspector = new GUIStyle();
             panelstyle_inspector.normal.background = TargetTextureInspector;
 
 
             /*------------------------------------*/
+            /*
             //Button Header Texture
             Texture2D targetTextureButtonHeader = new Texture2D(1, 1);
             targetTextureButtonHeader.SetPixel(0, 0, Color.gray);
@@ -155,6 +156,7 @@ namespace RydenCam.BranchCamEditor
             /*------------------------------------*/
 
             //Text
+            /*
             inspectorText = new GUIStyle();
             inspectorText.normal.textColor = Color.white;
             inspectorText.fontSize = 15;
@@ -252,7 +254,7 @@ namespace RydenCam.BranchCamEditor
         }
         */
 
-
+    /*
         void OnGUI()
         {
 
@@ -363,6 +365,8 @@ namespace RydenCam.BranchCamEditor
                     }
                 }
             }
+            */
+    /*
 
             //Draw Each Node
             Color saved = GUI.backgroundColor;
@@ -395,6 +399,7 @@ namespace RydenCam.BranchCamEditor
                 dialoguePreviewWindow.DrawPreviewWindow(nodeCur);
             }
             */
+            /*
 
             EndWindows();
             GUI.backgroundColor = saved;
@@ -462,7 +467,8 @@ namespace RydenCam.BranchCamEditor
                         LoadFile.LoadSaveables();
                     }
                     */
-                }
+                
+/*
 
                 if (GUILayout.Button("Graph View", GUILayout.Width(85), GUILayout.Height(30)))
                 {
@@ -509,7 +515,8 @@ namespace RydenCam.BranchCamEditor
             }
 
         }
-
+    */
+/*
         private void HandleFileDropdownOption(string option)
         {
             switch (option)
@@ -575,7 +582,8 @@ namespace RydenCam.BranchCamEditor
 
         void DrawNodeWindow(int index)
         {
-            EditorBaseNode Node = NodeManager.Instance.GetNode(index);
+            /*
+            //EditorBaseNode Node = NodeManager.Instance.GetNode(index);
 
             // Button to delete
             Rect deleteButtonRect = new Rect(Node.nodeWidth - 20, 0, 20, 20);
@@ -588,13 +596,15 @@ namespace RydenCam.BranchCamEditor
                 ActiveNode = null;
             }
             GUI.DragWindow();
+            */
+/*
         }
 
         //FOR ADDING NEW node
         void ContextCallback(object obj)
         {
             string clb = obj.ToString();
-
+            /*
             switch (clb)
             {
                 case ("startNode"):
@@ -619,8 +629,10 @@ namespace RydenCam.BranchCamEditor
                     ActiveNode = actionNode;
                     break;
             }
+            */
+/*
         }
-
+        /*
         public static void OnClickRemoveConnection(Connection connection)
         {
             //ConnectionManager.Instance.Remove(connection);
@@ -659,4 +671,5 @@ namespace RydenCam.BranchCamEditor
         }
     }
 #endif
-}
+    */
+

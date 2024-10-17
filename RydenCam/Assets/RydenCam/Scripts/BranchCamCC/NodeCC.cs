@@ -1,9 +1,7 @@
-﻿using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes.Connections;
+﻿using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 

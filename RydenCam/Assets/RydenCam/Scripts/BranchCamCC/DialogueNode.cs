@@ -1,13 +1,7 @@
-﻿using RydenCam.BranchCamEditor.BranchCam;
-using RydenCam.BranchCamEditor.Controllers;
-using RydenCam.BranchCamEditor.Nodes.Connections;
+﻿using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using RydenCam.SequenceData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamCC

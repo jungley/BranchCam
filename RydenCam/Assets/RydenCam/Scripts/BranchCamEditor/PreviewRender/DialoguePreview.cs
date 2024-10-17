@@ -1,16 +1,4 @@
-using Assets.RydenCam.Scripts.BranchCamCC;
-using RydenCam.BranchCamEditor.BranchCam;
-using RydenCam.BranchCamEditor.Controllers;
-using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes;
-using RydenCam.BranchCamEditor.PreviewRender;
-using RydenCam.Common;
-using RydenCam.SequenceData;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
@@ -40,8 +28,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return blankTexture;
             }
         }
-
-        public void DrawPreviewWindow(EditorBaseNode node)
+        /*
+        public void DrawPreviewWindow(NodeCC node)
         {
 
             var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
@@ -65,5 +53,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             }
         }
+        */
+
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System.Linq;
@@ -115,25 +114,7 @@ namespace RydenCam.BranchCamEditor.Managers
         public StartNode StartNode => Nodes.ToList().Find(n => n.TypeOfNode == NodeType.StartNode) as StartNode;
 
 
-        ////////////////////////////////////////////////////////////////////////////
-
-
-        private List<EditorBaseNode> nodes;
-
-        public List<EditorBaseNode> GetList() => nodes;
-        public void RemoveNode(EditorBaseNode node)
-        {
-            if (node.TypeOfNode == NodeType.StartNode)
-            {
-                //BranchCamEditor.startNodeAdded = false;
-            }
-            nodes.Remove(node);
-        }
-
-        public void AddNode(EditorBaseNode node) => nodes.Add(node);
-        public EditorBaseNode GetNode(int index) => nodes[index];
-
-
+        /*
 
         //This is for when the user clicks off or selects another node.
         //If the other node is also a node that uses custom camera, it will not use the position of the previously
@@ -160,12 +141,14 @@ namespace RydenCam.BranchCamEditor.Managers
             if (string.IsNullOrEmpty(previousActorName))
                 return;
 
-            foreach (var node in nodes.OfType<ITalkable>()
+            foreach (var node in Nodes.OfType<ITalkable>()
                                         .Where(posNode => posNode.NodeConvodata.Actor.ActorName == previousActorName))
             {
                 node.NodeConvodata.Actor.ActorName = newActorInfo.ActorName;
                 node.NodeConvodata.Actor.ActorGO = newActorInfo.ActorGO;
             }
         }
+        */
     }
+    
 }

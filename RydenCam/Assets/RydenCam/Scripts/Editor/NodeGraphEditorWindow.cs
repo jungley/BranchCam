@@ -86,8 +86,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
         GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
 
-
-
         DrawUserDragConnectionCurve();
 
         HandleInputClicks();

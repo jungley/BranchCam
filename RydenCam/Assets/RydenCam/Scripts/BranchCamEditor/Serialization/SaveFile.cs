@@ -1,14 +1,11 @@
 ﻿using System.IO;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using System;
 using UnityEditor;
-using RydenCam.BranchCamEditor.Serialization.Saveables;
 using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Serialization

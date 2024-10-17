@@ -1,5 +1,4 @@
 ﻿using RydenCam.BranchCamEditor.BranchCam;
-using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using System.Collections.Generic;

@@ -2,7 +2,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Managers;
 using System;

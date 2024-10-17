@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using RydenCam.BranchCamEditor.Nodes.Connections;
+﻿using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using System;
 using System.Collections.Generic;

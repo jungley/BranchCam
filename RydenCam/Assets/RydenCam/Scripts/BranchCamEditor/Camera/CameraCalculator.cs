@@ -19,7 +19,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
         {
             get
             {
-                return EditorController.Instance.ActorsInScene
+                return NodeManager.Instance.ActorsInScene()
                    .Where(item => item.ActorGO != null)
                    .Select(item => item.ActorGO.transform)
                    .ToList();

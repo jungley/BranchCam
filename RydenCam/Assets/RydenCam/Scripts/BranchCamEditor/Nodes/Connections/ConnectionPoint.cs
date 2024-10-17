@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using RydenCam.Common;
 using Assets.RydenCam.Scripts.BranchCamCC;
-using Newtonsoft.Json;
 using RydenCam.BranchCamEditor.Managers;
 
 namespace RydenCam.BranchCamEditor.Nodes.Connections

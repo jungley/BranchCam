@@ -1,7 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
+
 
 [CreateAssetMenu(fileName = "Global Settings", menuName = "BranchCam/Global Settings", order = 1)]
 public class GlobalSettingsData : ScriptableObject

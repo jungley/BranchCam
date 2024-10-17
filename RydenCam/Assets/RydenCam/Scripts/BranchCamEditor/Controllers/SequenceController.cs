@@ -3,7 +3,6 @@ using UnityEngine;
 using RydenCam.SequenceData;
 
 using RydenCam.BranchCamEditor.BranchCam;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.BranchCamEditor.Managers;
 using Cinemachine;
 using Assets.RydenCam.Scripts.DialogueGameUI;

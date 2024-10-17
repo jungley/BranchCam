@@ -1,14 +1,6 @@
-﻿using Cinemachine;
-using RydenCam.BranchCamEditor;
-using RydenCam.BranchCamEditor.Serialization;
+﻿using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
-using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -84,7 +76,6 @@ namespace RydenCam.DialogueGameUI
         {
             if (LoadFile.IsValidDialogueTriggerPath(DialogueFolder))
             {
-                EditorController.Instance.ResetEverything();
                 LoadFile.LoadSaveables();
             }
             else
