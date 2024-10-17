@@ -25,6 +25,7 @@ public class NodeGraphEditorWindow : EditorWindow
     //Window Properties
     static float panX = 0;
     static float panY = 0;
+    private Rect lastEditorWindowPos;
     static Texture2D _tt { get; set; }
     static Texture2D tex
     {
@@ -81,11 +82,11 @@ public class NodeGraphEditorWindow : EditorWindow
         }
 
 
-        GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
-
         DrawGrid(gridSpacing: 20f, gridOpacity: 0.5f, gridColor: Color.white);
 
-        DrawRibbon();
+        GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
+
+
 
         DrawUserDragConnectionCurve();
 
@@ -95,14 +96,49 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawConnections();
 
-        DrawInspector();
+        MousePan();
 
         GUI.EndGroup();
 
+        DrawRibbon();
+
+        DrawInspector();
+
+
     }
+
+    private void MousePan()
+    {
+        var mousePosition = Event.current.mousePosition;
+        
+        if (Event.current.type == EventType.MouseDrag &&
+            //mouse not over 
+            !(InspectorPanelArea.Contains(mousePosition) || ButtonPanelArea.Contains(mousePosition)))
+        {
+            //The EditorWindow is not being dragged
+            if (lastEditorWindowPos == position)
+            {
+
+                //Weird Jumping Check
+                int difference = 70;
+                if ((Event.current.delta.x > -difference && Event.current.delta.x < difference)
+                    && (Event.current.delta.y > -difference && Event.current.delta.y < difference))
+                {
+                    panX += Event.current.delta.x;
+                    panY += Event.current.delta.y;
+                    Repaint();
+                }
+            }
+        }
+    }
+
+
 
     private void OnInspectorUpdate()
     {
+        //If window was resized or moved
+        lastEditorWindowPos = position;
+
         if(viewModel.IsDrawingHandle)
         {
             Repaint();
