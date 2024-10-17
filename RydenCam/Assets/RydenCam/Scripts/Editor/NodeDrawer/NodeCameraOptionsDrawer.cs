@@ -60,20 +60,20 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             }
 
 
-            //If it's Exterior or Apex
             if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
             {
-                //Generate List Except of actor associated with node
-                List<string> tmp = new List<string>();
-                tmp.AddRange(EditorController.Instance.ActorsInScene.Select(x => x.ActorName));
-                tmp.Remove(nodeConvodata.Actor.ActorName);
-                int OppActorIndex = tmp.IndexOf(nodeConvodata.ShotConfig.oppositeActor);
-                if (OppActorIndex == -1) { OppActorIndex = 0; }
+                var actors = NodeManager.Instance.ActorsInScene()
+                    .Where(x => x.ActorName != nodeConvodata.Actor.ActorName)
+                    .Select(x => x.ActorName)
+                    .ToList();
 
-                if (tmp.Count > 0)
+                int OppActorIndex = actors.IndexOf(nodeConvodata.ShotConfig.oppositeActor);
+                if (OppActorIndex == -1) OppActorIndex = 0;
+
+                if (actors.Count > 0)
                 {
-                    OppActorIndex = EditorGUILayout.Popup(OppActorIndex, tmp.ToArray(), GUILayout.Width(70));
-                    nodeConvodata.ShotConfig.oppositeActor = tmp[OppActorIndex];
+                    OppActorIndex = EditorGUILayout.Popup(OppActorIndex, actors.ToArray(), GUILayout.Width(70));
+                    nodeConvodata.ShotConfig.oppositeActor = actors[OppActorIndex];
                 }
             }
             GUILayout.EndHorizontal();

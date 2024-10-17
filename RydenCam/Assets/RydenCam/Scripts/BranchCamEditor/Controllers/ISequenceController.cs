@@ -1,4 +1,5 @@
-﻿using RydenCam.BranchCamEditor.Nodes;
+﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using RydenCam.BranchCamEditor.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,6 @@ namespace RydenCam.BranchCamEditor.Controllers
     public interface ISequenceController
     {
         Stack<string> PreviousDialogue { get; set; }
-        EditorBaseNode CurrentNode { get; set; }
+        NodeCC CurrentNode { get; set; }
     }
 }

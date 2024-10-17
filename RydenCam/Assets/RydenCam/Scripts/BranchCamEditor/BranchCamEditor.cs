@@ -234,10 +234,13 @@ namespace RydenCam.BranchCamEditor
             return;
         }
 
+
+        /*
         private void OnEnable()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
+        
 
 
         void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -247,6 +250,7 @@ namespace RydenCam.BranchCamEditor
                 Repaint(); // Force a repaint when entering or exiting play mode
             }
         }
+        */
 
 
         void OnGUI()

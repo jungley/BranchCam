@@ -4,6 +4,7 @@ using RydenCam.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamCC
@@ -35,6 +36,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
 
             EditorPosition = position;
         }
+
+        public virtual NodeCC GetNextNode() => PointOut.FirstOrDefault()?.ConnectedTo?.Node;
 
 
     }

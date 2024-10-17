@@ -167,11 +167,22 @@ public class NodeGraphEditorWindow : EditorWindow
 
         resourcesInitalized = true;
     }
+    
+    void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.ExitingPlayMode)
+        {
+            Repaint(); // Force a repaint when entering or exiting play mode
+        }
+    }
+    
 
 
     // Called when the window is enabled or created
     private void OnEnable()
     {
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+
         //Event Handlers
         viewModel = new NodeGraphViewModel();
 

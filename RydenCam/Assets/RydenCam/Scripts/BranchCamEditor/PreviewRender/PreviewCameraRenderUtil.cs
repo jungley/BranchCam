@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.BranchCam;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
@@ -47,7 +48,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             PreviewRenderUtility.camera.farClipPlane = 20;
         }
     
-        internal void DrawSavePreview(Rect windowRect, IPositionalNode node)
+        internal void DrawSavePreview(Rect windowRect, ITalkable node)
         {
 
             var focusTarget = GameObject.Find(node.NodeConvodata.ShotConfig.actor);

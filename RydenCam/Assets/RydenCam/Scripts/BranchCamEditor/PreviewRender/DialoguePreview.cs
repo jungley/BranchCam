@@ -1,3 +1,4 @@
+using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
@@ -10,7 +11,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
@@ -47,9 +47,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
                 node.windowRect.width, node.windowRect.height);
 
-            if (node is IPositionalNode)
+            if (node is ITalkable)
             {
-                var dialogueNode = node as IPositionalNode;
+                var dialogueNode = node as ITalkable;
 
                 //PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
 

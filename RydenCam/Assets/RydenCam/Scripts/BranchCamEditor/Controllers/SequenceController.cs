@@ -7,6 +7,8 @@ using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.BranchCamEditor.Managers;
 using Cinemachine;
 using Assets.RydenCam.Scripts.DialogueGameUI;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.NodeCommands;
 
 namespace RydenCam.BranchCamEditor.Controllers
 {
@@ -18,13 +20,12 @@ namespace RydenCam.BranchCamEditor.Controllers
         [SerializeField] [HideInInspector] private GameObject cameraBrain;
         [SerializeField] [HideInInspector] private Queue<string> dialogQueue;
 
-        public EditorBaseNode CurrentNode { get; set; }
+        public NodeCC CurrentNode { get; set; }
         public int DialogueIndex = -1;
         public Stack<string> PreviousDialogue { get; set; } = new Stack<string>();
 
         public InGameDialogUIView UIView { get; set; }
         public CameraCalculator CamCalculator { get; set; }
-        public List<ActorInfo> ActorsInScene => EditorController.Instance.ActorsInScene;
 
         public bool DialogueIsRunning = false;
 
@@ -41,7 +42,7 @@ namespace RydenCam.BranchCamEditor.Controllers
         {
             ToggleRelevantObjects(visibility: true);
             CurrentNode = NodeManager.Instance.StartNode;
-            SetPreDefinedActorPositions(CurrentNode as EditorStartNode);
+            SetPreDefinedActorPositions(CurrentNode as StartNode);
             ActorsLookAtEachOther();
             SetDepthOfField(depthEnabled: true);
             PreviousDialogue = new Stack<string>();
@@ -52,14 +53,14 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void MakeDecision(int choiceIndex)
         {
             DecisionBeingMadeLock = false;
-            if (CurrentNode is EditorDecisionNode node)
+            if (CurrentNode is DecisionNode node)
             {
                 CurrentNode = node.MakeDecision(choiceIndex);
                 TraverseNodeNetwork();
             }
         }
 
-        private void HandleDialogueText(EditorDialogueNode dialogueNode)
+        private void HandleDialogueText(DialogueNode dialogueNode)
         {
             if (dialogueNode.NodeConvodata.DialogTextList.Count > 0)
             {
@@ -79,26 +80,27 @@ namespace RydenCam.BranchCamEditor.Controllers
             {
                 switch (CurrentNode)
                 {
-                    case EditorStartNode _:
+                    case StartNode _:
                         CurrentNode = CurrentNode.GetNextNode();
                         TraverseNodeNetwork();
                         return;
-                    case EditorDialogueNode dialogueNode:
+                    case DialogueNode dialogueNode:
                         HandleDialogueText(dialogueNode);
                         SetCamera();
-                        if (dialogueNode.ReachedLastDialogueText(DialogueIndex))
+                        if(DialogueIndex == dialogueNode.NodeConvodata.DialogTextList.Count -1)
                         {
                             DialogueIndex = -1;
                             CurrentNode = CurrentNode.GetNextNode();
                         }
                         return;
-                    case EditorDecisionNode _:
+                    case DecisionNode _:
                         DecisionBeingMadeLock = true;
                         UIView.DisplayDecisionNode();
                         SetCamera();
                         return;
-                    case EditorActionNode actionNode:
-                        actionNode.InvokeAction();
+                    case ActionNode actionNode:
+                        ActionNodeCommand command = new ActionNodeCommand(actionNode);
+                        command.InvokeCommands();
                         CurrentNode = CurrentNode.GetNextNode();
                         TraverseNodeNetwork();
                         return;
@@ -112,7 +114,7 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         private void SetCamera()
         {
-            if (CurrentNode is IPositionalNode posNode)
+            if (CurrentNode is ITalkable posNode)
             {
                 ConversationData convoData = posNode.NodeConvodata;
                 Pose placement = CamCalculator.CalculatePlacement(convoData.ShotConfig);
@@ -137,11 +139,11 @@ namespace RydenCam.BranchCamEditor.Controllers
         }
 
         //TODO move this as part of Calculator or CameraUtility somewhere else
-        public void SetPreDefinedActorPositions(EditorStartNode startNode)
+        public void SetPreDefinedActorPositions(StartNode startNode)
         {
             if (startNode.StartPositionsEnabled)
             {
-                foreach (ActorInfo actorInfo in ActorsInScene)
+                foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
                 {
                     if (startNode.ReturnToOriginalPositions)
                     {
@@ -163,7 +165,7 @@ namespace RydenCam.BranchCamEditor.Controllers
             {
                 Vector3 midPoint = CamCalculator.CalculateMidPoint();
 
-                foreach (ActorInfo actorInfo in ActorsInScene)
+                foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
                 {
                     actorInfo.ActorGO.transform.root.LookAt(new Vector3(midPoint.x, actorInfo.ActorGO.transform.root.position.y, midPoint.z));
                 }
@@ -172,16 +174,16 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void ReturnActorsToOriginalPositionsIfEnabled()
         {
-            if (NodeManager.Instance.StartNode is EditorStartNode startNode && startNode.ReturnToOriginalPositions)
+            if  (NodeManager.Instance.StartNode.ReturnToOriginalPositions)
             {
-                foreach (ActorInfo actorInfo in ActorsInScene)
+                foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
                 {
                     actorInfo.ActorGO.transform.root.position = actorInfo.OriginalPositionAtStartOfDialogue.position;
                 }
 
                 Vector3 midPoint = CamCalculator.CalculateMidPoint();
 
-                foreach (ActorInfo actorInfo in ActorsInScene)
+                foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
                 {
                     actorInfo.ActorGO.transform.root.LookAt(new Vector3(midPoint.x, actorInfo.ActorGO.transform.root.position.y, midPoint.z));
                 }

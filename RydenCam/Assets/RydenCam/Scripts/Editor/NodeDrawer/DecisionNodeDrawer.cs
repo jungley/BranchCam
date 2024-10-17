@@ -21,7 +21,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
 
         private int ActorEditorDropdownIndex { get; set; }
-        public bool ShowPreviousDialog { get; set; }
 
         private Vector2 scrollPosInspector { get; set; }
 
@@ -111,7 +110,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             using (var horizontalScopeShowPreviewOption = new GUILayout.HorizontalScope())
             {
                 GUILayout.Label("Show Previous Dialog", inspectorText, GUILayout.Width(150));
-                ShowPreviousDialog = EditorGUILayout.Toggle(ShowPreviousDialog);
+                node.ShowPreviousDialog = EditorGUILayout.Toggle(node.ShowPreviousDialog);
             }
 
             EditorGUILayout.Space();

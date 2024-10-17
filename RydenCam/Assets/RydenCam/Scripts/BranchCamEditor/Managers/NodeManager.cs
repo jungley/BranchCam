@@ -112,15 +112,14 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
+        public StartNode StartNode => Nodes.ToList().Find(n => n.TypeOfNode == NodeType.StartNode) as StartNode;
+
 
         ////////////////////////////////////////////////////////////////////////////
 
 
         private List<EditorBaseNode> nodes;
 
-
-        //public int Length => nodes.Count;
-        public EditorStartNode StartNode => nodes.Find(n => n.TypeOfNode == NodeType.StartNode) as EditorStartNode;
         public List<EditorBaseNode> GetList() => nodes;
         public void RemoveNode(EditorBaseNode node)
         {
@@ -161,7 +160,7 @@ namespace RydenCam.BranchCamEditor.Managers
             if (string.IsNullOrEmpty(previousActorName))
                 return;
 
-            foreach (var node in nodes.OfType<IPositionalNode>()
+            foreach (var node in nodes.OfType<ITalkable>()
                                         .Where(posNode => posNode.NodeConvodata.Actor.ActorName == previousActorName))
             {
                 node.NodeConvodata.Actor.ActorName = newActorInfo.ActorName;

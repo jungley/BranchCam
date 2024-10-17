@@ -20,8 +20,14 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
 
         public List<string> DecisionOptions;
 
+        public bool ShowPreviousDialog;
+
         public override float NodeHeight => DecisionOptions.Count > 2 ? DecisionOptions.Count * 25 + 65 : 120;
 
+        public NodeCC MakeDecision(int choiceIndex)
+        {
+            return PointOut[choiceIndex].ConnectedTo?.Node;
+        }
 
         public DecisionNode(Vector2 position) : base(position)
         {

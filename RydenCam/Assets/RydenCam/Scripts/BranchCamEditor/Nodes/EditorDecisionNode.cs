@@ -11,10 +11,11 @@ using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Serialization.Saveables;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
-    public class EditorDecisionNode : EditorBaseNode, IPositionalNode
+    public class EditorDecisionNode : EditorBaseNode, ITalkable
     {
         public ConversationData NodeConvodata { get; set; }
 

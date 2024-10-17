@@ -8,15 +8,14 @@ using RydenCam.Common;
 using System.Linq;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Controllers;
-using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Serialization.Saveables;
-using RydenCam.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 
 namespace RydenCam.BranchCamEditor.Nodes
 {
     [ExecuteAlways]
-    public class EditorDialogueNode : EditorBaseNode, IPositionalNode
+    public class EditorDialogueNode : EditorBaseNode, ITalkable
     {
         public ConversationData NodeConvodata { get; set; }
         [TextArea]
@@ -138,12 +137,12 @@ namespace RydenCam.BranchCamEditor.Nodes
             EditorGUILayout.Space();
             GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 
-            int indexx = EditorGUILayout.Popup(ActorIndex, EditorController.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+            int selectedActorIndex = EditorGUILayout.Popup(ActorIndex, EditorController.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
             EditorGUILayout.Space(20);
             //Call when changed
-            if (indexx != ActorIndex)
+            if (selectedActorIndex != ActorIndex)
             {
-                ActorIndex = indexx;
+                ActorIndex = selectedActorIndex;
                 Sel_ActorID = EditorController.Instance.ActorsInScene[ActorIndex].ActorID;
                 NodeConvodata.Actor = EditorController.Instance.ActorsInScene.Where(x => x.ActorID == Sel_ActorID).FirstOrDefault();
                 NodeConvodata.ShotConfig.actor = NodeConvodata.Actor.ActorName;
