@@ -19,7 +19,7 @@ namespace RydenCam.BranchCamEditor.Controllers
         [SerializeField] [HideInInspector] private GameObject cameraBrain;
         [SerializeField] [HideInInspector] private Queue<string> dialogQueue;
 
-        public NodeCC CurrentNode { get; set; }
+        public Node CurrentNode { get; set; }
         public int DialogueIndex = -1;
         public Stack<string> PreviousDialogue { get; set; } = new Stack<string>();
 

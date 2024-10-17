@@ -102,14 +102,14 @@ namespace RydenCam.BranchCamEditor.Managers
                    (B.Type == ConnectionPointType.Out && B.ConnectedTo != null);
         }
 
-        public void CreateConnections(List<NodeCC> nodes)
+        public void CreateConnections(List<Node> nodes)
         {
             //Associate Connections
             foreach (var node in nodes)
             {
                 foreach (var pointOut in node.PointOut)
                 {
-                    NodeCC connectedNode = NodeManager.Instance.FindNode(pointOut.ConnectedNodeId);
+                    Node connectedNode = NodeManager.Instance.FindNode(pointOut.ConnectedNodeId);
                     {
                         if (connectedNode != null)
                         {
@@ -121,7 +121,7 @@ namespace RydenCam.BranchCamEditor.Managers
         }
 
 
-        public void RemoveAssociatedConnections(NodeCC node)
+        public void RemoveAssociatedConnections(Node node)
         {
             var pointsToRemove = new HashSet<ConnectionPoint> { node.PointIn };
             pointsToRemove.UnionWith(node.PointOut);

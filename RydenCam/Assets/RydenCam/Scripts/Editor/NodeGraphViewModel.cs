@@ -117,7 +117,7 @@ public class NodeGraphViewModel
 
     public void AddNode(Vector2 position, NodeType nodeType)
     {
-        NodeCC newNode = null;
+        Node newNode = null;
         switch (nodeType)
         {
             case NodeType.StartNode:

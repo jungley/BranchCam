@@ -27,7 +27,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private GUIStyle decisionOptionNumber { get; set; }
 
 
-        public DecisionNodeDrawer(NodeCC _node) : base(_node)
+        public DecisionNodeDrawer(Node _node) : base(_node)
         {
             node = _node as DecisionNode;
 

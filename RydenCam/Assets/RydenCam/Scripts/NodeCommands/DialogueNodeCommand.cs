@@ -8,7 +8,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     {
         private DialogueNode node { get; set; }
 
-        public DialogueNodeCommand(NodeCC _node)
+        public DialogueNodeCommand(Node _node)
         {
             node = _node as DialogueNode;
         }
@@ -30,7 +30,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             node.NodeConvodata.ShotConfig.actor = node.NodeConvodata.Actor.ActorName;
         }
 
-        public void RemoveNode(NodeCC node)
+        public void RemoveNode(Node node)
         {
             NodeManager.Instance.RemoveNode(node);
             ConnectionManager.Instance.RemoveAssociatedConnections(node);

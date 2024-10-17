@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Assets.RydenCam.Scripts.BranchCamCC
 {
     [System.Serializable]
-    public class StartNode : NodeCC
+    public class StartNode : Node
     {
         //Actors In Scene
         public List<ActorInfo> ActorsInScene;

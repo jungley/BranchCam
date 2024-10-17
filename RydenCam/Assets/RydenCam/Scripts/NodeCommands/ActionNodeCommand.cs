@@ -12,7 +12,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     {
         private ActionNode node { get; set; }
 
-        public ActionNodeCommand(NodeCC _node)
+        public ActionNodeCommand(Node _node)
         {
             node = _node as ActionNode;
         }
@@ -76,7 +76,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             }
         }
 
-        public void RemoveNode(NodeCC node)
+        public void RemoveNode(Node node)
         {
             NodeManager.Instance.RemoveNode(node);
             ConnectionManager.Instance.RemoveAssociatedConnections(node);

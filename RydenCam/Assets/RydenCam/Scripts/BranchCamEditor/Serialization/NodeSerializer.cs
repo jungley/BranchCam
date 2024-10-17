@@ -11,9 +11,9 @@ namespace RydenCam.BranchCamEditor.Serialization
 {
     public static class NodeSerializer
     {
-        public static List<NodeCC> DeserializeNodes(string directoryPath)
+        public static List<Node> DeserializeNodes(string directoryPath)
         {
-            List<NodeCC> deserializedNodes = new List<NodeCC>();
+            List<Node> deserializedNodes = new List<Node>();
             if (Directory.Exists(directoryPath))
             {
                 string assetFileName = Directory.GetFiles(directoryPath, "*.json").FirstOrDefault();

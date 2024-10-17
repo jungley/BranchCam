@@ -29,7 +29,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             }
         }
         /*
-        public void DrawPreviewWindow(NodeCC node)
+        public void DrawPreviewWindow(Node node)
         {
 
             var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,

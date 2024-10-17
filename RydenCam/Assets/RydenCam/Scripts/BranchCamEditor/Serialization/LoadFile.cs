@@ -92,7 +92,7 @@ namespace RydenCam.BranchCamEditor.Serialization
 
             path = BranchCamEditorPreferences.GetLastFilePath();
 
-            List<NodeCC> deserializedNodes = NodeSerializer.DeserializeNodes(path);
+            List<Node> deserializedNodes = NodeSerializer.DeserializeNodes(path);
 
             NodeManager.Instance.LoadNodes(deserializedNodes);
             ConnectionManager.Instance.CreateConnections(deserializedNodes);

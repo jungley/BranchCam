@@ -6,6 +6,6 @@ namespace RydenCam.BranchCamEditor.Controllers
     public interface ISequenceController
     {
         Stack<string> PreviousDialogue { get; set; }
-        NodeCC CurrentNode { get; set; }
+        Node CurrentNode { get; set; }
     }
 }

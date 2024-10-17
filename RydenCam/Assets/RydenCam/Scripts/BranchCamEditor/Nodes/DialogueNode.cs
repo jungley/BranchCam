@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Assets.RydenCam.Scripts.BranchCamCC
 {
     [System.Serializable]
-    public class DialogueNode : NodeCC, ITalkable 
+    public class DialogueNode : Node, ITalkable 
     {
         [SerializeField]
         public ConversationData NodeConvodataField;

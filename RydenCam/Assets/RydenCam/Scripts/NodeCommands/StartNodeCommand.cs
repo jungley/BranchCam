@@ -11,7 +11,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     {
         private StartNode node { get; set; }
 
-        public StartNodeCommand(NodeCC _node)
+        public StartNodeCommand(Node _node)
         {
             node = _node as StartNode;
         }
@@ -107,7 +107,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
 
 
-        public void RemoveNode(NodeCC node)
+        public void RemoveNode(Node node)
         {
             NodeManager.Instance.RemoveNode(node);
             ConnectionManager.Instance.RemoveAssociatedConnections(node);

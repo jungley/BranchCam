@@ -11,7 +11,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
     //NodeGraphViewModel (ViewModel)
     //NodeGraphEditorView (View)
     [System.Serializable]
-    public abstract class NodeCC : INodeCC
+    public abstract class Node : INode
     {
         //Ideally move this out of Node?
         public Vector2 EditorPosition;
@@ -25,7 +25,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public List<ConnectionPoint> PointOut;
         public string NodeId;
 
-        public NodeCC(Vector2 position)
+        public Node(Vector2 position)
         {
             Guid guidVal = Guid.NewGuid();
             NodeId = guidVal.ToString();
@@ -35,7 +35,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             EditorPosition = position;
         }
 
-        public virtual NodeCC GetNextNode() => PointOut.FirstOrDefault()?.ConnectedTo?.Node;
+        public virtual Node GetNextNode() => PointOut.FirstOrDefault()?.ConnectedTo?.Node;
 
 
     }

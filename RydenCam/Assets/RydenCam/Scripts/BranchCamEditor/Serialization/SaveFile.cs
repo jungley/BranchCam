@@ -38,10 +38,10 @@ namespace RydenCam.BranchCamEditor.Serialization
 
                 BranchCamEditorPreferences.SetLastFilePath(directoryPathWithName);
 
-                List<NodeCC> nodeList = NodeManager.Instance.Nodes.ToList();
+                List<Node> nodeList = NodeManager.Instance.Nodes.ToList();
 
                 List<NodeData> nodeDatas = new List<NodeData>();
-                foreach (NodeCC save in nodeList)
+                foreach (Node save in nodeList)
                 {
                     string jsonNode = JsonUtility.ToJson(save);
                     NodeType type = save.TypeOfNode;

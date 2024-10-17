@@ -21,7 +21,7 @@ namespace Assets.RydenCam.Scripts.Editor
 
     public abstract class NodeDrawerBase
     {
-        public NodeCC Node;
+        public Node Node;
 
         protected INodeCommand Command;
 
@@ -62,7 +62,7 @@ namespace Assets.RydenCam.Scripts.Editor
 
 
 
-        public NodeDrawerBase(NodeCC node)
+        public NodeDrawerBase(Node node)
         {
             Node = node;
 

@@ -87,7 +87,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
     }
 
     [Serializable]
-    public class ActionNode : NodeCC
+    public class ActionNode : Node
     {
         public override float NodeHeight
         {

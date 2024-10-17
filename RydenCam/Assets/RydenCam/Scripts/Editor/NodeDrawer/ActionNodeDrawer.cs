@@ -18,7 +18,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         private List<GameActionData> selectedGameActionDatas { get; set; }
 
-        public ActionNodeDrawer(NodeCC _node) : base(_node)
+        public ActionNodeDrawer(Node _node) : base(_node)
         {
             node = _node as ActionNode;
             command = new ActionNodeCommand(_node);

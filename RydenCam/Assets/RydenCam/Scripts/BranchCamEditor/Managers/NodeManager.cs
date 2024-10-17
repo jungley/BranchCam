@@ -34,13 +34,13 @@ namespace RydenCam.BranchCamEditor.Managers
 
         private NodeManager()
         {
-            Nodes = new ObservableCollection<NodeCC>();
+            Nodes = new ObservableCollection<Node>();
         }
 
-        public ObservableCollection<NodeCC> Nodes { get; set; }
+        public ObservableCollection<Node> Nodes { get; set; }
 
-        private NodeCC activeNode { get; set; }
-        public NodeCC ActiveNode
+        private Node activeNode { get; set; }
+        public Node ActiveNode
         {
             get => activeNode;
             set
@@ -73,7 +73,7 @@ namespace RydenCam.BranchCamEditor.Managers
             StartNodeAdded = false;
         }
 
-        public void RemoveNode(NodeCC node)
+        public void RemoveNode(Node node)
         {
             if (node.TypeOfNode == NodeType.StartNode)
             {
@@ -82,13 +82,13 @@ namespace RydenCam.BranchCamEditor.Managers
             Nodes.Remove(node);
         }
 
-        public void LoadNodes(List<NodeCC> nodes) => nodes.ForEach(n => { Nodes.Add(n); });
+        public void LoadNodes(List<Node> nodes) => nodes.ForEach(n => { Nodes.Add(n); });
 
-        public void AddNode(NodeCC node) => Nodes.Add(node);
+        public void AddNode(Node node) => Nodes.Add(node);
 
-        public NodeCC GetNodeCC(int index) => Nodes[index];
+        public Node GetNode(int index) => Nodes[index];
 
-        public NodeCC FindNode(string id) => Nodes.ToList().Find(n => n.NodeId == id);
+        public Node FindNode(string id) => Nodes.ToList().Find(n => n.NodeId == id);
 
         public int Length => Nodes.Count;
 

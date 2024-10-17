@@ -20,7 +20,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private int ActorEditorDropdownIndex { get; set; }
 
 
-        public DialogueNodeDrawer(NodeCC _node): base(_node)
+        public DialogueNodeDrawer(Node _node): base(_node)
         {
             node = _node as DialogueNode;
             command = new DialogueNodeCommand(node);

@@ -13,7 +13,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private StartNode startNode { get; set; }
         private StartNodeCommand startCommand { get; set; }
 
-        public StartNodeDrawer(NodeCC node) : base(node)
+        public StartNodeDrawer(Node node) : base(node)
         {
             startNode = node as StartNode;
             startCommand = new StartNodeCommand(node);

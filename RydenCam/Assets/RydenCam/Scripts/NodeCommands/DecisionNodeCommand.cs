@@ -12,7 +12,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         private DecisionNode node { get; set; }
 
 
-        public DecisionNodeCommand(NodeCC _node)
+        public DecisionNodeCommand(Node _node)
         {
             node = _node as DecisionNode;
         }
@@ -36,7 +36,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             node.PointOut.RemoveAt(index);
         }
 
-        public void RemoveNode(NodeCC node)
+        public void RemoveNode(Node node)
         {
             NodeManager.Instance.ActiveNode = null;
             NodeManager.Instance.RemoveNode(node);

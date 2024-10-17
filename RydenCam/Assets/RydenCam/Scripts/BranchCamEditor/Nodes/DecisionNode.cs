@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Assets.RydenCam.Scripts.BranchCamCC
 {
     [System.Serializable]
-    public class DecisionNode : NodeCC, ITalkable
+    public class DecisionNode : Node, ITalkable
     {
         //Field needed for Saving/Deserizalzing class as JSON
         public ConversationData NodeConvodataField;
@@ -24,7 +24,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
 
         public override float NodeHeight => DecisionOptions.Count > 2 ? DecisionOptions.Count * 25 + 65 : 120;
 
-        public NodeCC MakeDecision(int choiceIndex)
+        public Node MakeDecision(int choiceIndex)
         {
             return PointOut[choiceIndex].ConnectedTo?.Node;
         }

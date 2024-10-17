@@ -18,8 +18,8 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public Rect LocalBounds;
         public static Color Color => new Color(0, 0.8f, 0, 1);
 
-        private NodeCC node { get; set; }
-        public NodeCC Node 
+        private Node node { get; set; }
+        public Node Node 
         {
             get
             {
@@ -47,7 +47,7 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
             }    
         }
 
-        public ConnectionPoint(NodeCC node, ConnectionPointType type)
+        public ConnectionPoint(Node node, ConnectionPointType type)
         {
             Node = node;
             Type = type;
