@@ -8,6 +8,29 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamCC
 {
+    [Serializable]
+    public class ActionNode : Node
+    {
+        public override float NodeHeight
+        {
+            get
+            {
+                var namesCount = GameActionDatas.Where(x => !string.IsNullOrEmpty(x.SelectedMethodName)).Count();
+                return namesCount > 2 ? namesCount * 20 + 50: 80;
+            }
+        }
+
+        public List<GameActionData> GameActionDatas;
+
+        public ActionNode(Vector2 position) : base(position)
+        {
+            TypeOfNode = NodeType.ActionNode;
+            GameActionDatas = new List<GameActionData>();
+
+            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
+            PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };
+        }
+    }
 
 
     [Serializable]
@@ -83,32 +106,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public GameActionData()
         {
 
-        }
-    }
-
-    [Serializable]
-    public class ActionNode : Node
-    {
-        public override float NodeHeight
-        {
-            get
-            {
-                var namesCount = GameActionDatas.Where(x => !string.IsNullOrEmpty(x.SelectedMethodName)).Count();
-                return namesCount > 2 ? namesCount * 20 + 50: 80;
-            }
-        }
-
-
-
-        public List<GameActionData> GameActionDatas;
-
-        public ActionNode(Vector2 position) : base(position)
-        {
-            TypeOfNode = NodeType.ActionNode;
-            GameActionDatas = new List<GameActionData>();
-
-            PointIn = new ConnectionPoint(this, ConnectionPointType.In);
-            PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };
         }
     }
 }

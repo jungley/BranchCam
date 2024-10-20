@@ -3,6 +3,7 @@ using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.Common;
 using UnityEditor;
 using UnityEngine;
+using RydenCam.BranchCamEditor.Managers;
 
 namespace RydenCam.DialogueGameUI
 {
@@ -42,25 +43,30 @@ namespace RydenCam.DialogueGameUI
 
         [HideInInspector]
         public string DialogueFolder;
-        public SequenceController SequenceControls;
-        public bool IsDialogueRunning => SequenceControls.DialogueIsRunning;
+        public NodeStateController SatePlayer;
+        public bool IsDialogueRunning => SatePlayer.IsDialogueRunning;
 
-        public void Start()
+        public void Awake()
         {
-            SequenceControls = new SequenceController(DialogueCamera, DialogueCameraBrain);
-            SequenceControls.ToggleRelevantObjects(visibility: false);
+            SatePlayer = new NodeStateController(DialogueCamera, DialogueCameraBrain);
+            SatePlayer.ToggleRelevantObjects(visibility: false);
         }
 
-        
-        public void Update()
+        private void OnEnable()
         {
-            if (!ValidInputs.ProgressionInputPressed) return;
-            if (!SequenceControls.DialogueIsRunning) return;
-
-            if (!SequenceControls.DecisionBeingMadeLock)
-                SequenceControls.TraverseNodeNetwork();
+            ValidInputs.OnValidInput += SatePlayer.TraverseNodeNetwork;
         }
 
+        private void OnDisable()
+        {
+            ValidInputs.OnValidInput -= SatePlayer.TraverseNodeNetwork;
+        }
+
+        private void Update()
+        {
+            // Call the Update method of ValidInputs to check for changes
+            ValidInputs.Update();
+        }
 
         /// <summary>
         /// StartSequence should be triggered by a trigger collider
@@ -68,8 +74,9 @@ namespace RydenCam.DialogueGameUI
         public void StartSequence()
         {
             LoadConversation();
-            SequenceControls.SetUpSequence();
-            SequenceControls.TraverseNodeNetwork();
+            SatePlayer.IsDialogueRunning = true;
+            SatePlayer.CurrentNode = NodeManager.Instance.StartNode;
+            SatePlayer.TraverseNodeNetwork();
         }
 
         public void LoadConversation()

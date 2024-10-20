@@ -30,7 +30,7 @@ public class ButtonHolder
 
     public void ButtonAction()
     {
-        ButtonManager.Instance.DialoguePlayer.SequenceControls.MakeDecision(optionIndex);
+        ButtonManager.Instance.DialoguePlayer.SatePlayer.MakeDecision(optionIndex);
         ButtonManager.Instance.Clear();
     }
 

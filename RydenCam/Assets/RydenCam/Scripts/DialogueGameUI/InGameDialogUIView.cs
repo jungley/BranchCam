@@ -48,9 +48,9 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             }
         }
 
-        public ISequenceController Controller;
+        public NodeStateController Controller;
 
-        public InGameDialogUIView(ISequenceController controller)
+        public InGameDialogUIView(NodeStateController controller)
         {
             Controller = controller;
         }
@@ -89,6 +89,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         private void CreateButtons(DecisionNode node)
         {
             var buttonManager = ButtonManager.Instance;
+            buttonManager.ButtonList.Clear();
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {

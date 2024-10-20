@@ -53,9 +53,6 @@ namespace Assets.RydenCam.Scripts.Editor
 
         protected GUIStyle textareaStyle { get; set; }
 
-       // public float NodeWidth { get; set; }
-       // public virtual float NodeHeight { get; set; }
-
         public Color NodeColor { get; set; }
 
         public int WindowId { get; set; }
@@ -129,12 +126,8 @@ namespace Assets.RydenCam.Scripts.Editor
             return null;
         }
 
-
         protected int heightConnectionPoint => 18;
         protected int widthConnectionPoint => 20;
-
-
-
         
         protected void DrawPoint(Rect bounds, bool isConnected)
         {
