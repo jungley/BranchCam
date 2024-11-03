@@ -7,6 +7,7 @@ using Cinemachine;
 using Assets.RydenCam.Scripts.DialogueGameUI;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
+using Assets.RydenCam.Scripts.BranchCamEditor.Controllers;
 
 namespace RydenCam.BranchCamEditor.Controllers
 {
@@ -22,15 +23,13 @@ namespace RydenCam.BranchCamEditor.Controllers
             //Set Up Sequence
             controller.ToggleRelevantObjects(true);
 
-            controller.SetPreDefinedActorPositions(controller.CurrentNode as StartNode);
-            controller.ActorsLookAtEachOther();
-            controller.SetDepthOfField(true);
+            controller.SetupManager.SetPreDefinedActorPositions(controller.CurrentNode as StartNode);
+            controller.SetupManager.ActorsLookAtEachOther();
+            controller.SetupManager.SetDepthOfField(true);
 
             controller.CurrentNode = controller.CurrentNode.GetNextNode();
             controller.TraverseNodeNetwork();
         }
-
-
     }
 
     public class DialogueNodePlayer : INodePlayer
@@ -62,7 +61,6 @@ namespace RydenCam.BranchCamEditor.Controllers
                 controller.DialogueIndex = -1;
                 controller.CurrentNode = controller.CurrentNode.GetNextNode();
             }
-
         }
     }
 
@@ -100,10 +98,13 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public bool IsDialogueRunning { get; set; } = false;
 
+        public SequenceSetupManager SetupManager { get; set; }
+
         public NodeStateController(GameObject dcamera, GameObject dcameraBrain)
         {
             dialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
             CamCalculator = new CameraCalculator();
+            SetupManager = new SequenceSetupManager(CamCalculator);
             UIView = new InGameDialogUIView(this);
         }
 
@@ -153,8 +154,8 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void EndSequence()
         {
-            ReturnActorsToOriginalPositionsIfEnabled();
-            SetDepthOfField(false);
+            SetupManager.ReturnActorsToOriginalPositionsIfEnabled();
+            SetupManager.SetDepthOfField(false);
             UIView.ClearPanels();
             ToggleRelevantObjects(false);
             PreviousDialogue.Clear();
@@ -165,62 +166,6 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void ToggleRelevantObjects(bool visibility)
         {
             dialogueCamera.enabled = visibility;
-        }
-
-        public void SetPreDefinedActorPositions(StartNode startNode)
-        {
-            if (!startNode.StartPositionsEnabled) return;
-
-            foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
-            {
-                if (startNode.ReturnToOriginalPositions)
-                {
-                    actorInfo.OriginalPositionAtStartOfDialogue = new Pose(actorInfo.ActorGO.transform.root.position, actorInfo.ActorGO.transform.root.rotation);
-                }
-                actorInfo.ActorGO.transform.root.position = actorInfo.PreDefinedStartPosition.position;
-
-                if (!startNode.OverrideRotation)
-                {
-                    actorInfo.ActorGO.transform.root.rotation = actorInfo.PreDefinedStartPosition.rotation;
-                }
-            }
-        }
-
-        public void ActorsLookAtEachOther()
-        {
-            Vector3 midPoint = CamCalculator.CalculateMidPoint();
-            foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
-            {
-                actorInfo.ActorGO.transform.root.LookAt(new Vector3(midPoint.x, actorInfo.ActorGO.transform.root.position.y, midPoint.z));
-            }
-        }
-
-        public void ReturnActorsToOriginalPositionsIfEnabled()
-        {
-            if (NodeManager.Instance.StartNode == null || !NodeManager.Instance.StartNode.ReturnToOriginalPositions) return;
-
-            foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
-            {
-                actorInfo.ActorGO.transform.root.position = actorInfo.OriginalPositionAtStartOfDialogue.position;
-            }
-            ActorsLookAtEachOther();
-        }
-
-        //RS TODO Automatically setting the depth of field
-        public void SetDepthOfField(bool enabled)
-        {
-            /*
-            PostProcessVolume volume = cameraBrain.GetComponent<PostProcessVolume>();
-
-            if (volume.profile.TryGetSettings(out DepthOfField depth))
-            {
-             depth.enabled.value = depthEnabled;
-                if (depthEnabled)
-                {
-                    depth.focusDistance.value = 50.0f; // Calculate based on distance
-                }
-            }
-            */
         }
     }
 }

@@ -4,13 +4,16 @@ using System.Linq;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
-    public class DialogueNodeCommand : INodeCommand
+    public class DialogueNodeCommand : INodeCommand, IHasCustomCameraCommand
     {
         private DialogueNode node { get; set; }
+
+        public CustomCameraCommand CustomCameraCommand { get; set; }
 
         public DialogueNodeCommand(Node _node)
         {
             node = _node as DialogueNode;
+            CustomCameraCommand = new CustomCameraCommand(node);
         }
 
         public void AddDialogue()

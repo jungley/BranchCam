@@ -17,15 +17,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
     //The View for the Camera Options on nodes
     public class NodeCameraOptionsDrawer
     {
-
         private GUIStyle inspectorText { get; set; }
         private GUIStyle labelStyleHead_Panel { get; set; }
 
 
-        private GameObject SetCustomCameraPosition { get; set; }
-        public string node_id { get; set; }
-
-        public static string customCamLock_nodeId;
+        private static GameObject tempCustomCamera { get; set; }
     
         public NodeCameraOptionsDrawer(GUIStyle _inspectorText, GUIStyle _labelStyleHead_Panel)
         {
@@ -33,27 +29,21 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             labelStyleHead_Panel = _labelStyleHead_Panel;
         }
 
-        public void DrawUICamCompOptions(ConversationData nodeConvodata, INodeCommand command)
+        public void DrawUICamCompOptions(ConversationData nodeConvodata, IHasCustomCameraCommand command)
         {
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            //DRAW CAMERASHOT SELECTOR -- SAME CODE IN DIALOGUE
             EditorGUILayout.LabelField("Shot Composition", labelStyleHead_Panel);
             EditorGUILayout.Space();
 
-            //DRAW CAMERASHOT SELECTOR -- SAME CODE IN DIALOGUE
             List<string> options_Distance = Enum.GetNames(typeof(CameraDistance)).ToList();
             List<string> options_Angle = Enum.GetNames(typeof(CameraAngle)).ToList();
             int index_dist = Array.IndexOf(Enum.GetValues(typeof(CameraDistance)), nodeConvodata.ShotConfig.GoalDistance);
             int index_angle = Array.IndexOf(Enum.GetValues(typeof(CameraAngle)), nodeConvodata.ShotConfig.GoalAngle);
 
-            //DROPDOWN FOR TYPE 
             EditorGUILayout.LabelField("Type", inspectorText, GUILayout.Width(50));
             GUILayout.BeginHorizontal("box");
             CameraGoal selected_goal = (CameraGoal)EditorGUILayout.EnumPopup(nodeConvodata.ShotConfig.GoalType, GUILayout.Width(140));
-            //check if it's been updated
-
-
             if (nodeConvodata.ShotConfig.GoalType != selected_goal)
             {
                 nodeConvodata.ShotConfig.GoalType = selected_goal;
@@ -81,24 +71,20 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             //Everything has distance and Y angle except custom
             if (selected_goal != CameraGoal.Custom)
             {
-                //DROPDOWN FOR DISTANCE
                 EditorGUILayout.LabelField("Distance", inspectorText, GUILayout.Width(50));
                 GUILayout.BeginHorizontal("box");
                 index_dist = EditorGUILayout.Popup(index_dist, options_Distance.ToArray(), GUILayout.Width(140));
                 if (index_dist == -1) { index_dist = 0; }
-                //check if it's been updated
                 if (nodeConvodata.ShotConfig.GoalDistance != (CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist))
                 {
                     nodeConvodata.ShotConfig.GoalDistance = ((CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist));
                 }
                 GUILayout.EndHorizontal();
 
-                //DROPDOWN FOR ANGLE
                 EditorGUILayout.LabelField("Height", inspectorText, GUILayout.Width(50));
                 GUILayout.BeginHorizontal("box");
                 index_angle = EditorGUILayout.Popup(index_angle, options_Angle.ToArray(), GUILayout.Width(140));
                 if (index_angle == -1) { index_angle = 0; }
-                //check if it's been updated
                 if (nodeConvodata.ShotConfig.GoalAngle != (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle))
                 {
                     nodeConvodata.ShotConfig.GoalAngle = ((CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle));
@@ -126,81 +112,75 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 //Set Camera Position if it has not already been set
                 //If user clicks from one custom node to another custom node, camera needs to be updated
-                /*
-                if (customCamLock_nodeId != node_id)
-                {
-                    if (customCamHasBeenSet(nodeConvodata))
-                    {
-                        SetCustomCameraPosition = ResetPosition(nodeConvodata);
-                        /*
-                        if (!GameObject.Find(BranchConstants.CustomCamera))
-                        {
-                            PlaceCustomCam(nodeConvodata);
-                        }
-                        SetCustomCameraPosition = ResetPosition(nodeConvodata);
-                        
-                    }
-                    else
-                    {
-                        DestroyCustomCamera();
-                    }
-                    customCamLock_nodeId = node_id;
-                }
-                */
+                command.CustomCameraCommand.Update(tempCustomCamera);
 
 
-                //Custom Camera Buttons
-                if (!GameObject.Find(BranchConstants.CustomCamera))
+                string buttonText = string.Empty;
+
+                // Custom Camera Buttons
+                if (!GameObject.Find(BranchConstants.CustomCamera) && nodeConvodata.ShotConfig.IsCustomSet)
                 {
-                    if (nodeConvodata.ShotConfig.CustomCamPos != null && nodeConvodata.ShotConfig.CustomCamRot != null)
+                    buttonText = "ReCreate Custom Camera";
+                    if (GUILayout.Button(buttonText, GUILayout.Width(170), GUILayout.Height(30)))
                     {
-                        if (GUILayout.Button("ReCreate Custom Camera", GUILayout.Width(170), GUILayout.Height(30)))
-                        {
-                            //SetCustomCameraPosition = PlaceCustomCam(nodeConvodata);
-                        }
-                    }
-                    else
-                    {
-                        if (GUILayout.Button("Create Custom Camera", GUILayout.Width(170), GUILayout.Height(30)))
-                        {
-                            //SetCustomCameraPosition = PlaceCustomCam(nodeConvodata);
-                        }
+                        tempCustomCamera = command.CustomCameraCommand.PlaceCustomCam(nodeConvodata);
+
                     }
                 }
+                else if(!GameObject.Find(BranchConstants.CustomCamera))
+                {
+                    buttonText = "Create Custom Camera";
+                    if (GUILayout.Button(buttonText, GUILayout.Width(170), GUILayout.Height(30)))
+                    {
+                        tempCustomCamera = command.CustomCameraCommand.PlaceCustomCam(nodeConvodata);
+                    }
+                }
+
 
                 else if (GUILayout.Button("Clear Camera", GUILayout.Width(170), GUILayout.Height(30)))
                 {
-                    /*
-                    DestroyCustomCamera();
-                    nodeConvodata.ShotConfig.CustomCamPos = null;
-                    nodeConvodata.ShotConfig.CustomCamRot = null;
-                    */
+                    command.CustomCameraCommand.ClearCamera();
+                    tempCustomCamera = null;
                 }
 
+
                 //Update Camera Position
-                using (var horizontalScope33 = new GUILayout.HorizontalScope())
+                using (var customCameraScope = new GUILayout.HorizontalScope())
                 {
                     GUILayout.Label("Drag to set Cam:", inspectorText, GUILayout.Width(60));
-                    SetCustomCameraPosition = (GameObject)EditorGUILayout.ObjectField(SetCustomCameraPosition, typeof(GameObject), true);
-                    if (SetCustomCameraPosition != null)
+                    tempCustomCamera = (GameObject)EditorGUILayout.ObjectField(tempCustomCamera, typeof(GameObject), true);
+                    if (tempCustomCamera != null)
                     {
-                        //NodeManager.Instance.EnsureUniqueCustomCameraSelection(this);
-                        nodeConvodata.ShotConfig.CustomCamPos = SetCustomCameraPosition.transform.position;
-                        nodeConvodata.ShotConfig.CustomCamRot = SetCustomCameraPosition.transform.rotation;
-                        GameObject target = GameObject.Find(nodeConvodata.Actor.ActorName);
-                        nodeConvodata.ShotConfig.LocalRelativeActorPos = target.transform.position;
-                        nodeConvodata.ShotConfig.LocalRelativeActorRot = target.transform.rotation;
+                        command.CustomCameraCommand.SetCustomCameraPosition(tempCustomCamera);
                     }
                 }
 
                 //If Set Display the coordinates
-                if (nodeConvodata.ShotConfig.CustomCamPos != null && nodeConvodata.ShotConfig.CustomCamRot != null)
+                if (nodeConvodata.ShotConfig.GlobalCustomCamPos != null  && nodeConvodata.ShotConfig.GlobalCustomCamRot != null)
                 {
-                    //This will eventually be replaced by preview area 
-                    GUILayout.Label("The Custom Position has been set!");
+                    //RS TODO
+                    //This will eventually need to have the preview area?
+
+                    var positionData = nodeConvodata?.ShotConfig?.GlobalCustomCamPos ?? Vector3.zero; 
+                    var rotationData = nodeConvodata?.ShotConfig?.GlobalCustomCamRot ?? Quaternion.identity;
+
+                    // Format the position components to two decimal places
+                    float posX = Mathf.Round(positionData.x * 100) / 100;
+                    float posY = Mathf.Round(positionData.y * 100) / 100;
+                    float posZ = Mathf.Round(positionData.z * 100) / 100;
+
+                    float rotX = Mathf.Round(rotationData.x * 100) / 100;
+                    float rotY = Mathf.Round(rotationData.y * 100) / 100;
+                    float rotZ = Mathf.Round(rotationData.z * 100) / 100;
+
+                    // Create a formatted string with the position data
+                    //GUILayout.Label( $"Position Set ✓ X:{x:0.00} Y:{y:0.00} Z:{z:0.00}");
+                    GUILayout.Label($"Position Set ✓ X:{posX:0.00} Y:{posY:0.00} Z:{posZ:0.00}");
+                    GUILayout.Label($"Rotation Set ✓ X:{rotX:0.00} Y:{rotY:0.00} Z:{rotZ:0.00}");
                 }
 
             }
         }
+
     }
 }

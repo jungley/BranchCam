@@ -31,7 +31,7 @@ namespace RydenCam.SequenceData
         public ConversationData()
         {
             Actor = NodeManager.Instance.ActorsInScene().FirstOrDefault();
-            ShotConfig  = new CamShotConfig(Actor != null ? Actor.ActorName : string.Empty, CameraGoal.Portrait, CameraDistance.Mid, CameraAngle.EyeLevel, CustomCameraType.None);
+            ShotConfig  = new CamShotConfig(Actor != null ? Actor.ActorName : string.Empty);
             DialogTextList = new List<string> { string.Empty };
         }
     }

@@ -6,15 +6,17 @@ using System.Linq;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
-    public class DecisionNodeCommand : INodeCommand
+    public class DecisionNodeCommand : INodeCommand, IHasCustomCameraCommand
     {
 
         private DecisionNode node { get; set; }
 
+        public CustomCameraCommand CustomCameraCommand { get; set; }
 
         public DecisionNodeCommand(Node _node)
         {
             node = _node as DecisionNode;
+            CustomCameraCommand = new CustomCameraCommand(node);
         }
 
         public void AddDecisionOption()

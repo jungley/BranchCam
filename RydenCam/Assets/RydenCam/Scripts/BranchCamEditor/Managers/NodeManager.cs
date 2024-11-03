@@ -25,18 +25,6 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private NodeManager()
-        {
-            Nodes = new ObservableCollection<Node>();
-        }
-
         public ObservableCollection<Node> Nodes { get; set; }
 
         private Node activeNode { get; set; }
@@ -50,36 +38,20 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
+        public StartNode StartNode => Nodes.ToList().Find(n => n.TypeOfNode == NodeType.StartNode) as StartNode;
+
         public static bool StartNodeAdded { get; set; }
 
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        public List<ActorInfo> ActorsInScene()
+        protected virtual void OnPropertyChanged(string propertyName)
         {
-            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
-            return startNode?.ActorsInScene ?? new List<ActorInfo>();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void ClearActorsInScene()
+        private NodeManager()
         {
-            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
-            if(startNode != null) startNode.ActorsInScene = new List<ActorInfo>();
-        }
-
-
-        public void Clear()
-        {
-            Nodes.Clear();
-            ActiveNode = null;
-            StartNodeAdded = false;
-        }
-
-        public void RemoveNode(Node node)
-        {
-            if (node.TypeOfNode == NodeType.StartNode)
-            {
-                StartNodeAdded = false;
-            }
-            Nodes.Remove(node);
+            Nodes = new ObservableCollection<Node>();
         }
 
         public void LoadNodes(List<Node> nodes) => nodes.ForEach(n => { Nodes.Add(n); });
@@ -91,6 +63,22 @@ namespace RydenCam.BranchCamEditor.Managers
         public Node FindNode(string id) => Nodes.ToList().Find(n => n.NodeId == id);
 
         public int Length => Nodes.Count;
+
+        public void RemoveNode(Node node)
+        {
+            if (node.TypeOfNode == NodeType.StartNode)
+            {
+                StartNodeAdded = false;
+            }
+            Nodes.Remove(node);
+        }
+
+        public void Clear()
+        {
+            Nodes.Clear();
+            ActiveNode = null;
+            StartNodeAdded = false;
+        }
 
         public string GetSequenceName()
         {
@@ -111,8 +99,17 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
-        public StartNode StartNode => Nodes.ToList().Find(n => n.TypeOfNode == NodeType.StartNode) as StartNode;
+        public List<ActorInfo> ActorsInScene()
+        {
+            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
+            return startNode?.ActorsInScene ?? new List<ActorInfo>();
+        }
 
+        public void ClearActorsInScene()
+        {
+            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
+            if (startNode != null) startNode.ActorsInScene = new List<ActorInfo>();
+        }
 
         /*
 
@@ -128,9 +125,7 @@ namespace RydenCam.BranchCamEditor.Managers
                     node.SetCustomCameraPosition = null;
                 }
             }
-            
         }
-
 
         //Check on this?
         //When NodeManager is updated,
@@ -150,5 +145,4 @@ namespace RydenCam.BranchCamEditor.Managers
         }
         */
     }
-    
 }

@@ -145,6 +145,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
     public void OnActiveNodeUpdated(object sender, PropertyChangedEventArgs e)
     {
+        //Update the Drawer
         if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
             ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(NodeManager.Instance.ActiveNode);
