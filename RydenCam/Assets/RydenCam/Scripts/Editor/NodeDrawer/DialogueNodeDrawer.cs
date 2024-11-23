@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DialogueNodeDrawer : NodeDrawerBase
+    internal class DialogueNodeDrawer : NodeDrawerBase, IHasCustomCameraView
     {
         private DialogueNode node { get; set; }
         private DialogueNodeCommand command { get; set; }
@@ -25,7 +25,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             node = _node as DialogueNode;
             command = new DialogueNodeCommand(node);
 
-            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(inspectorText, labelStyleHead_Panel);
+            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
 
             //Text
             decisionTextArea = new GUIStyle(EditorStyles.textArea);
@@ -41,6 +41,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 ? NodeManager.Instance.ActorsInScene().FindIndex(actor => actor.ActorName == actorName)
                 : -1;
 
+        }
+
+        public void UpdateCustomCamView()
+        {
+            nodeCameraOptionsDrawer.UpdateCustomCamView();
         }
 
         public override void DrawNode(int index)
@@ -126,7 +131,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
 
-            nodeCameraOptionsDrawer.DrawUICamCompOptions(node.NodeConvodata, command);
+            nodeCameraOptionsDrawer.DrawUICamCompOptions();
         }
     }
 }

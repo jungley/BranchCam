@@ -150,6 +150,11 @@ public class NodeGraphEditorWindow : EditorWindow
         {
             ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(NodeManager.Instance.ActiveNode);
         }
+
+        if(ActiveNodeDrawView is IHasCustomCameraView view)
+        {
+            view.UpdateCustomCamView();
+        }
     }
 
 

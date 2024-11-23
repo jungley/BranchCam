@@ -2,17 +2,13 @@
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DecisionNodeDrawer : NodeDrawerBase
+    internal class DecisionNodeDrawer : NodeDrawerBase, IHasCustomCameraView
     {
         private DecisionNode node  { get; set; }
         private DecisionNodeCommand command { get; set; }
@@ -33,7 +29,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             command = new DecisionNodeCommand(node);
 
-            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(inspectorText, labelStyleHead_Panel);
+            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -47,6 +43,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             ActorEditorDropdownIndex = node?.NodeConvodata?.Actor?.ActorName is string actorName
                 ? NodeManager.Instance.ActorsInScene().FindIndex(actor => actor.ActorName == actorName)
                 : -1;
+        }
+
+        public void UpdateCustomCamView()
+        {
+            nodeCameraOptionsDrawer.UpdateCustomCamView();
         }
 
         public override void DrawNode(int index)
@@ -144,7 +145,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
 
-            nodeCameraOptionsDrawer.DrawUICamCompOptions(node.NodeConvodata, command);
+            nodeCameraOptionsDrawer.DrawUICamCompOptions();
 
         }
 

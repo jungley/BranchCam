@@ -18,14 +18,12 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public static string customCamLock_nodeId;
 
+        //Called when a node is selected
         public CustomCameraCommand(Node node)
         {
             Node = node;
             var talkable = node as ITalkable;
             convoData = talkable.NodeConvodata; 
-
-            //RS TODO Update Camera Information here
-
         }
 
         public void Update(GameObject tempCustomCameraPosition)
