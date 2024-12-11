@@ -18,10 +18,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
     {
         private GUIStyle inspectorText { get; set; }
         private GUIStyle labelStyleHead_Panel { get; set; }
-
-
-        private static GameObject tempCustomCamera { get; set; }
-
         private ITalkable currentNode { get; set; } 
         private CustomCameraCommand currentCommand { get; set; }
     
@@ -33,21 +29,15 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             inspectorText = _inspectorText;
             labelStyleHead_Panel = _labelStyleHead_Panel;
+
+            //here
+            //When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
+            currentCommand.UpdateCustomCamera();
         }
 
-
-        //Triggered when clicked on in OnActiveNodeUpdated
-        public void UpdateCustomCamView()
-        {
-            //Delete the Temp CamObject if it exists
-            GameObject obj = GameObject.Find(BranchConstants.CustomCamera);
-            if (obj != null) GameObject.DestroyImmediate(obj);
-
-            if (currentNode.NodeConvodata.ShotConfig.IsCustomSet)
-            {
-                tempCustomCamera = currentCommand.PlaceCustomCam(currentNode.NodeConvodata);
-            }
-        }
+       
+        
+        
 
         public void DrawUICamCompOptions()
         {
@@ -71,7 +61,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             {
                 conversationData.ShotConfig.GoalType = selected_goal;
             }
-
 
             if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
             {
@@ -135,7 +124,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 //Set Camera Position if it has not already been set
                 //If user clicks from one custom node to another custom node, camera needs to be updated
-                currentCommand.Update(tempCustomCamera);
+                currentCommand.Update();
 
 
                 string buttonText = string.Empty;
@@ -146,7 +135,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     buttonText = "ReCreate Custom Camera";
                     if (GUILayout.Button(buttonText, GUILayout.Width(170), GUILayout.Height(30)))
                     {
-                        tempCustomCamera = currentCommand.PlaceCustomCam(conversationData);
+                        currentCommand.PlaceCustomCam(conversationData);
 
                     }
                 }
@@ -155,7 +144,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     buttonText = "Create Custom Camera";
                     if (GUILayout.Button(buttonText, GUILayout.Width(170), GUILayout.Height(30)))
                     {
-                        tempCustomCamera = currentCommand.PlaceCustomCam(conversationData);
+                        currentCommand.PlaceCustomCam(conversationData);
                     }
                 }
 
@@ -163,7 +152,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 else if (GUILayout.Button("Clear Camera", GUILayout.Width(170), GUILayout.Height(30)))
                 {
                     currentCommand.ClearCamera();
-                    tempCustomCamera = null;
                 }
 
 
@@ -171,11 +159,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 using (var customCameraScope = new GUILayout.HorizontalScope())
                 {
                     GUILayout.Label("Drag to set Cam:", inspectorText, GUILayout.Width(60));
-                    tempCustomCamera = (GameObject)EditorGUILayout.ObjectField(tempCustomCamera, typeof(GameObject), true);
-                    if (tempCustomCamera != null)
-                    {
-                        currentCommand.SetCustomCameraPosition(tempCustomCamera);
-                    }
+
+                    CustomCameraCommand.tempCustomCamera = (GameObject)EditorGUILayout.ObjectField(CustomCameraCommand.tempCustomCamera, typeof(GameObject), true);
+                    currentCommand.SetCustomCameraPosition();
+
                 }
 
                 //If Set Display the coordinates

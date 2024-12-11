@@ -145,16 +145,15 @@ public class NodeGraphEditorWindow : EditorWindow
 
     public void OnActiveNodeUpdated(object sender, PropertyChangedEventArgs e)
     {
+
+        ActiveNodeDrawView?.DeSelect();
+       
         //Update the Drawer
         if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
             ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(NodeManager.Instance.ActiveNode);
         }
 
-        if(ActiveNodeDrawView is IHasCustomCameraView view)
-        {
-            view.UpdateCustomCamView();
-        }
     }
 
 

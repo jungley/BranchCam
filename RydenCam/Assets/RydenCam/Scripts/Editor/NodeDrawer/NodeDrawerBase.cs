@@ -93,6 +93,8 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public abstract void DrawNodeInspector();
 
+        public abstract void DeSelect();
+
 
         public bool IsOverPoint(Vector2 mousePos)
         {

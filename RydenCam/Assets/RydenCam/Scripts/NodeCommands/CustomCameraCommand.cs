@@ -15,6 +15,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         private ConversationData convoData { get; set; }
 
+        public static GameObject tempCustomCamera { get; set; }
 
         public static string customCamLock_nodeId;
 
@@ -26,45 +27,14 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             convoData = talkable.NodeConvodata; 
         }
 
-        public void Update(GameObject tempCustomCameraPosition)
+        public void Update()
         {
 
-
-            if (tempCustomCameraPosition != null)
+            if (tempCustomCamera != null)
             {
-                //Update the position
-                convoData.ShotConfig.GlobalCustomCamPos = tempCustomCameraPosition.transform.position;
-                convoData.ShotConfig.GlobalCustomCamRot = tempCustomCameraPosition.transform.rotation;
-                Debug.Log("Setting cam position");
+                convoData.ShotConfig.GlobalCustomCamPos = tempCustomCamera.transform.position;
+                convoData.ShotConfig.GlobalCustomCamRot = tempCustomCamera.transform.rotation;
             }
-
-
-            /*
-
-            if (convoData.ShotConfig.IsCustomSet)
-            {
-                if (tempCustomCameraPosition != null)
-                {
-                    //Update the position
-                    convoData.ShotConfig.GlobalCustomCamPos = tempCustomCameraPosition.transform.position;
-                    convoData.ShotConfig.GlobalCustomCamRot = tempCustomCameraPosition.transform.rotation;
-                    Debug.Log("Setting cam position");
-                }
-
-                /*
-                else if (!GameObject.Find(BranchConstants.CustomCamera))
-                {
-                    PlaceCustomCam(convoData);
-                }
-                */
-                //tempCustomCameraPosition = ResetPosition(convoData);
-            /*
-            else
-            {
-                ClearCamera();
-            }
-            */
-            
         }
 
 
@@ -91,39 +61,64 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             */
         }
 
-        public void SetCustomCameraPosition(GameObject customCameraPosition)
+        public void SetCustomCameraPosition()
         {
+            if (tempCustomCamera == null) return;
+
             EnsureUniqueCustomCameraSelection(Node);
-            convoData.ShotConfig.GlobalCustomCamPos = customCameraPosition.transform.position;
-            convoData.ShotConfig.GlobalCustomCamRot = customCameraPosition.transform.rotation;
+            convoData.ShotConfig.GlobalCustomCamPos = tempCustomCamera.transform.position;
+            convoData.ShotConfig.GlobalCustomCamRot = tempCustomCamera.transform.rotation;
             GameObject target = GameObject.Find(convoData.Actor.ActorName);
             convoData.ShotConfig.LocalRelativeActorPos = target.transform.position;
             convoData.ShotConfig.LocalRelativeActorRot = target.transform.rotation;
         }
 
-        public void ClearCamera()
+
+
+        public void UpdateCustomCamera()
+        {
+            ITalkable talk = Node as ITalkable;
+           
+            PlaceCustomCam(talk.NodeConvodata);
+        }
+
+
+        public void ClearCameraSceneObject()
         {
             GameObject obj = GameObject.Find(BranchConstants.CustomCamera);
             if (obj != null) GameObject.DestroyImmediate(obj);
+
+            tempCustomCamera = null;
+        }
+
+        public void ClearCamera()
+        {
+            ClearCameraSceneObject();
 
             convoData.ShotConfig.GlobalCustomCamPos = Vector3.zero;
             convoData.ShotConfig.GlobalCustomCamRot = Quaternion.identity;
             convoData.ShotConfig.IsCustomSet = false;
         }
 
-        public GameObject PlaceCustomCam(ConversationData nodeConvodata)
+        public void PlaceCustomCam(ConversationData nodeConvodata)
         {
-            //Instantiate the CustomCamera Prefab
-            UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath(BranchConstants.CamPrefabPath, typeof(GameObject));
-            UnityEngine.Object obj = PrefabUtility.InstantiatePrefab(prefab);
-            GameObject cameraObject = (GameObject)obj;
+            if (nodeConvodata.ShotConfig.GoalType == CameraGoal.Custom && tempCustomCamera == null)
+            {
 
-            nodeConvodata.ShotConfig.IsCustomSet = true;
+                //Instantiate the CustomCamera Prefab
+                UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath(BranchConstants.CamPrefabPath, typeof(GameObject));
+                UnityEngine.Object obj = PrefabUtility.InstantiatePrefab(prefab);
+                GameObject cameraObject = (GameObject)obj;
 
-            //Place the Camera
-            PlaceCamera(nodeConvodata, cameraObject);
-            Selection.activeObject = cameraObject;
-            return cameraObject;
+                nodeConvodata.ShotConfig.IsCustomSet = true;
+
+                //Place the Camera
+                PlaceCamera(nodeConvodata, cameraObject);
+                Selection.activeObject = cameraObject;
+                tempCustomCamera = cameraObject;
+            }
+
+
         }
 
         public void PlaceCamera(ConversationData nodeConvodata, GameObject obj)

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DialogueNodeDrawer : NodeDrawerBase, IHasCustomCameraView
+    internal class DialogueNodeDrawer : NodeDrawerBase
     {
         private DialogueNode node { get; set; }
         private DialogueNodeCommand command { get; set; }
@@ -43,9 +43,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         }
 
-        public void UpdateCustomCamView()
+
+        public override void DeSelect()
         {
-            nodeCameraOptionsDrawer.UpdateCustomCamView();
+            command.CustomCameraCommand.ClearCameraSceneObject();
         }
 
         public override void DrawNode(int index)

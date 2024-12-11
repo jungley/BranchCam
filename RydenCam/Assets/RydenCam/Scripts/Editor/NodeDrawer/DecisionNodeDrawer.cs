@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DecisionNodeDrawer : NodeDrawerBase, IHasCustomCameraView
+    internal class DecisionNodeDrawer : NodeDrawerBase
     {
         private DecisionNode node  { get; set; }
         private DecisionNodeCommand command { get; set; }
@@ -45,11 +45,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 : -1;
         }
 
-        public void UpdateCustomCamView()
+        public override void DeSelect()
         {
-            nodeCameraOptionsDrawer.UpdateCustomCamView();
+            command.CustomCameraCommand.ClearCameraSceneObject();
         }
-
+        
         public override void DrawNode(int index)
         {
             GUI.backgroundColor = Color.gray;

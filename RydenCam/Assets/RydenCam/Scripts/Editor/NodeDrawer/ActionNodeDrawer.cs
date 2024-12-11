@@ -64,7 +64,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         }
 
+        public override void DeSelect()
+        {
 
+        }
 
         public override void DrawNodeInspector()
         {
@@ -142,5 +145,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             EditorGUILayout.EndScrollView();
         }
+
+
     }
 }
