@@ -1,6 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
-using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.SequenceData;
@@ -20,7 +19,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private GUIStyle labelStyleHead_Panel { get; set; }
         private ITalkable currentNode { get; set; } 
         private CustomCameraCommand currentCommand { get; set; }
-    
+
         public NodeCameraOptionsDrawer(ITalkable node, GUIStyle _inspectorText, GUIStyle _labelStyleHead_Panel)
         {
             currentNode = node;
@@ -30,14 +29,14 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             inspectorText = _inspectorText;
             labelStyleHead_Panel = _labelStyleHead_Panel;
 
-            //here
+
             //When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
             currentCommand.UpdateCustomCamera();
         }
 
-       
-        
-        
+
+
+
 
         public void DrawUICamCompOptions()
         {

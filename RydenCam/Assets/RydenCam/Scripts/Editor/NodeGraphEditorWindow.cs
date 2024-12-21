@@ -13,6 +13,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using System;
+using RydenCam.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -21,6 +23,7 @@ public class NodeGraphEditorWindow : EditorWindow
 {
     private NodeGraphViewModel viewModel;
     private NodeDrawerBase ActiveNodeDrawView { get; set; }
+    static DialoguePreview dialoguePreviewWindow { get; set; }
 
     //Window Properties
     static float panX = 0;
@@ -92,6 +95,8 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawNodes();
 
+        DrawPreviewWindows();
+
         DrawConnections();
 
         MousePan();
@@ -104,6 +109,23 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
     }
+
+    private void DrawPreviewWindows()
+    {
+        //draws the preview windows next to the nodes.
+        if (NodeGraphViewModel.RedrawPreviewWindows)
+        {
+            Debug.Log("Redrawing.");
+            dialoguePreviewWindow.DrawPreviewWindows(NodeManager.Instance.Nodes.ToList());
+        }
+        else
+        {
+            dialoguePreviewWindow.DrawCachedWindows(NodeManager.Instance.Nodes.ToList());
+        }
+
+        NodeGraphViewModel.RedrawPreviewWindows = false;
+    }
+
 
     private void MousePan()
     {
@@ -204,9 +226,27 @@ public class NodeGraphEditorWindow : EditorWindow
         panelstyle_button = new GUIStyle();
         panelstyle_button.normal.background = targetTextureButtonHeader;
 
+
+        //PreviewRender stuff
+        dialoguePreviewWindow = DialoguePreview.CreateAndPopulateMeshes(NodeManager.Instance.Nodes.Where(x => x is ITalkable).ToArray());
+
+        //OnNodePropertyChanged += editor.MarkForRedraw;
+        
+        //TODO:OnPropertyChanged should be on the node command
+        /*
+        for (int i = 0; i < NodeManager.Instance.Length; i++)
+        {
+            NodeManager.Instance.GetNode(i).OnPropertyChanged += (evt) => { OnNodePropertyChanged?.Invoke(evt); };
+        }
+        */
+
+        //MarkForRedraw();
+        NodeGraphViewModel.RedrawPreviewWindows = true;
+
+
         resourcesInitalized = true;
     }
-    
+
     void OnPlayModeStateChanged(PlayModeStateChange state)
     {
         if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.ExitingPlayMode)

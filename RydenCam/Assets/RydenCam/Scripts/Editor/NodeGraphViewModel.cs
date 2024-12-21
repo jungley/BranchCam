@@ -14,6 +14,8 @@ public class NodeGraphViewModel
 {
     public bool IsDrawingHandle { get; set; }
 
+    public static bool RedrawPreviewWindows { get; set; }
+
     public ConnectionPoint SelectedConnectionPoint { get; set; }
 
     public NodeGraphViewModel()
@@ -139,5 +141,6 @@ public class NodeGraphViewModel
 
         NodeManager.Instance.Nodes.Add(newNode);
         NodeManager.Instance.ActiveNode = newNode;
+        NodeGraphViewModel.RedrawPreviewWindows = true;
     }
 }
