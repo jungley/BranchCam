@@ -58,6 +58,8 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
+    private RibbonBuilder ribbonBuilder { get; set; }
+
     List<NodeDrawerBase> NodeDrawers { get; set; }
     List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
@@ -74,8 +76,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
     static bool resourcesInitalized { get; set; } = false;
 
-    //Ribbon Properties
-    private bool showDropdown = false;
 
     void OnGUI()
     {
@@ -103,7 +103,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         GUI.EndGroup();
 
-        DrawRibbon();
+        ribbonBuilder.DrawRibbon();
 
         DrawInspector();
 
@@ -133,7 +133,7 @@ public class NodeGraphEditorWindow : EditorWindow
         
         if (Event.current.type == EventType.MouseDrag &&
             //mouse not over 
-            !(InspectorPanelArea.Contains(mousePosition) || ButtonPanelArea.Contains(mousePosition)))
+            !(InspectorPanelArea.Contains(mousePosition) || ribbonBuilder.ButtonPanelArea.Contains(mousePosition)))
         {
             //The EditorWindow is not being dragged
             if (lastEditorWindowPos == position)
@@ -265,6 +265,8 @@ public class NodeGraphEditorWindow : EditorWindow
         //Event Handlers
         viewModel = new NodeGraphViewModel();
 
+        ribbonBuilder = new RibbonBuilder(viewModel);
+
         NodeManager.Instance.Nodes.CollectionChanged += OnNodesChanged;
         NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
         ConnectionManager.Instance.Connections.CollectionChanged += OnConnectionsChanged;
@@ -339,69 +341,15 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    private void DrawRibbon()
-    {
-        GUILayoutOption[] horizontalLayoutOptions = new GUILayoutOption[]
-        {
-                  GUILayout.Width(EditorGUIUtility.currentViewWidth),
-                  GUILayout.Height(30)
-        };
 
-        using (var horizontalScope = new GUILayout.HorizontalScope(panelstyle_button, horizontalLayoutOptions))
-        {
 
-            void HandleFileDropdownOption(string option)
-            {
-                switch (option)
-                {
-                    case "New":
-                        viewModel.NewFile();
-                        showDropdown = false;
-                        UpdateNodeDrawers();
-                        break;
-                    case "Save As":
-                        viewModel.SaveAs();
-                        showDropdown = false;
-                        break;
-                    default:
-                        break;
 
-                }
-            }
 
-            using (var scope = new GUILayout.VerticalScope(GUILayout.Width(100)))
-            {
-                if (GUILayout.Button("File", GUILayout.Width(100), GUILayout.Height(30))) showDropdown = !showDropdown;
-                if (showDropdown)
-                {
-                    foreach (var option in BranchConstants.FileDropdownOptions)
-                        if (GUILayout.Button(option, GUILayout.Width(100))) HandleFileDropdownOption(option);
-                }
-            }
 
-            if (GUILayout.Button("Save", GUILayout.Width(65), GUILayout.Height(30)))
-            {
-                viewModel.Save();
-            }
-            if (GUILayout.Button("Load", GUILayout.Width(65), GUILayout.Height(30)))
-            {
-                viewModel.Load();
-                UpdateNodeDrawers();
-            }
 
-            if (GUILayout.Button("Inkle Script View", GUILayout.Width(120), GUILayout.Height(30)))
-            {
-                //The next epic part of this tool
-            }
 
-            if (GUILayout.Button("Locate Global Settings", GUILayout.Width(140), GUILayout.Height(30)))
-            {
-                viewModel.LocateGlobalSettings();
-
-                
-            }
-        }
-    }
+        
+    
 
 
     //Because of event lifecycle, clicking has to be checked before DrawNodes()-> GUI.DragWindow() in NodeDrawer
