@@ -23,7 +23,6 @@ public class NodeGraphEditorWindow : EditorWindow
 {
     private NodeGraphViewModel viewModel;
     private NodeDrawerBase ActiveNodeDrawView { get; set; }
-    static DialoguePreview dialoguePreviewWindow { get; set; }
 
     //Window Properties
     static float panX = 0;
@@ -95,7 +94,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawNodes();
 
-        DrawPreviewWindows();
+       // DrawPreviewWindows();
 
         DrawConnections();
 
@@ -109,7 +108,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
     }
-
+    /*
     private void DrawPreviewWindows()
     {
         //draws the preview windows next to the nodes.
@@ -125,7 +124,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         NodeGraphViewModel.RedrawPreviewWindows = false;
     }
-
+    */
 
     private void MousePan()
     {
@@ -228,7 +227,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
         //PreviewRender stuff
-        dialoguePreviewWindow = DialoguePreview.CreateAndPopulateMeshes(NodeManager.Instance.Nodes.Where(x => x is ITalkable).ToArray());
+       // dialoguePreviewWindow = DialoguePreview.CreateAndPopulateMeshes(NodeManager.Instance.Nodes.Where(x => x is ITalkable).ToArray());
 
         //OnNodePropertyChanged += editor.MarkForRedraw;
         

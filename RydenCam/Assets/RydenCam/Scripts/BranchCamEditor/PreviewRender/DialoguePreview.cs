@@ -13,6 +13,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
     public class DialoguePreview
     {
+        private Node node { get; set; }
+
         static Dictionary<string, PreviewCameraRenderUtil> PreviewRenderMap { get; set; } = new Dictionary<string, PreviewCameraRenderUtil>();
 
         Texture2D blankTexture;
@@ -34,25 +36,21 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         public Dictionary<Node, Texture2D> CachedTextures = new();
         public Dictionary<Node, (GameObject focusTarget, List<(Mesh mesh, Material mat)> meshMat)> CachedActor = new();
         CameraCalculator CameraCalculator = new();
-        public static DialoguePreview CreateAndPopulateMeshes(Node[] nodes)
+
+        public static DialoguePreview CreateAndPopulateMeshes(Node node)
         {
-            var dialoguePreview = new DialoguePreview();
-            dialoguePreview.PopulateCachedMeshes(nodes);
+            var dialoguePreview = new DialoguePreview(node);
+            dialoguePreview.CreateActorCache();
             //BranchCamEditor.OnNodePropertyChanged += dialoguePreview.CreateActorCache;
             return dialoguePreview;
         }
 
-        private DialoguePreview() { }
-
-        void PopulateCachedMeshes(Node[] nodes)
+        private DialoguePreview(Node node) 
         {
-            foreach (var node in nodes)
-            {
-                CreateActorCache(node);
-            }
+            this.node = node;
         }
 
-        void CreateActorCache(Node node)
+        public void CreateActorCache()
         {
             if (node is not ITalkable dialogueNode) return;
 
@@ -72,30 +70,45 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             CachedActor[node] = (focusTarget, meshMatList);
         }
 
-        public void DrawPreviewWindows(List<Node> nodes)
+        //TODO: Create a single entry point that knows when to draw a new preview window or load a texture.
+        public void DrawWindow()
         {
-            foreach (var node in nodes)
+            DrawPreviewWindow();
+            /*
+            CachedTextures.TryGetValue(node, out Texture2D texture);
+            
+            if (texture == null)
             {
-                if (node is not ITalkable dialogueNode) continue;
-
-                var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y,
-                node.NodeWidth, node.NodeHeight);
-
-                PreviewCameraRenderUtil newUtil = new();
-
-                if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
-                {
-                    if (!CachedActor.ContainsKey(node)) CreateActorCache(node);
-
-                    newUtil.DrawSavePreview(windowRect, GetCamPose(node), GetActorPose(node), CachedActor[node].meshMat.ToArray());
-                    CachedTextures[node] = newUtil.CachedRenderTexture;
-                }
-
-                newUtil.Dispose();
+                DrawPreviewWindow();
             }
+            else
+            {
+                DrawCachedWindow();
+            }
+            */
         }
 
-        Pose GetActorPose(Node node) => new Pose(Vector3.zero, GetRotation(CachedActor[node].focusTarget.transform.position));
+        void DrawPreviewWindow()
+        {
+            if (node is not ITalkable dialogueNode) return;
+
+            var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y,
+            node.NodeWidth, node.NodeHeight);
+
+            PreviewCameraRenderUtil newUtil = new();
+
+            if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
+            {
+                if (!CachedActor.ContainsKey(node)) CreateActorCache();
+
+                newUtil.DrawSavePreview(windowRect, GetCamPose(), GetActorPose(), CachedActor[node].meshMat.ToArray());
+                CachedTextures[node] = newUtil.CachedRenderTexture;
+            }
+
+            newUtil.Dispose();
+        }
+
+        Pose GetActorPose() => new Pose(Vector3.zero, GetRotation(CachedActor[node].focusTarget.transform.position));
 
         Quaternion GetRotation(Vector3 pos)
         {
@@ -104,10 +117,18 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
             direction.y = 0;
 
-            return Quaternion.LookRotation(direction);
+            // Check if the direction vector is valid (non-zero), prevents warning message being spammed to console.
+            if (direction.sqrMagnitude > Mathf.Epsilon) 
+            {
+                return Quaternion.LookRotation(direction);
+            }
+            else
+            {
+                return Quaternion.identity;
+            }
         }
 
-        Pose GetCamPose(Node node)
+        Pose GetCamPose()
         {
             if (node is not ITalkable posNode) throw new ArgumentException($"Error: {node} is not {typeof(ITalkable)}");
 
@@ -127,28 +148,25 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             return new Pose(finalPosition, finalRotation);
         }
 
-        public void DrawCachedWindows(List<Node> nodes)
+        void DrawCachedWindow()
         {
-            foreach (var node in nodes)
+            if (node is not ITalkable) return;
+
+            CachedTextures.TryGetValue(node, out Texture2D texture);
+            if (texture == null) return;
+
+            //For some reason DrawPreviewWindow sometimes draws a blank texture and that gets cached. This prevents a blank texture from being drawn.
+
+            if (texture.IsTextureEmpty())
             {
-                if (node is not ITalkable) continue;
-
-                CachedTextures.TryGetValue(node, out Texture2D texture);
-                if (texture == null) continue;
-
-                //For some reason DrawPreviewWindow sometimes draws a blank texture and that gets cached. This prevents a blank texture from being drawn.
-
-                if (texture.IsTextureEmpty())
-                {
-                    DrawPreviewWindows(nodes);
-                    return;
-                }
-
-                var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y,
-                node.NodeWidth, node.NodeHeight);
-
-                GUI.DrawTexture(windowRect, CachedTextures[node]);
+                DrawPreviewWindow();
+                return;
             }
+
+            var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y,
+            node.NodeWidth, node.NodeHeight);
+
+            GUI.DrawTexture(windowRect, CachedTextures[node]);
         }
 
         private GameObject[] GetChildrenWithMeshes(Transform actorParent)

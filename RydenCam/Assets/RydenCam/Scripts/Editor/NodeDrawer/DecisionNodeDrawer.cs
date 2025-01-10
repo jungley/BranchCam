@@ -1,6 +1,7 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
 using System.Linq;
 using UnityEditor;
@@ -12,7 +13,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
     {
         private DecisionNode node  { get; set; }
         private DecisionNodeCommand command { get; set; }
-
+        private DialoguePreview preview { get; set; }
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
 
@@ -29,7 +30,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             command = new DecisionNodeCommand(node);
 
+            preview = DialoguePreview.CreateAndPopulateMeshes(node);
+
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
+            nodeCameraOptionsDrawer.OnPropertyChange += () => preview.DrawWindow();
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -147,6 +151,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             nodeCameraOptionsDrawer.DrawUICamCompOptions();
 
+            preview.DrawWindow();
         }
 
         //Draws and recalculates the spacing of the decision out points based on
