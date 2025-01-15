@@ -10,17 +10,24 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
     public class PreviewCameraRenderUtil
     {
-        public PreviewRenderUtility PreviewRenderUtility { get; set; }
-        public Texture2D CachedRenderTexture { get; set; }
-        public PreviewCameraRenderUtil()
+        private PreviewRenderUtility _previewRenderUtility { get; set; }
+        public PreviewRenderUtility PreviewRenderUtility
         {
-            PreviewRenderUtility = new PreviewRenderUtility();
+            get
+            {
+                if(_previewRenderUtility == null || _previewRenderUtility.camera == null)
+                {
+                    _previewRenderUtility = new PreviewRenderUtility();
+                    _previewRenderUtility.camera.fieldOfView = 40;
+                    _previewRenderUtility.camera.nearClipPlane = 0.01f;
+                    _previewRenderUtility.camera.farClipPlane = 20;
+                }
 
-            //Initialize Camera Settings
-            PreviewRenderUtility.camera.fieldOfView = 40;
-            PreviewRenderUtility.camera.nearClipPlane = 0.01f;
-            PreviewRenderUtility.camera.farClipPlane = 20;
+                return _previewRenderUtility;   
+            }
         }
+        public Texture2D CachedRenderTexture { get; set; }
+        public PreviewCameraRenderUtil() { }
 
         internal void DrawSavePreview(Rect windowRect, Pose camPose, Pose objPose, (Mesh mesh, Material mat)[] meshMats)
         {
@@ -68,7 +75,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             if (PreviewRenderUtility != null)
             {
                 PreviewRenderUtility.Cleanup();
-                PreviewRenderUtility = null;
             }
         }
 

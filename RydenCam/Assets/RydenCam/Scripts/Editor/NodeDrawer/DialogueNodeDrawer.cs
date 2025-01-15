@@ -25,7 +25,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         {
             node = _node as DialogueNode;
             command = new DialogueNodeCommand(node);
-            preview = DialoguePreview.CreateAndPopulateMeshes(node);
+            preview = new DialoguePreview(node);
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
             nodeCameraOptionsDrawer.OnPropertyChange += () => preview.DrawWindow();
