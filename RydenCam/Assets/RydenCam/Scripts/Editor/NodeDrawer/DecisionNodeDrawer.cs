@@ -13,7 +13,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
     {
         private DecisionNode node  { get; set; }
         private DecisionNodeCommand command { get; set; }
-        private DialoguePreview preview { get; set; }
+        private DialoguePreview<DecisionNode> preview { get; set; }
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
 
@@ -30,10 +30,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             command = new DecisionNodeCommand(node);
 
-            preview = new DialoguePreview(node);
+            preview = new DialoguePreview<DecisionNode>(node);
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.OnPropertyChange += () => preview.DrawWindow();
+            nodeCameraOptionsDrawer.OnPropertyChange += () => preview.UpdateShotRender();
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -151,7 +151,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             nodeCameraOptionsDrawer.DrawUICamCompOptions();
 
-            preview.DrawWindow();
+            preview.DrawPreviewWindow();
         }
 
         //Draws and recalculates the spacing of the decision out points based on

@@ -1,0 +1,59 @@
+﻿using System.Collections;
+using UnityEditor;
+using UnityEngine;
+
+namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
+{
+    public class PreviewRenderer
+    {
+        public Texture2D CachedRenderTexture { get; set; }
+
+        private PreviewRenderUtility _prevRenderUtility { get; set; }
+        private PreviewRenderUtility previewRenderUtility
+        {
+            get
+            {
+                if (_prevRenderUtility == null || _prevRenderUtility.camera == null)
+                {
+                    _prevRenderUtility = new PreviewRenderUtility();
+                    _prevRenderUtility.camera.fieldOfView = 40;
+                    _prevRenderUtility.camera.nearClipPlane = 0.01f;
+                    _prevRenderUtility.camera.farClipPlane = 20;
+                }
+
+                return _prevRenderUtility;
+            }
+        }
+
+        public PreviewRenderer()
+        {
+
+        }
+
+        public void RenderPreview(Rect windowRect, Pose camPose, Pose actorPose, ActorMeshPreviewData actorMeshData)
+        {
+            previewRenderUtility.BeginStaticPreview(windowRect);
+
+            foreach (var meshMat in actorMeshData.MeshMat)
+            {
+                if (meshMat.Mesh == null) continue;
+
+                // Use custom matrix for actor pose
+                Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation, Vector3.one);
+                previewRenderUtility.DrawMesh(meshMat.Mesh, customMatrix, meshMat.Mat, 0);
+            }
+
+            previewRenderUtility.Render();
+            CachedRenderTexture = previewRenderUtility.EndStaticPreview();
+
+            GUI.DrawTexture(windowRect, CachedRenderTexture);
+
+            previewRenderUtility.Cleanup();
+        }
+
+        public void SetCameraPose(Pose camPose)
+        {
+            previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
+        }
+    }
+}
