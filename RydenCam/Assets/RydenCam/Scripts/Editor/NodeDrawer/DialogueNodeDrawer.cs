@@ -86,9 +86,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 }, "");
 
+            preview.DrawPreviewWindow();
+
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
 
-            preview.DrawPreviewWindow();
         }
 
         public override void DrawNodeInspector()
@@ -103,6 +104,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             if (indexx != ActorEditorDropdownIndex)
             {
                 command.AssignNewActor(indexx);
+                preview.UpdateShotRender();
                 ActorEditorDropdownIndex = indexx;
             }
 

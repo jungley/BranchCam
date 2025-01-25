@@ -95,6 +95,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                  }, "");
 
+            preview.DrawPreviewWindow();
+
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
 
@@ -109,6 +111,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             if(indexx != ActorEditorDropdownIndex)
             {
                 command.AssignNewActor(indexx);
+                preview.UpdateShotRender();
                 ActorEditorDropdownIndex = indexx;
             }
 
@@ -149,9 +152,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
 
-            nodeCameraOptionsDrawer.DrawUICamCompOptions();
-
-            preview.DrawPreviewWindow();
+            nodeCameraOptionsDrawer.DrawUICamCompOptions();        
         }
 
         //Draws and recalculates the spacing of the decision out points based on

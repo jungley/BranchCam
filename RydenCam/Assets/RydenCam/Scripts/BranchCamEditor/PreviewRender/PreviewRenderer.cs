@@ -25,14 +25,11 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             }
         }
 
-        public PreviewRenderer()
-        {
-
-        }
-
         public void RenderPreview(Rect windowRect, Pose camPose, Pose actorPose, ActorMeshPreviewData actorMeshData)
         {
             previewRenderUtility.BeginStaticPreview(windowRect);
+
+            previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
 
             foreach (var meshMat in actorMeshData.MeshMat)
             {
@@ -49,11 +46,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             GUI.DrawTexture(windowRect, CachedRenderTexture);
 
             previewRenderUtility.Cleanup();
-        }
-
-        public void SetCameraPose(Pose camPose)
-        {
-            previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
         }
     }
 }

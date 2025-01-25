@@ -26,9 +26,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             previewRenderer = new PreviewRenderer();
         }
 
-        //Called when shot is updated
         public void UpdateShotRender()
         {
+            //Re Initialize the preview renderer
             Initailize();
         }
 
@@ -44,7 +44,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return;
             }
             */
-
+            
             ComposePreviewImage(windowRect);
         }
 
@@ -54,8 +54,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             {
                 Pose camPose = cameraPoseCalculator.CalculateCameraPose(node.NodeConvodata.ShotConfig, actorMeshManager.CachedActorMesh.FocusTarget.transform);
                 Pose actorPose = GetActorPreviewPositionData();
-
-                previewRenderer.SetCameraPose(camPose);
 
                 previewRenderer.RenderPreview(windowRect, camPose, actorPose, actorMeshManager.CachedActorMesh);
             }
@@ -71,16 +69,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             direction.y = 0;
 
             // Check if the direction vector is valid (non-zero), prevents warning message being spammed to console.
-            Quaternion rotation;
-
-            if (direction.sqrMagnitude > Mathf.Epsilon)
-            {
-               rotation = Quaternion.LookRotation(direction);
-            }
-            else
-            {
-                rotation =  Quaternion.identity;
-            }
+            Quaternion rotation = (direction.sqrMagnitude > Mathf.Epsilon) ? Quaternion.LookRotation(direction) : Quaternion.identity;
 
             return new Pose(Vector3.zero, rotation);
 

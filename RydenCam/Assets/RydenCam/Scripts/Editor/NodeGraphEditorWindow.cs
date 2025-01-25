@@ -166,13 +166,12 @@ public class NodeGraphEditorWindow : EditorWindow
 
     public void OnActiveNodeUpdated(object sender, PropertyChangedEventArgs e)
     {
-
         ActiveNodeDrawView?.DeSelect();
        
         //Update the Drawer
         if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
-            ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(NodeManager.Instance.ActiveNode);
+            ActiveNodeDrawView = NodeDrawers.FirstOrDefault(x => x.Node == NodeManager.Instance.ActiveNode);
         }
 
     }
@@ -197,7 +196,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         InitializeStaticResources();
 
-        window.UpdateNodeDrawers();
+        window.CreateInitialNodeDrawers();
 
         window.ShowUtility();
     }
@@ -271,7 +270,7 @@ public class NodeGraphEditorWindow : EditorWindow
         ConnectionManager.Instance.Connections.CollectionChanged += OnConnectionsChanged;
 
         //Draw Nodes
-        UpdateNodeDrawers();
+        CreateInitialNodeDrawers();
         UpdateConnectionDrawers();
     }
 
@@ -288,10 +287,26 @@ public class NodeGraphEditorWindow : EditorWindow
         UpdateConnectionDrawers();
     }
     
-
     private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
-        UpdateNodeDrawers();
+        if (e.Action == NotifyCollectionChangedAction.Add)
+        {
+            foreach (var node in e.NewItems.Cast<Node>().ToList())
+            {
+                NodeDrawers.Add(NodeDrawerFactory.CreateNodeDrawer(node));
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Remove)
+        {
+            foreach (var node in e.OldItems.Cast<Node>().ToList())
+            {
+                NodeDrawers.Remove(NodeDrawers.FirstOrDefault(x => x.Node == node));
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            NodeDrawers.Clear();
+        }
     }
 
     private void UpdateConnectionDrawers()
@@ -301,11 +316,12 @@ public class NodeGraphEditorWindow : EditorWindow
             .ToList();
     }
 
-    private void UpdateNodeDrawers()
+    
+    private void CreateInitialNodeDrawers()
     {
         NodeDrawers = NodeManager.Instance.Nodes.Select(node => NodeDrawerFactory.CreateNodeDrawer(node)).ToList();
     }
-
+    
     private void DrawInspector()
     {
 

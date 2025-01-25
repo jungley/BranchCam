@@ -6,7 +6,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 {
     public class ActorMeshManager
     {
-        public ActorMeshPreviewData CachedActorMesh { get; private set; }
+        public ActorMeshPreviewData CachedActorMesh { get; set; }
 
         public ActorMeshManager(GameObject focusTarget)
         {
@@ -44,6 +44,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
         private void FindMeshChildren(Transform parent, List<GameObject> meshChildren)
         {
+            if (parent == null) return;
+
             foreach (Transform child in parent)
             {
                 if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
