@@ -6,7 +6,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 {
     public class PreviewRenderer
     {
-        public Texture2D CachedRenderTexture { get; set; }
+        public Texture CachedRenderTexture { get; set; }
 
         private PreviewRenderUtility _prevRenderUtility { get; set; }
         private PreviewRenderUtility previewRenderUtility
@@ -27,7 +27,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
         public void RenderPreview(Rect windowRect, Pose camPose, Pose actorPose, ActorMeshPreviewData actorMeshData)
         {
-            previewRenderUtility.BeginStaticPreview(windowRect);
+            previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
+
 
             previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
 
@@ -39,9 +40,11 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                 Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation, Vector3.one);
                 previewRenderUtility.DrawMesh(meshMat.Mesh, customMatrix, meshMat.Mat, 0);
             }
-
+            
             previewRenderUtility.Render();
-            CachedRenderTexture = previewRenderUtility.EndStaticPreview();
+
+            CachedRenderTexture = previewRenderUtility.EndPreview();
+
 
             GUI.DrawTexture(windowRect, CachedRenderTexture);
 
