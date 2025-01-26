@@ -1,6 +1,7 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
 using System.Linq;
 using UnityEditor;
@@ -12,7 +13,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
     {
         private DialogueNode node { get; set; }
         private DialogueNodeCommand command { get; set; }
-
+        private DialoguePreview<DialogueNode> preview { get; set; }
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
         private GUIStyle decisionTextArea { get; set; }
@@ -24,8 +25,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         {
             node = _node as DialogueNode;
             command = new DialogueNodeCommand(node);
+            preview = new DialoguePreview<DialogueNode>(node);
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
+            nodeCameraOptionsDrawer.OnPropertyChange += () => preview.UpdateShotRender();
 
             //Text
             decisionTextArea = new GUIStyle(EditorStyles.textArea);
@@ -42,7 +45,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 : -1;
 
         }
-
 
         public override void DeSelect()
         {
@@ -84,7 +86,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 }, "");
 
+            preview.DrawPreviewWindow();
+
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
+
         }
 
         public override void DrawNodeInspector()
@@ -99,6 +104,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             if (indexx != ActorEditorDropdownIndex)
             {
                 command.AssignNewActor(indexx);
+                preview.UpdateShotRender();
                 ActorEditorDropdownIndex = indexx;
             }
 

@@ -1,18 +1,17 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
-using Assets.RydenCam.Scripts.Editor.NodeDrawer;
 using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Common;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using UnityEditor;
 using UnityEngine;
 
 public class NodeGraphViewModel
 {
     public bool IsDrawingHandle { get; set; }
+
+    public static bool RedrawPreviewWindows { get; set; }
 
     public ConnectionPoint SelectedConnectionPoint { get; set; }
 
@@ -60,7 +59,7 @@ public class NodeGraphViewModel
         }
     }
 
-    public void Load()
+    public void Open()
     {
         if (LoadFile.HasDialogueFile(BranchConstants.LoadFolderPanelTitle, BranchConstants.LoadFolderPanelTitle))
         {
@@ -100,6 +99,12 @@ public class NodeGraphViewModel
 
         GlobalSettingsData globalSetting = FindGlobalSetting();
 
+        //Focus on the Project Tab
+        System.Type projectType = typeof(Editor).Assembly.GetType("UnityEditor.ProjectBrowser");
+        EditorWindow projectWindow = EditorWindow.GetWindow(projectType);
+        projectWindow?.Focus();
+
+
         if (globalSetting != null)
         {
             // Asset exists, ping it
@@ -113,6 +118,11 @@ public class NodeGraphViewModel
             AssetDatabase.SaveAssets();
             EditorGUIUtility.PingObject(globalSetting);
         }
+    }
+
+    public void ToggleNodePreviewRender()
+    {
+        //RS TODO
     }
 
     public void AddNode(Vector2 position, NodeType nodeType)

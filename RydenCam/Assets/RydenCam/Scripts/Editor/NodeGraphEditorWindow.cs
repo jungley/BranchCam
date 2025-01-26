@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -12,7 +11,7 @@ using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using RydenCam.BranchCamEditor.Nodes.Connections;
-using System;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -55,6 +54,8 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
+    private RibbonBuilder ribbonBuilder { get; set; }
+
     List<NodeDrawerBase> NodeDrawers { get; set; }
     List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
@@ -71,8 +72,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
     static bool resourcesInitalized { get; set; } = false;
 
-    //Ribbon Properties
-    private bool showDropdown = false;
 
     void OnGUI()
     {
@@ -98,7 +97,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         GUI.EndGroup();
 
-        DrawRibbon();
+        ribbonBuilder.DrawRibbon();
 
         DrawInspector();
 
@@ -111,7 +110,7 @@ public class NodeGraphEditorWindow : EditorWindow
         
         if (Event.current.type == EventType.MouseDrag &&
             //mouse not over 
-            !(InspectorPanelArea.Contains(mousePosition) || ButtonPanelArea.Contains(mousePosition)))
+            !(InspectorPanelArea.Contains(mousePosition) || ribbonBuilder.ButtonPanelArea.Contains(mousePosition)))
         {
             //The EditorWindow is not being dragged
             if (lastEditorWindowPos == position)
@@ -145,13 +144,11 @@ public class NodeGraphEditorWindow : EditorWindow
 
     public void OnActiveNodeUpdated(object sender, PropertyChangedEventArgs e)
     {
-
         ActiveNodeDrawView?.DeSelect();
        
-        //Update the Drawer
         if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
-            ActiveNodeDrawView = NodeDrawerFactory.CreateNodeDrawer(NodeManager.Instance.ActiveNode);
+            ActiveNodeDrawView = NodeDrawers.FirstOrDefault(x => x.Node == NodeManager.Instance.ActiveNode);
         }
 
     }
@@ -159,10 +156,9 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
 
-[MenuItem("Window/Node Graph Editor-(BranchCamCC)")]
+    [MenuItem("BranchCam/Launch Editor")]
     public static void OpenWindow()
     {
-        //SetUp UI
         NodeGraphEditorWindow window = GetWindow<NodeGraphEditorWindow>();
         window.titleContent = new GUIContent("Window/Node Graph Editor-(BranchCamCC)");
         window.minSize = new Vector2(400f, 400f);
@@ -176,7 +172,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         InitializeStaticResources();
 
-        window.UpdateNodeDrawers();
+        window.CreateInitialNodeDrawers();
 
         window.ShowUtility();
     }
@@ -204,9 +200,10 @@ public class NodeGraphEditorWindow : EditorWindow
         panelstyle_button = new GUIStyle();
         panelstyle_button.normal.background = targetTextureButtonHeader;
 
+
         resourcesInitalized = true;
     }
-    
+
     void OnPlayModeStateChanged(PlayModeStateChange state)
     {
         if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.ExitingPlayMode)
@@ -222,15 +219,17 @@ public class NodeGraphEditorWindow : EditorWindow
     {
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
-        //Event Handlers
+        //Handles events in the NodeGraphWindow
         viewModel = new NodeGraphViewModel();
+
+        ribbonBuilder = new RibbonBuilder(viewModel);
 
         NodeManager.Instance.Nodes.CollectionChanged += OnNodesChanged;
         NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
         ConnectionManager.Instance.Connections.CollectionChanged += OnConnectionsChanged;
 
-        //Draw Nodes
-        UpdateNodeDrawers();
+        //Draw Nodes & connections
+        CreateInitialNodeDrawers();
         UpdateConnectionDrawers();
     }
 
@@ -247,10 +246,26 @@ public class NodeGraphEditorWindow : EditorWindow
         UpdateConnectionDrawers();
     }
     
-
     private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
-        UpdateNodeDrawers();
+        if (e.Action == NotifyCollectionChangedAction.Add)
+        {
+            foreach (var node in e.NewItems.Cast<Node>().ToList())
+            {
+                NodeDrawers.Add(NodeDrawerFactory.CreateNodeDrawer(node));
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Remove)
+        {
+            foreach (var node in e.OldItems.Cast<Node>().ToList())
+            {
+                NodeDrawers.Remove(NodeDrawers.FirstOrDefault(x => x.Node == node));
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            NodeDrawers.Clear();
+        }
     }
 
     private void UpdateConnectionDrawers()
@@ -260,11 +275,12 @@ public class NodeGraphEditorWindow : EditorWindow
             .ToList();
     }
 
-    private void UpdateNodeDrawers()
+    
+    private void CreateInitialNodeDrawers()
     {
         NodeDrawers = NodeManager.Instance.Nodes.Select(node => NodeDrawerFactory.CreateNodeDrawer(node)).ToList();
     }
-
+    
     private void DrawInspector()
     {
 
@@ -299,69 +315,15 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    private void DrawRibbon()
-    {
-        GUILayoutOption[] horizontalLayoutOptions = new GUILayoutOption[]
-        {
-                  GUILayout.Width(EditorGUIUtility.currentViewWidth),
-                  GUILayout.Height(30)
-        };
 
-        using (var horizontalScope = new GUILayout.HorizontalScope(panelstyle_button, horizontalLayoutOptions))
-        {
 
-            void HandleFileDropdownOption(string option)
-            {
-                switch (option)
-                {
-                    case "New":
-                        viewModel.NewFile();
-                        showDropdown = false;
-                        UpdateNodeDrawers();
-                        break;
-                    case "Save As":
-                        viewModel.SaveAs();
-                        showDropdown = false;
-                        break;
-                    default:
-                        break;
 
-                }
-            }
 
-            using (var scope = new GUILayout.VerticalScope(GUILayout.Width(100)))
-            {
-                if (GUILayout.Button("File", GUILayout.Width(100), GUILayout.Height(30))) showDropdown = !showDropdown;
-                if (showDropdown)
-                {
-                    foreach (var option in BranchConstants.FileDropdownOptions)
-                        if (GUILayout.Button(option, GUILayout.Width(100))) HandleFileDropdownOption(option);
-                }
-            }
 
-            if (GUILayout.Button("Save", GUILayout.Width(65), GUILayout.Height(30)))
-            {
-                viewModel.Save();
-            }
-            if (GUILayout.Button("Load", GUILayout.Width(65), GUILayout.Height(30)))
-            {
-                viewModel.Load();
-                UpdateNodeDrawers();
-            }
 
-            if (GUILayout.Button("Inkle Script View", GUILayout.Width(120), GUILayout.Height(30)))
-            {
-                //The next epic part of this tool
-            }
 
-            if (GUILayout.Button("Locate Global Settings", GUILayout.Width(140), GUILayout.Height(30)))
-            {
-                viewModel.LocateGlobalSettings();
-
-                
-            }
-        }
-    }
+        
+    
 
 
     //Because of event lifecycle, clicking has to be checked before DrawNodes()-> GUI.DragWindow() in NodeDrawer
@@ -485,7 +447,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
     private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
-    {
+    {     
         GUI.DrawTexture(new Rect(0, 0, maxSize.x, maxSize.y), tex, ScaleMode.StretchToFill);
 
         Vector2 offset = new Vector2(panX, panY);
@@ -512,6 +474,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
         Handles.color = Color.white;
         Handles.EndGUI();
-
+        
     }
 }

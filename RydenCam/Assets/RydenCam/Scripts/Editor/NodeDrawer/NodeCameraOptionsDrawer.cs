@@ -1,6 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
-using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.SequenceData;
@@ -20,7 +19,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private GUIStyle labelStyleHead_Panel { get; set; }
         private ITalkable currentNode { get; set; } 
         private CustomCameraCommand currentCommand { get; set; }
-    
+        public event Action OnPropertyChange;
+
         public NodeCameraOptionsDrawer(ITalkable node, GUIStyle _inspectorText, GUIStyle _labelStyleHead_Panel)
         {
             currentNode = node;
@@ -30,14 +30,14 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             inspectorText = _inspectorText;
             labelStyleHead_Panel = _labelStyleHead_Panel;
 
-            //here
+
             //When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
             currentCommand.UpdateCustomCamera();
         }
 
-       
-        
-        
+
+
+
 
         public void DrawUICamCompOptions()
         {
@@ -60,6 +60,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             if (conversationData.ShotConfig.GoalType != selected_goal)
             {
                 conversationData.ShotConfig.GoalType = selected_goal;
+                OnPropertyChange?.Invoke();
             }
 
             if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
@@ -90,6 +91,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 if (conversationData.ShotConfig.GoalDistance != (CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist))
                 {
                     conversationData.ShotConfig.GoalDistance = ((CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist));
+                    OnPropertyChange?.Invoke();
                 }
                 GUILayout.EndHorizontal();
 
@@ -100,6 +102,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 if (conversationData.ShotConfig.GoalAngle != (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle))
                 {
                     conversationData.ShotConfig.GoalAngle = ((CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle));
+                    OnPropertyChange?.Invoke();
                 }
                 GUILayout.EndHorizontal();
             }
