@@ -447,7 +447,8 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
     private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
-    {     
+    {
+        /*
         GUI.DrawTexture(new Rect(0, 0, maxSize.x, maxSize.y), tex, ScaleMode.StretchToFill);
 
         Vector2 offset = new Vector2(panX, panY);
@@ -474,6 +475,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         Handles.color = Color.white;
         Handles.EndGUI();
-        
+        */
+
     }
 }
