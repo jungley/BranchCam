@@ -29,7 +29,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
         {
             previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
 
-
             previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
 
             foreach (var meshMat in actorMeshData.MeshMat)
@@ -44,7 +43,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             previewRenderUtility.Render();
 
             CachedRenderTexture = previewRenderUtility.EndPreview();
-
 
             GUI.DrawTexture(windowRect, CachedRenderTexture);
 

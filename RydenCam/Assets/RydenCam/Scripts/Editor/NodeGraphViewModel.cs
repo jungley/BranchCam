@@ -149,6 +149,5 @@ public class NodeGraphViewModel
 
         NodeManager.Instance.Nodes.Add(newNode);
         NodeManager.Instance.ActiveNode = newNode;
-        NodeGraphViewModel.RedrawPreviewWindows = true;
     }
 }

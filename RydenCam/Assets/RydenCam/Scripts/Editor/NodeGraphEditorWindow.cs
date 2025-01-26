@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -12,8 +11,6 @@ using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using RydenCam.BranchCamEditor.Nodes.Connections;
-using System;
-using RydenCam.BranchCamEditor.PreviewRender;
 using Assets.RydenCam.Scripts.BranchCamCC;
 
 //NodeGraphEditorWindow is the View in MVVM
@@ -94,8 +91,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawNodes();
 
-       // DrawPreviewWindows();
-
         DrawConnections();
 
         MousePan();
@@ -108,23 +103,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
     }
-    /*
-    private void DrawPreviewWindows()
-    {
-        //draws the preview windows next to the nodes.
-        if (NodeGraphViewModel.RedrawPreviewWindows)
-        {
-            Debug.Log("Redrawing.");
-            dialoguePreviewWindow.DrawPreviewWindows(NodeManager.Instance.Nodes.ToList());
-        }
-        else
-        {
-            dialoguePreviewWindow.DrawCachedWindows(NodeManager.Instance.Nodes.ToList());
-        }
-
-        NodeGraphViewModel.RedrawPreviewWindows = false;
-    }
-    */
 
     private void MousePan()
     {
@@ -168,7 +146,6 @@ public class NodeGraphEditorWindow : EditorWindow
     {
         ActiveNodeDrawView?.DeSelect();
        
-        //Update the Drawer
         if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
             ActiveNodeDrawView = NodeDrawers.FirstOrDefault(x => x.Node == NodeManager.Instance.ActiveNode);
@@ -179,10 +156,9 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
 
-[MenuItem("Window/Node Graph Editor-(BranchCamCC)")]
+    [MenuItem("BranchCam/Launch Editor")]
     public static void OpenWindow()
     {
-        //SetUp UI
         NodeGraphEditorWindow window = GetWindow<NodeGraphEditorWindow>();
         window.titleContent = new GUIContent("Window/Node Graph Editor-(BranchCamCC)");
         window.minSize = new Vector2(400f, 400f);
@@ -225,23 +201,6 @@ public class NodeGraphEditorWindow : EditorWindow
         panelstyle_button.normal.background = targetTextureButtonHeader;
 
 
-        //PreviewRender stuff
-       // dialoguePreviewWindow = DialoguePreview.CreateAndPopulateMeshes(NodeManager.Instance.Nodes.Where(x => x is ITalkable).ToArray());
-
-        //OnNodePropertyChanged += editor.MarkForRedraw;
-        
-        //TODO:OnPropertyChanged should be on the node command
-        /*
-        for (int i = 0; i < NodeManager.Instance.Length; i++)
-        {
-            NodeManager.Instance.GetNode(i).OnPropertyChanged += (evt) => { OnNodePropertyChanged?.Invoke(evt); };
-        }
-        */
-
-        //MarkForRedraw();
-        NodeGraphViewModel.RedrawPreviewWindows = true;
-
-
         resourcesInitalized = true;
     }
 
@@ -260,7 +219,7 @@ public class NodeGraphEditorWindow : EditorWindow
     {
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
-        //Event Handlers
+        //Handles events in the NodeGraphWindow
         viewModel = new NodeGraphViewModel();
 
         ribbonBuilder = new RibbonBuilder(viewModel);
@@ -269,7 +228,7 @@ public class NodeGraphEditorWindow : EditorWindow
         NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
         ConnectionManager.Instance.Connections.CollectionChanged += OnConnectionsChanged;
 
-        //Draw Nodes
+        //Draw Nodes & connections
         CreateInitialNodeDrawers();
         UpdateConnectionDrawers();
     }
@@ -488,7 +447,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
     private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
-    {
+    {     
         GUI.DrawTexture(new Rect(0, 0, maxSize.x, maxSize.y), tex, ScaleMode.StretchToFill);
 
         Vector2 offset = new Vector2(panX, panY);
@@ -515,6 +474,6 @@ public class NodeGraphEditorWindow : EditorWindow
 
         Handles.color = Color.white;
         Handles.EndGUI();
-
+        
     }
 }
