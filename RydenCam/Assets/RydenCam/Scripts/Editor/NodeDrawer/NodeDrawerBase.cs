@@ -29,6 +29,7 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public Rect WindowRect { get; set; }
 
+        public bool IsActive => NodeManager.Instance.ActiveNode?.NodeId == Node.NodeId;
 
         private Texture2D _headerTexture { get; set; }
         protected Texture2D HeaderTexture
@@ -43,6 +44,41 @@ namespace Assets.RydenCam.Scripts.Editor
                 }
 
                 return _headerTexture;
+            }
+        }
+
+        private Texture2D highlightText { get; set; } 
+        protected Texture2D HighlightTex
+        {
+            get
+            {
+                if (highlightText == null)
+                {
+                    Rect rect = new Rect(WindowRect);
+                    // Create Highlight Texture2D
+                    highlightText = new Texture2D((int)rect.width, (int)rect.height);
+                    int borderwidth = 2;
+                    Color[] textureColors = new Color[highlightText.width * highlightText.height];
+
+                    for (int y = 0; y < highlightText.height; y++)
+                    {
+                        for (int x = 0; x < highlightText.width; x++)
+                        {
+                            // Check if the pixel is within the border region
+                            Color colResult = (x >= (highlightText.width - borderwidth) || x <= borderwidth || y <= borderwidth || y >= (highlightText.height - borderwidth))
+                                ? NodeColor
+                                : Color.clear;
+
+                            textureColors[y * highlightText.width + x] = colResult; // Set the pixel color in the array
+                        }
+                    }
+
+                    // Apply all changes at once for performance reasons
+                    highlightText.SetPixels(textureColors);
+                    highlightText.Apply();
+                }
+
+                return highlightText;
             }
         }
 
@@ -95,6 +131,17 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public abstract void DeSelect();
 
+        public void HighlightSelctedNode()
+        {
+            Rect expandedRect = new Rect(
+                WindowRect.x - 2,               // Shift left by 5
+                WindowRect.y - 2,               // Shift down by 5
+                WindowRect.width + 4,           // Increase width by 10 (5 left + 5 right)
+                WindowRect.height + 4           // Increase height by 10 (5 up + 5 down)
+            );
+
+           GUI.DrawTextureWithTexCoords(expandedRect, HighlightTex, new Rect(0, 0, 1, 1.0f));
+        }
 
         public bool IsOverPoint(Vector2 mousePos)
         {

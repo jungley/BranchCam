@@ -35,7 +35,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawPreviewWindow()
         {
-            var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
+            var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
             /* TODO use Cached Image render result
             if (previewRenderer.CachedRenderTexture != null)
             {

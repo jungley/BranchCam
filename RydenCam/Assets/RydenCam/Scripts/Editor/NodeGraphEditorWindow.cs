@@ -25,20 +25,7 @@ public class NodeGraphEditorWindow : EditorWindow
     static float panX = 0;
     static float panY = 0;
     private Rect lastEditorWindowPos;
-    static Texture2D _tt { get; set; }
-    static Texture2D tex
-    {
-        get
-        {
-            if (_tt == null)
-            {
-                _tt = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                _tt.SetPixel(0, 0, new Color(0f, 0f, 0f));
-                _tt.Apply();
-            }
-            return _tt;
-        }
-    }
+
     static Texture2D _targetTextureInspector { get; set; }
     static Texture2D TargetTextureInspector
     {
@@ -316,16 +303,6 @@ public class NodeGraphEditorWindow : EditorWindow
     }
 
 
-
-
-
-
-
-
-        
-    
-
-
     //Because of event lifecycle, clicking has to be checked before DrawNodes()-> GUI.DragWindow() in NodeDrawer
     private void HandleInputClicks()
     {
@@ -360,7 +337,7 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-    //mayve move to viewModel?
+    //maybe move to viewModel?
     public void HandleConnectionPointSelected(Vector2 mousePos)
     {
         ConnectionPoint selectedPoint = ActiveNodeDrawView?.GetHandlePoint(mousePos);

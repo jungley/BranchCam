@@ -88,6 +88,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             preview.DrawPreviewWindow();
 
+            if (IsActive) HighlightSelctedNode();
+
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
 
         }
@@ -136,9 +138,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             EditorGUILayout.Space();
             EditorGUILayout.EndScrollView();
 
-            GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
+            //Color Banner but cant dyanically change position when file button shifts everything down
+            //GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
 
             nodeCameraOptionsDrawer.DrawUICamCompOptions();
+
         }
     }
 }
