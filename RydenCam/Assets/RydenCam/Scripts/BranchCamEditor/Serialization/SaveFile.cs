@@ -1,14 +1,12 @@
 ﻿using System.IO;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using System;
 using UnityEditor;
-using RydenCam.BranchCamEditor.Serialization.Saveables;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -40,16 +38,18 @@ namespace RydenCam.BranchCamEditor.Serialization
 
                 BranchCamEditorPreferences.SetLastFilePath(directoryPathWithName);
 
-                List<Saveable> saveableList = NodeSerializer.SerializeNodes(NodeManager.Instance.GetList());
+                List<Node> nodeList = NodeManager.Instance.Nodes.ToList();
 
-                List<string> jsonStrings = new List<string>();
-                foreach (Saveable save in saveableList)
+                List<NodeData> nodeDatas = new List<NodeData>();
+                foreach (Node save in nodeList)
                 {
-                    string result = JsonUtility.ToJson(save);
-                    jsonStrings.Add(result);
+                    string jsonNode = JsonUtility.ToJson(save);
+                    NodeType type = save.TypeOfNode;
+
+                    nodeDatas.Add(new NodeData(type, jsonNode));
                 }
 
-                SaveDataContainer saveDataContainer = new SaveDataContainer(jsonStrings);
+                SaveDataContainer saveDataContainer = new SaveDataContainer(nodeDatas);
                 string combinedJson = JsonUtility.ToJson(saveDataContainer);
 
                 var finalPath = $"{directoryPathWithName}/{name}.json";

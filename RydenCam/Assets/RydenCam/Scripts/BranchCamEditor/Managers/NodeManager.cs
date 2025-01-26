@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System.Linq;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace RydenCam.BranchCamEditor.Managers
-{    
-    [System.Serializable]
+{
     [ExecuteAlways]
-    public class NodeManager
+    public class NodeManager : INotifyPropertyChanged
     {
         private static NodeManager instance;
         public static NodeManager Instance
@@ -24,31 +25,67 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
-        private List<EditorBaseNode> nodes;
-        public int Length => nodes.Count;
-        public EditorStartNode StartNode => nodes.Find(n => n.TypeOfNode == NodeType.StartNode) as EditorStartNode;
-        public List<EditorBaseNode> GetList() => nodes;
-        public void Clear() => instance = new NodeManager();
-        public void RemoveNode(EditorBaseNode node)
+        public ObservableCollection<Node> Nodes { get; set; }
+
+        private Node activeNode { get; set; }
+        public Node ActiveNode
+        {
+            get => activeNode;
+            set
+            {
+                activeNode = value;
+                OnPropertyChanged(nameof(ActiveNode));
+            }
+        }
+
+        public StartNode StartNode => Nodes.ToList().Find(n => n.TypeOfNode == NodeType.StartNode) as StartNode;
+
+        public static bool StartNodeAdded { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private NodeManager()
+        {
+            Nodes = new ObservableCollection<Node>();
+        }
+
+        public void LoadNodes(List<Node> nodes) => nodes.ForEach(n => { Nodes.Add(n); });
+
+        public void AddNode(Node node) => Nodes.Add(node);
+
+        public Node GetNode(int index) => Nodes[index];
+
+        public Node FindNode(string id) => Nodes.ToList().Find(n => n.NodeId == id);
+
+        public int Length => Nodes.Count;
+
+        public void RemoveNode(Node node)
         {
             if (node.TypeOfNode == NodeType.StartNode)
             {
-                BranchCamEditor.startNodeAdded = false;
+                StartNodeAdded = false;
             }
-            nodes.Remove(node);
+            Nodes.Remove(node);
         }
 
-        public void AddNode(EditorBaseNode node) => nodes.Add(node);
-        public EditorBaseNode GetNode(int index) => nodes[index];
-        public EditorBaseNode FindNode(string id) => nodes.Find(n => n.node_id == id);
+        public void Clear()
+        {
+            Nodes.Clear();
+            ActiveNode = null;
+            StartNodeAdded = false;
+        }
 
         public string GetSequenceName()
         {
-            EditorStartNode startNodeRef = (EditorStartNode)NodeManager.Instance.StartNode;
-            string name = string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
-
-            return name;
+            StartNode startNodeRef = Nodes.OfType<StartNode>().FirstOrDefault();
+            return string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
         }
+
         public bool IsValidSequence()
         {
             if (Length == 0)
@@ -61,10 +98,20 @@ namespace RydenCam.BranchCamEditor.Managers
                 return true;
             }
         }
-        private NodeManager()
+
+        public List<ActorInfo> ActorsInScene()
         {
-            nodes = new List<EditorBaseNode>();
+            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
+            return startNode?.ActorsInScene ?? new List<ActorInfo>();
         }
+
+        public void ClearActorsInScene()
+        {
+            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
+            if (startNode != null) startNode.ActorsInScene = new List<ActorInfo>();
+        }
+
+        /*
 
         //This is for when the user clicks off or selects another node.
         //If the other node is also a node that uses custom camera, it will not use the position of the previously
@@ -78,21 +125,24 @@ namespace RydenCam.BranchCamEditor.Managers
                     node.SetCustomCameraPosition = null;
                 }
             }
-            
         }
 
+        //Check on this?
+        //When NodeManager is updated,
+        //The ActorManger should be updated via decorator pattern?
 
         public void ReplaceActorInfo(string previousActorName, ActorInfo newActorInfo)
         {
             if (string.IsNullOrEmpty(previousActorName))
                 return;
 
-            foreach (var node in nodes.OfType<IPositionalNode>()
+            foreach (var node in Nodes.OfType<ITalkable>()
                                         .Where(posNode => posNode.NodeConvodata.Actor.ActorName == previousActorName))
             {
                 node.NodeConvodata.Actor.ActorName = newActorInfo.ActorName;
                 node.NodeConvodata.Actor.ActorGO = newActorInfo.ActorGO;
             }
         }
+        */
     }
 }

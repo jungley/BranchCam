@@ -1,117 +1,166 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes.Connections;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Linq;
+
 
 namespace RydenCam.BranchCamEditor.Managers
 {
-    [System.Serializable]
     [ExecuteAlways]
-    public class ConnectionManager
+    public class ConnectionManager : INotifyPropertyChanged
     {
-        private List<Connection> connectionList;
-        public static ConnectionManager Instance { get; private set; }
-        
+        public ObservableCollection<Connection> Connections;
+
+        private static ConnectionManager instance;
+        public static ConnectionManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new ConnectionManager();
+                }
+                return instance;
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private ConnectionManager()
         {
-            connectionList = new List<Connection>();
-        } 
-        
-        static ConnectionManager()
-        {
-            Instance = new ConnectionManager();
+            Connections = new ObservableCollection<Connection>();
         }
-        
-        
-        public int GetLength()
-        {
-            return connectionList.Count;
-        }
-        
 
         public void Clear()
         {
-            connectionList.Clear();
+            Connections.Clear();
         }
 
-        public void AddConnection(ConnectionPoint fromPoint, ConnectionPoint handlePoint, Action<Connection> action)
+        public void AddConnection(ConnectionPoint fromPoint, ConnectionPoint handlePoint)
         {
-            var pointIN = fromPoint.type == ConnectionPointType.In ? fromPoint : handlePoint.type == ConnectionPointType.In ? handlePoint : null;
-            var pointOUT = fromPoint.type == ConnectionPointType.Out ? fromPoint : handlePoint.type == ConnectionPointType.Out ? handlePoint : null;
+            if (IsOutConnected(fromPoint, handlePoint))
+            {
+                RemoveConnectionsFromPoints(fromPoint, handlePoint);
+            }
 
-            Connection newConnection = new Connection(pointIN, pointOUT, action);
-            connectionList.Add(newConnection);
+            //Points Reference each other
+            fromPoint.ConnectedTo = handlePoint;
+            handlePoint.ConnectedTo = fromPoint;
+
+            Connection newConnection = new Connection(fromPoint, handlePoint);
+            Connections.Add(newConnection);
         }
 
-        public void Remove(Connection connection)
+        public void RemoveConnection(Connection connection)
         {
-            connection.Point_OUT.connectedTo = null;
-            connection.Point_IN.connectedTo = null;
-            connectionList.Remove(connection);
+            connection.Point_A.ConnectedTo = null;
+            connection.Point_B.ConnectedTo = null;
+
+            Connections.Remove(connection);
+
+            reassociateConnctions(Connections);
         }
 
-        public bool IsOutConnected(ConnectionPoint A, ConnectionPoint B)
+
+        public void RemoveConnectionsFromPoints(ConnectionPoint A, ConnectionPoint B)
         {
-            return (A.type == ConnectionPointType.Out && A.connectedTo != null) ||
-                   (B.type == ConnectionPointType.Out && B.connectedTo != null);
+            A.ConnectedTo = null;
+            B.ConnectedTo = null;
+
+            var connectionsToRemove = Connections.Where(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B)).ToList();
+            connectionsToRemove.ForEach(connection => Connections.Remove(connection));
+
+            reassociateConnctions(Connections);
         }
 
-        public void Remove(ConnectionPoint A, ConnectionPoint B)
-        {
-            try { A.connectedTo.connectedTo = null; }
-            catch (Exception) { }
 
-            try { B.connectedTo.connectedTo = null; }
-            catch (Exception) { }
-
-            connectionList.RemoveAll(connection => connection.ContainsPoint(A) || connection.ContainsPoint(B));
-        }
 
         public void Remove(ConnectionPoint A)
         {
-            for (int i = 0; i < connectionList.Count; i++)
+            foreach(var connection in Connections)
             {
-                if (connectionList[i].ContainsPoint(A))
+                if (connection.ContainsPoint(A))
                 {
-                    Remove(connectionList[i]);
+                    RemoveConnection(connection);
                     return;
                 }
             }
         }
 
-        public void RemoveAssocConnec(EditorBaseNode node)
+        public bool IsOutConnected(ConnectionPoint A, ConnectionPoint B)
         {
-            List<ConnectionPoint> delPointList = new List<ConnectionPoint> { node.PointIn };
-            delPointList.AddRange(node.PointOut);
+            return (A.Type == ConnectionPointType.Out && A.ConnectedTo != null) ||
+                   (B.Type == ConnectionPointType.Out && B.ConnectedTo != null);
+        }
 
-            for (int i = 0; i < delPointList.Count; i++)
+        public void CreateConnections(List<Node> nodes)
+        {
+            //Associate Connections
+            foreach (var node in nodes)
             {
-                for (int j = 0; j < connectionList.Count; j++)
+                foreach (var pointOut in node.PointOut)
                 {
-                    if (connectionList[j].ContainsPoint(delPointList[i]))
+                    Node connectedNode = NodeManager.Instance.FindNode(pointOut.ConnectedNodeId);
                     {
-                        connectionList.RemoveAt(j);
-                        j = -1;
+                        if (connectedNode != null)
+                        {
+                            AddConnection(pointOut, connectedNode.PointIn);
+                        }
                     }
                 }
             }
         }
 
-        public void DrawConnections()
+
+        public void RemoveAssociatedConnections(Node node)
         {
-#if UNITY_EDITOR
-            //Connection can sometimes be modified
-            try
+            var pointsToRemove = new HashSet<ConnectionPoint> { node.PointIn };
+            pointsToRemove.UnionWith(node.PointOut);
+
+            var connectionsToRemove = new List<Connection>();
+
+            foreach (var connection in Connections)
             {
-                foreach (Connection connection in connectionList)
+                foreach (var point in pointsToRemove)
                 {
-                    connection.Draw();
+                    if (connection.ContainsPoint(point))
+                    {
+                        connectionsToRemove.Add(connection);
+                        break;
+                    }
                 }
             }
-            catch (Exception) { }
-#endif
+
+            // Remove identified connections
+            foreach (var connection in connectionsToRemove)
+            {
+                RemoveConnection(connection);
+            }
+
+            reassociateConnctions(Connections);
         }
+
+        private void reassociateConnctions(ObservableCollection<Connection> Connections1)
+        {
+            //Reassociate lost Connections
+            foreach (var connection in Connections1)
+            {
+                var pointA = connection.Point_A;
+                var pointB = connection.Point_B;
+                pointA.ConnectedTo = pointB;
+                pointB.ConnectedTo = pointA;
+            }
+        }
+
     }
 }
+

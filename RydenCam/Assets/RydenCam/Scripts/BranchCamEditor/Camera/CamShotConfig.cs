@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using RydenCam.BranchCamEditor.Managers;
+﻿using UnityEngine;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Extensions;
 
@@ -18,28 +16,39 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public string oppositeActor;
         public string actor;
 
-        public Vector3? CustomCamPos;
-        public Quaternion? CustomCamRot;
+        public bool IsCustomSet;
+
+        public Vector3 GlobalCustomCamPos;
+        public Quaternion GlobalCustomCamRot;
         public Vector3 LocalRelativeActorPos;
         public Quaternion LocalRelativeActorRot;
 
+        //RS TODO
         //For Custom Shots
+        /*
         public CamShotConfig(string a, CustomCameraType customtype, Vector3 pos, Quaternion rot)
         {
             actor = a;
             GoalType = CameraGoal.Custom;
             GoalCustomType = customtype;
-            CustomCamPos = pos;
-            CustomCamRot = rot;
+            GlobalCustomCamPos = pos;
+            GlobalCustomCamRot = rot;
         }
+        */
 
-        public CamShotConfig(string a, CameraGoal goal_t, CameraDistance goal_d, CameraAngle goal_a, CustomCameraType customtype)
+        //Default Constructor
+        public CamShotConfig(string targetGameObjectName)
         {
-            actor = a;
-            GoalType = goal_t;
-            GoalDistance = goal_d;
-            GoalAngle = goal_a;
-            GoalCustomType = customtype;
+            actor = targetGameObjectName;
+            GoalType = CameraGoal.Portrait;
+            GoalDistance = CameraDistance.Mid;
+            GoalAngle = CameraAngle.EyeLevel;
+            GoalCustomType = CustomCameraType.None;
+            
+            GlobalCustomCamPos = Vector3.zero;
+            GlobalCustomCamRot = Quaternion.identity;
+            LocalRelativeActorPos = Vector3.zero;
+            LocalRelativeActorRot = Quaternion.identity;
         }
 
         public override bool Equals(object obj)
@@ -55,7 +64,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
                        GoalCustomType == other.GoalCustomType &&
                        oppositeActor == other.oppositeActor &&
                        actor == other.actor &&
-                       CustomCamPos.IsEqual(other.CustomCamPos) &&
+                       GlobalCustomCamPos.IsEqual(other.GlobalCustomCamPos) &&
                        LocalRelativeActorPos.IsEqual(other.LocalRelativeActorPos);
         }
     }

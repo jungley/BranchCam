@@ -1,5 +1,8 @@
 ﻿using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.Common;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RydenCam.SequenceData
@@ -16,16 +19,20 @@ namespace RydenCam.SequenceData
     [ExecuteAlways]
     public class ConversationData
     {
-        [SerializeField]
         public List<string> DialogTextList;
-        [SerializeField]
         public ActorInfo Actor;
-        [SerializeField]
         public CamShotConfig ShotConfig;
         public ConversationData(ActorInfo actor, List<string> dialog = null)
         {
-            DialogTextList = dialog == null ? new List<string>() : dialog;
+            DialogTextList = dialog == null ? new List<string>() { string.Empty } : dialog;
             Actor = actor;
+        }
+
+        public ConversationData()
+        {
+            Actor = NodeManager.Instance.ActorsInScene().FirstOrDefault();
+            ShotConfig  = new CamShotConfig(Actor != null ? Actor.ActorName : string.Empty);
+            DialogTextList = new List<string> { string.Empty };
         }
     }
 }

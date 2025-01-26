@@ -1,9 +1,10 @@
-﻿using RydenCam.Common;
+﻿
+using RydenCam.Common;
 
-namespace RydenCam.BranchCamEditor.Nodes
+namespace Assets.RydenCam.Scripts.BranchCamCC
 {
     public interface INode
     {
-        public NodeType TypeOfNode { get; }
+       
     }
 }

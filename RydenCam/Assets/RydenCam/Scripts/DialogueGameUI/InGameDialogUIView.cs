@@ -1,13 +1,7 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
+﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Controllers;
-using RydenCam.BranchCamEditor.Nodes;
-using RydenCam.Common;
 using RydenCam.DialogueGameUI;
-using RydenCam.Utilities;
-using System.Runtime.CompilerServices;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 namespace Assets.RydenCam.Scripts.DialogueGameUI
@@ -54,9 +48,9 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             }
         }
 
-        public ISequenceController Controller;
+        public NodeStateController Controller;
 
-        public InGameDialogUIView(ISequenceController controller)
+        public InGameDialogUIView(NodeStateController controller)
         {
             Controller = controller;
         }
@@ -72,7 +66,7 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         public void DisplayDecisionNode()
         {
             ClearPanels();
-            EditorDecisionNode node = Controller.CurrentNode as EditorDecisionNode;
+            DecisionNode node = Controller.CurrentNode as DecisionNode;
             DecisionPanel.visible = true;
             CreateButtons(node);
 
@@ -92,9 +86,10 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             textLabel.style.fontSize = GlobalSettings.Settings.defaultFontSize;
         }
 
-        private void CreateButtons(EditorDecisionNode node)
+        private void CreateButtons(DecisionNode node)
         {
             var buttonManager = ButtonManager.Instance;
+            buttonManager.ButtonList.Clear();
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {

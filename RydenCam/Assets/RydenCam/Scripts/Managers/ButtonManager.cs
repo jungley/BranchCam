@@ -1,11 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.Common;
-using System;
 using UnityEngine.UIElements;
-using System.Xml;
-using System.Linq;
 
 namespace RydenCam.DialogueGameUI
 {

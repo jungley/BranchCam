@@ -1,8 +1,4 @@
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.DialogueGameUI;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -34,7 +30,7 @@ public class ButtonHolder
 
     public void ButtonAction()
     {
-        ButtonManager.Instance.DialoguePlayer.SequenceControls.MakeDecision(optionIndex);
+        ButtonManager.Instance.DialoguePlayer.SatePlayer.MakeDecision(optionIndex);
         ButtonManager.Instance.Clear();
     }
 

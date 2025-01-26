@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using RydenCam.Common;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using RydenCam.BranchCamEditor.Managers;
 
 namespace RydenCam.BranchCamEditor.Nodes.Connections
 {
@@ -9,87 +10,89 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
     [System.Serializable]
     public class ConnectionPoint
     {
-        public ConnectionPointType type;
-        public EditorBaseNode node;
-        public ConnectionPoint connectedTo;
-        public Rect pointBounds;
-        private Color pointColor = new Color(0, 0.8f, 0, 1);
+        public ConnectionPointType Type;
 
-        public ConnectionPoint(EditorBaseNode node, ConnectionPointType ty)
+        public string NodeId;
+        public string ConnectedNodeId;
+
+        public Rect LocalBounds;
+        public static Color Color => new Color(0, 0.8f, 0, 1);
+
+        private Node node { get; set; }
+        public Node Node 
         {
-            System.Guid guidVal = System.Guid.NewGuid();
-
-            this.node = node;
-            if (ty == ConnectionPointType.In)
+            get
             {
-                this.type = ConnectionPointType.In;
-                pointBounds = new Rect((node.nodeWidth / 2 - 10), 0, 20, 18);
+                if(node == null && !string.IsNullOrEmpty(NodeId))
+                {
+                    node = NodeManager.Instance.FindNode(NodeId);
+                }
+                return node;
             }
-            else if (ty == ConnectionPointType.Out)
+            set
             {
-                this.type = ConnectionPointType.Out;
-                pointBounds = new Rect((node.nodeWidth / 2 - 10), node.nodeHeight - 16, 20, 18);
+                node = value;
+                NodeId = value?.NodeId;
+            }
+        }
+        
+        private ConnectionPoint connectedTo { get; set; }
+        public ConnectionPoint ConnectedTo
+        {
+            get { return connectedTo; }
+            set 
+            { 
+                connectedTo = value;
+                ConnectedNodeId = connectedTo?.Node?.NodeId;
+            }    
+        }
+
+        public ConnectionPoint(Node node, ConnectionPointType type)
+        {
+            Node = node;
+            Type = type;
+
+            // Determine the local bounds based on the type of connection point
+            if (node == null) return;
+
+            if (type == ConnectionPointType.In)
+            {
+                // For input connection points (In), position the bounds at the top center of the node
+                LocalBounds = new Rect((node.NodeWidth / 2 - 10), 0, 20, 18);
+            }
+            else if (type == ConnectionPointType.Out)
+            {
+                // For output connection points (Out), position the bounds at the bottom center of the node
+                LocalBounds = new Rect((node.NodeWidth / 2 - 10), node.NodeHeight - 16, 20, 18);
             }
         }
 
         public void ClearPointer()
         {
-            connectedTo = null;
+            ConnectedTo = null;
         }
 
-        public Vector2 getGlobalPoint()
-        {
-            float globalXPos = (node.windowRect.x) + pointBounds.center.x;
-            float globalYPos = (node.windowRect.y) + pointBounds.center.y;
-            return new Vector2(globalXPos, globalYPos);
-        }
 
-#if UNITY_EDITOR
-        public void Draw(Color col)
+        private Vector2 globalPoint { get; set; }
+        public Vector2 GlobalPoint
         {
-            Handles.color = col;
-            Handles.DrawSolidDisc(pointBounds.center, new Vector3(0, 0, 1), 7.0f);
-
-            if (connectedTo != null)
+            get
             {
-                Handles.DrawWireDisc(pointBounds.center, new Vector3(0, 0, 1), 10.0f);
+                if (Node != null)
+                { 
+                    float globalXPos = (Node.EditorPosition.x) + LocalBounds.center.x;
+                    float globalYPos = (Node.EditorPosition.y) + LocalBounds.center.y;
+                    globalPoint = new Vector2(globalXPos, globalYPos);
+                }
+
+                return globalPoint;
+
+            }
+            set
+            {
+                globalPoint = value;
             }
         }
 
-        public void Draw()
-        {
-            Handles.color = pointColor;
-            Handles.DrawSolidDisc(pointBounds.center, new Vector3(0, 0, 1), 7.0f);
-
-            if (connectedTo != null)
-            {
-                Handles.DrawWireDisc(pointBounds.center, new Vector3(0, 0, 1), 10.0f);
-            }
-        }
-
-        //For the decision node
-        public void Draw(int num)
-        {
-
-            Handles.color = pointColor;//Color.black;//pointColor;
-            Handles.DrawSolidDisc(pointBounds.center, new Vector3(0, 0, 1), 7.0f);
-
-            if (connectedTo != null)
-            {
-                Handles.color = pointColor;
-                Handles.DrawWireDisc(pointBounds.center, new Vector3(0, 0, 1), 10.0f);
-                Handles.color = pointColor; //Color.black;
-            }
-            Vector3 pos = pointBounds.center;
-            pos = new Vector3(pos.x - 3, pos.y - 12, pos.z);
-
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.white;
-            style.fontStyle = FontStyle.Bold;
-            style.fontSize = 10;
-            Handles.Label(pos, "" + num, style);
-
-        }
-#endif
     }
 }

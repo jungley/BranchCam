@@ -2,11 +2,11 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using RydenCam.BranchCamEditor.Nodes;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Managers;
 using System;
 using System.Linq;
+using Assets.RydenCam.Scripts.BranchCamCC;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -87,23 +87,20 @@ namespace RydenCam.BranchCamEditor.Serialization
 
         public static void LoadSaveables()
         {
+            NodeManager.Instance.Clear();
+            ConnectionManager.Instance.Clear();
+
             path = BranchCamEditorPreferences.GetLastFilePath();
 
-            List<EditorBaseNode> loadedEditorNodes = NodeSerializer.DeserializeNodes(path);
+            List<Node> deserializedNodes = NodeSerializer.DeserializeNodes(path);
 
-            NodeManager.Instance.Clear();
-
-            if (loadedEditorNodes != null)
-            {
-                loadedEditorNodes.ForEach(n => NodeManager.Instance.AddNode(n));
-            }
+            NodeManager.Instance.LoadNodes(deserializedNodes);
+            ConnectionManager.Instance.CreateConnections(deserializedNodes);
         }
 
         public static void SetLastFilePath()
         {
             string fullPath = EditorUtility.OpenFolderPanel("Choose a folder containing Dialogue files only", BranchConstants.DefaultDialogueFolder, "Choose a folder containing Dialogue files only");
-
-
             string projectPath = Application.dataPath;
 
             try

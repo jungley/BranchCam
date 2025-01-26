@@ -1,6 +1,4 @@
-﻿using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor

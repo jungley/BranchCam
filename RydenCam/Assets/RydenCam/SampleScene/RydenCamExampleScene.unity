@@ -411,7 +411,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _requiredDialogueCamera: {fileID: 2871365018967173003}
   _requiredDialogueCameraBrain: {fileID: 1251845246931807342}
-  DialogueFolder: C:/Users/rshar/Documents/UnityProjects/Core/RydenCam/Assets/RydenCam/DialogueFiles/NewDialogueFile
+  DialogueFolder: C:/Users/rshar/Documents/UnityProjects/Core/BranchCam_GIT/BranchCam/RydenCam/Assets/RydenCam/DialogueFiles/whoa
 --- !u!1001 &679017368
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -528,17 +528,17 @@ PrefabInstance:
     - target: {fileID: 5102845305364853768, guid: 6a711c655153cb148b9551fa321bf319,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 1.053
       objectReference: {fileID: 0}
     - target: {fileID: 5102845305364853768, guid: 6a711c655153cb148b9551fa321bf319,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.6
+      value: 1.649
       objectReference: {fileID: 0}
     - target: {fileID: 5102845305364853768, guid: 6a711c655153cb148b9551fa321bf319,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.052
       objectReference: {fileID: 0}
     - target: {fileID: 5102845305364853775, guid: 6a711c655153cb148b9551fa321bf319,
         type: 3}
@@ -1496,7 +1496,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1251845246931807342}
-  m_LocalRotation: {x: -0.1296036, y: -0.011210552, z: 0.0120006045, w: -0.99143}
+  m_LocalRotation: {x: -0.12960455, y: -0.011209816, z: 0.012000494, w: -0.9914298}
   m_LocalPosition: {x: 0, y: 0, z: -0.78999996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1578,7 +1578,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1629673474291990575}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.1296036, y: -0.011210552, z: 0.0120006045, w: -0.99143}
+  m_LocalRotation: {x: -0.12960455, y: -0.011209816, z: 0.012000494, w: -0.9914298}
   m_LocalPosition: {x: 0.57, y: 2.02, z: -1.86}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

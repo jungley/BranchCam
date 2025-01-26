@@ -1,69 +1,77 @@
-using RydenCam.BranchCamEditor.BranchCam;
-using RydenCam.BranchCamEditor.Controllers;
-using RydenCam.BranchCamEditor.Managers;
-using RydenCam.BranchCamEditor.Nodes;
-using RydenCam.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.Common;
-using RydenCam.SequenceData;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEngine;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
-    /// <summary>
-    /// Sets up the dialogue variables in order to send to the PreviewCameraRenderUtil to render.
-    /// </summary>
-    /// 
-
-    public class DialoguePreview
+    public class DialoguePreview<N> where N : Node, ITalkable
     {
+        private CameraPoseCalculator cameraPoseCalculator;
+        private ActorMeshManager actorMeshManager;
+        private PreviewRenderer previewRenderer;
 
-        static Dictionary<string, PreviewCameraRenderUtil> PreviewRenderMap { get; set; } = new Dictionary<string, PreviewCameraRenderUtil>();
+        private N node;
 
-        Texture2D blankTexture;
-        Texture2D BlankTexture
+        public DialoguePreview(N node)
         {
-            get
+            this.node = node;
+            Initailize();
+        }
+
+        public void Initailize()
+        {
+            cameraPoseCalculator = new CameraPoseCalculator();
+            actorMeshManager = new ActorMeshManager(node.NodeConvodata.Actor.ActorGO);
+            previewRenderer = new PreviewRenderer();
+        }
+
+        public void UpdateShotRender()
+        {
+            //Re Initialize the preview renderer
+            Initailize();
+        }
+
+
+        public void DrawPreviewWindow()
+        {
+            var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
+            /* TODO use Cached Image render result
+            if (previewRenderer.CachedRenderTexture != null)
             {
-                if (blankTexture == null)
-                {
-                    var previewTexture = new Texture2D(1, 1);
-                    previewTexture.SetPixel(0, 0, Color.black);
-                    previewTexture.Apply();
-                    blankTexture = previewTexture;
-                }
-                return blankTexture;
+                GUI.DrawTexture(windowRect, previewRenderer.CachedRenderTexture);
+                return;
+            } 
+            */
+
+            ComposePreviewImage(windowRect);
+        }
+
+        public void ComposePreviewImage(Rect windowRect)
+        {
+            if (node.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
+            {
+                Pose camPose = cameraPoseCalculator.CalculateCameraPose(node.NodeConvodata.ShotConfig, actorMeshManager.CachedActorMesh.FocusTarget.transform);
+                Pose actorPose = GetActorPreviewPositionData();
+
+                previewRenderer.RenderPreview(windowRect, camPose, actorPose, actorMeshManager.CachedActorMesh);
             }
         }
 
-        public void DrawPreviewWindow(EditorBaseNode node)
+        private Pose GetActorPreviewPositionData()
         {
+            Vector3 pos = actorMeshManager.CachedActorMesh.FocusTarget.transform.position;
 
-            var windowRect = new Rect(node.windowRect.position.x + node.windowRect.width, node.windowRect.position.y,
-                node.windowRect.width, node.windowRect.height);
+            Vector3 midPoint = cameraPoseCalculator.CalculateMidPreviewPoint();
+            Vector3 direction = pos - midPoint;
 
-            if (node is IPositionalNode)
-            {
-                var dialogueNode = node as IPositionalNode;
+            direction.y = 0;
 
-                //PreviewRenderMap.TryGetValue(node.node_id, out PreviewCameraRenderUtil previewRender);
+            // Check if the direction vector is valid (non-zero), prevents warning message being spammed to console.
+            Quaternion rotation = (direction.sqrMagnitude > Mathf.Epsilon) ? Quaternion.LookRotation(direction) : Quaternion.identity;
 
-                PreviewCameraRenderUtil newUtil = new PreviewCameraRenderUtil(dialogueNode.NodeConvodata.ShotConfig);
+            return new Pose(Vector3.zero, rotation);
 
-                    if (dialogueNode.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
-                    {
-                        newUtil.DrawSavePreview(windowRect, dialogueNode);
-                        //newUtil.PreviewRenderUtility.Cleanup();
-                        //PreviewRenderMap.Add(node.node_id, newUtil);
-                    }
-                    newUtil.PreviewRenderUtility.Cleanup();
-
-            }
         }
     }
 }
