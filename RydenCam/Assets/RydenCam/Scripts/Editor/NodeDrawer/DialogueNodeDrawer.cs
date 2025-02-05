@@ -18,10 +18,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private DialoguePreview<DialogueNode> preview { get; set; }
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
-        private GUIStyle textAreaStyleNode { get; set; }
-
-        private GUIStyle textAreaStyleInspector { get; set; }
-
         private Vector2 scrollPosInspector { get; set; }
         private int ActorEditorDropdownIndex { get; set; }
 
