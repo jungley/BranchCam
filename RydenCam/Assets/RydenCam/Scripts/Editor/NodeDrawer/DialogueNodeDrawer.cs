@@ -35,15 +35,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
             nodeCameraOptionsDrawer.OnPropertyChange += () => preview.UpdateShotRender();
 
-            //TextArea Node
-            textAreaStyleNode = new GUIStyle(EditorStyles.textArea);
-            textAreaStyleNode.wordWrap = true;
-            textAreaStyleNode.alignment = TextAnchor.MiddleCenter;
-
-            //TextArea Inspector
-            textAreaStyleInspector = new GUIStyle(EditorStyles.textArea);
-            textAreaStyleInspector.wordWrap = true;
-            textAreaStyleInspector.margin = new RectOffset(-20, 0, 0, 0);
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
