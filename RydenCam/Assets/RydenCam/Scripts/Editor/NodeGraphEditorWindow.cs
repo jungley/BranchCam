@@ -94,15 +94,18 @@ public class NodeGraphEditorWindow : EditorWindow
     private void MousePan()
     {
         var mousePosition = Event.current.mousePosition;
+
+        //mouse not over 
+        if (InspectorPanelArea.Contains(mousePosition)) return;
         
-        if (Event.current.type == EventType.MouseDrag &&
-            //mouse not over 
-            !(InspectorPanelArea.Contains(mousePosition) || ribbonBuilder.ButtonPanelArea.Contains(mousePosition)))
+        if(ButtonPanelArea.Contains(mousePosition)) return; 
+
+
+        if (Event.current.type == EventType.MouseDrag)
         {
             //The EditorWindow is not being dragged
             if (lastEditorWindowPos == position)
             {
-
                 //Weird Jumping Check
                 int difference = 70;
                 if ((Event.current.delta.x > -difference && Event.current.delta.x < difference)
@@ -182,7 +185,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
         //Define areas for clicking
         ButtonPanelArea = new Rect(0, 0, 1000, 30);
-        InspectorPanelArea = new Rect(0, 0, 250, 1000);
+        InspectorPanelArea = new Rect(0, 0, 200, 1000);
 
         panelstyle_button = new GUIStyle();
         panelstyle_button.normal.background = targetTextureButtonHeader;

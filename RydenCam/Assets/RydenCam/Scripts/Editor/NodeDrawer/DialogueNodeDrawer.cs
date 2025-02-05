@@ -3,9 +3,11 @@ using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
@@ -16,12 +18,15 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private DialoguePreview<DialogueNode> preview { get; set; }
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
-        private GUIStyle decisionTextArea { get; set; }
+        private GUIStyle textAreaStyleNode { get; set; }
+
+        private GUIStyle textAreaStyleInspector { get; set; }
+
         private Vector2 scrollPosInspector { get; set; }
         private int ActorEditorDropdownIndex { get; set; }
 
 
-        public DialogueNodeDrawer(Node _node): base(_node)
+        public DialogueNodeDrawer(Node _node) : base(_node)
         {
             node = _node as DialogueNode;
             command = new DialogueNodeCommand(node);
@@ -30,10 +35,15 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
             nodeCameraOptionsDrawer.OnPropertyChange += () => preview.UpdateShotRender();
 
-            //Text
-            decisionTextArea = new GUIStyle(EditorStyles.textArea);
-            decisionTextArea.wordWrap = true;
-            decisionTextArea.margin = new RectOffset(-20, 0, 0, 0);
+            //TextArea Node
+            textAreaStyleNode = new GUIStyle(EditorStyles.textArea);
+            textAreaStyleNode.wordWrap = true;
+            textAreaStyleNode.alignment = TextAnchor.MiddleCenter;
+
+            //TextArea Inspector
+            textAreaStyleInspector = new GUIStyle(EditorStyles.textArea);
+            textAreaStyleInspector.wordWrap = true;
+            textAreaStyleInspector.margin = new RectOffset(-20, 0, 0, 0);
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -58,21 +68,22 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             WindowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight),
                 (windowId) =>
                 {
-                  
+
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
                     EditorGUI.LabelField(new Rect(4, 4, node.NodeWidth, node.NodeHeight), "Dialogue", labelStyleHead_Node);
 
-                    EditorGUILayout.LabelField(node.NodeConvodata.Actor == null 
-                        ? BranchConstants.UnAssignedActor 
-                        : node.NodeConvodata.Actor.ActorName, 
-                        labelStyleHead_Node); 
-
+                    EditorGUILayout.LabelField(node.NodeConvodata.Actor == null
+                        ? BranchConstants.UnAssignedActor
+                        : node.NodeConvodata.Actor.ActorName,
+                        labelStyleHead_Node);
 
                     for (int i = 0; i < node.NodeConvodata.DialogTextList.Count; i++)
                     {
-                        node.NodeConvodata.DialogTextList[i] = EditorGUILayout.TextArea(node.NodeConvodata.DialogTextList[i], GUILayout.Width(node.NodeWidth- 10), GUILayout.Height(20));
+                        node.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(node.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: node.NodeWidth - 10);
+                         GUILayout.Space(5);
                     }
 
+                    Node.NodeHeight = CalculateNodeHeightFromText(node.NodeConvodata.DialogTextList, node.NodeWidth - 10);
 
                     Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                     if (GUI.Button(deleteButtonRect, "X"))
@@ -131,7 +142,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     }
                 }
 
-                node.NodeConvodata.DialogTextList[y] = EditorGUILayout.TextArea(node.NodeConvodata.DialogTextList[y], decisionTextArea, GUILayout.Width(200), GUILayout.Height(120));
+
+                node.NodeConvodata.DialogTextList[y] = EditorGUILayoutExtensions.SetTextAreaExpandable(node.NodeConvodata.DialogTextList[y], textAreaStyleInspector, areaHeight: 120, textWidth: 200);
             }
 
             EditorGUIUtility.labelWidth = 75;

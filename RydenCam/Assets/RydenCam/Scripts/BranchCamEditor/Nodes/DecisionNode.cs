@@ -22,8 +22,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
 
         public bool ShowPreviousDialog;
 
-        public override float NodeHeight => DecisionOptions.Count > 2 ? DecisionOptions.Count * 25 + 65 : 120;
-
         public Node MakeDecision(int choiceIndex)
         {
             return PointOut[choiceIndex].ConnectedTo?.Node;
@@ -35,6 +33,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             DecisionOptions = new List<string>() { "" };
             PointIn = new ConnectionPoint(this, ConnectionPointType.In);
             PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };
+            //Holds Actor and Shot data
             NodeConvodata = new ConversationData();
         }
     }

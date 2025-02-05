@@ -18,7 +18,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             set { NodeConvodataField = value; }
         }
 
-        public override float NodeHeight => NodeConvodata?.DialogTextList.Count > 2 ? NodeConvodata.DialogTextList.Count * 20 + 75 : 120;
 
         public DialogueNode(Vector2 position) : base(position)
         {

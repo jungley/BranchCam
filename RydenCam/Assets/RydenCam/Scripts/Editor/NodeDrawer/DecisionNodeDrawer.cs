@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.PreviewRender;
@@ -71,16 +72,18 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                      for (int decisionIndex = 0; decisionIndex < node.DecisionOptions.Count; decisionIndex++)
                      {
-                         EditorGUILayout.BeginHorizontal();
+                         GUILayout.BeginHorizontal();
+                            GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
+                            node.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(node.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: node.NodeWidth - 25);
+                            GUILayout.EndHorizontal();
+                         GUILayout.Space(5);
 
-                         GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(30));
-
-                         node.DecisionOptions[decisionIndex] = EditorGUILayout.TextField(node.DecisionOptions[decisionIndex], GUILayout.Width(150));
-
-                         EditorGUILayout.EndHorizontal();
-
-                         GUILayout.Space(5); 
                      }
+                     Node.NodeHeight = CalculateNodeHeightFromText(node.DecisionOptions, node.NodeWidth - 25);
+
+
+
+
 
 
                      Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
@@ -125,9 +128,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             EditorGUILayout.Space();
 
-
-            //Add Choice button
-            //Cap at 9 Choices
             if (GUILayout.Button("Add Choice", GUILayout.Width(80), GUILayout.Height(25)) && node.PointOut.Count < 9)
             {
                 command.AddDecisionOption();
@@ -148,7 +148,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                         break;
                     }
                 }
-                node.DecisionOptions[i] = EditorGUILayout.TextArea(node.DecisionOptions[i], textareaStyle, GUILayout.Width(200), GUILayout.Height(60));
+                node.DecisionOptions[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(node.DecisionOptions[i], textAreaStyleInspector, areaHeight:120, textWidth:200 );
             }
             EditorGUILayout.EndScrollView();
 

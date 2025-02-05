@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using Assets.RydenCam.Scripts.NodeCommands;
 using Codice.Client.BaseCommands;
 using RydenCam.BranchCamEditor.Managers;
@@ -86,8 +87,8 @@ namespace Assets.RydenCam.Scripts.Editor
         protected GUIStyle labelStyleHead_Node { get; set; }
         protected GUIStyle inspectorText { get; set; }
         protected GUIStyle inspectorTextBold { get; set; }
-
-        protected GUIStyle textareaStyle { get; set; }
+        protected GUIStyle textAreaStyleNode { get; set; }
+        protected GUIStyle textAreaStyleInspector { get; set; }
 
         public Color NodeColor { get; set; }
 
@@ -112,10 +113,16 @@ namespace Assets.RydenCam.Scripts.Editor
             labelStyleHead_Node.fontStyle = FontStyle.Bold;
             labelStyleHead_Node.fontSize = 15;
 
-            //Styles used in inspector
-            textareaStyle = new GUIStyle(EditorStyles.textArea);
-            textareaStyle.wordWrap = true;
-            textareaStyle.margin = new RectOffset(20, 0, 0, 0);
+            //TextArea Node
+            textAreaStyleNode = new GUIStyle(EditorStyles.textArea);
+            textAreaStyleNode.wordWrap = true;
+            textAreaStyleNode.alignment = TextAnchor.MiddleCenter;
+
+
+            //TextArea Inspector
+            textAreaStyleInspector = new GUIStyle(EditorStyles.textArea);
+            textAreaStyleInspector.wordWrap = true;
+            textAreaStyleInspector.margin = new RectOffset(-20, 0, 0, 0);
 
             inspectorText = new GUIStyle();
             inspectorText.normal.textColor = Color.white;
@@ -187,7 +194,25 @@ namespace Assets.RydenCam.Scripts.Editor
                 Handles.DrawWireDisc(bounds.center, Vector3.forward, 10.0f);
             }
         }
-        
+
+        //For Decision and Dialogue nodes / Nodes that contain text
+        protected float CalculateNodeHeightFromText(List<string> dialogueList, float areaWidth) 
+        {
+            float totalHeight = 60;
+
+            foreach (var dialogText in dialogueList)
+            {
+                // Get the height for each dialogText, with a minimum of 50
+                float height = Mathf.Max(EditorGUILayoutExtensions.GetTextAreaHeight(dialogText, areaWidth), 50);
+
+                // Adjust height (if necessary)
+                height = height < 50 ? 60 : height + 10;
+                totalHeight += height;
+            }
+
+            return totalHeight;
+        }
+
 
         protected void DrawConnectionPoints()
         {
