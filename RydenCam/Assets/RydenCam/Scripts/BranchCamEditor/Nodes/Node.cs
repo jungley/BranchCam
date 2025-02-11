@@ -16,7 +16,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         //Ideally move this out of Node?
         public Vector2 EditorPosition;
         public float NodeWidth;
-        public virtual float NodeHeight { get; set; }
+        public virtual float NodeHeight { get; set; } = 120;
         public int WindowId;
 
         public NodeType TypeOfNode;

@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿using Ink.Parsed;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,19 +28,24 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             }
         }
 
-        public void RenderPreview(Rect windowRect, Pose camPose, Pose actorPose, ActorMeshPreviewData actorMeshData)
+        public void RenderPreview(Rect windowRect, Pose camPose, List<PreviewActorData> actorsToRender)
         {
             previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
 
             previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
 
-            foreach (var meshMat in actorMeshData.MeshMat)
-            {
-                if (meshMat.Mesh == null) continue;
 
-                // Use custom matrix for actor pose
-                Matrix4x4 customMatrix = Matrix4x4.TRS(actorPose.position, actorPose.rotation, Vector3.one);
-                previewRenderUtility.DrawMesh(meshMat.Mesh, customMatrix, meshMat.Mat, 0);
+            foreach (var actor in actorsToRender)
+            {
+
+                foreach (var meshMat in actor.MeshMat)
+                {
+                    if (meshMat.Mesh == null) continue;
+
+                    // Use custom matrix for actor pose
+                    Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.ActorPosition, actor.ActorPositionData.ActorRotation, Vector3.one);
+                    previewRenderUtility.DrawMesh(meshMat.Mesh, customMatrix, meshMat.Mat, 0);
+                }
             }
             
             previewRenderUtility.Render();

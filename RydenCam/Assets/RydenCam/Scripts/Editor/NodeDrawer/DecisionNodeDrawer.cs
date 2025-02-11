@@ -79,12 +79,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                          GUILayout.Space(5);
 
                      }
+
                      Node.NodeHeight = CalculateNodeHeightFromText(node.DecisionOptions, node.NodeWidth - 25);
-
-
-
-
-
 
                      Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                      if (GUI.Button(deleteButtonRect, "X"))

@@ -2,16 +2,20 @@ using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.Common;
 using UnityEngine;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
+using System.Collections.Generic;
+using RydenCam.BranchCamEditor.BranchCam;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
     public class DialoguePreview<N> where N : Node, ITalkable
     {
-        private CameraPoseCalculator cameraPoseCalculator;
-        private ActorMeshManager actorMeshManager;
+
+        private PreviewCameraWrapper cameraWrapper;
         private PreviewRenderer previewRenderer;
 
         private N node;
+
+        public List<PreviewActorData> ActorDatas { get; set; }
 
         public DialoguePreview(N node)
         {
@@ -19,11 +23,16 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             Initailize();
         }
 
+
         public void Initailize()
         {
-            cameraPoseCalculator = new CameraPoseCalculator();
-            actorMeshManager = new ActorMeshManager(node.NodeConvodata.Actor.ActorGO);
             previewRenderer = new PreviewRenderer();
+
+            //Set the Actor meshes local to the preview scene
+            ActorDatas = SetupPreviewSceneData.Initialize();
+            cameraWrapper = new PreviewCameraWrapper(ActorDatas);
+
+
         }
 
         public void UpdateShotRender()
@@ -43,34 +52,17 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 return;
             } 
             */
-
+            
             ComposePreviewImage(windowRect);
         }
 
         public void ComposePreviewImage(Rect windowRect)
         {
-            if (node.NodeConvodata.ShotConfig.GoalType == CameraGoal.Portrait)
-            {
-                Pose camPose = cameraPoseCalculator.CalculateCameraPose(node.NodeConvodata.ShotConfig, actorMeshManager.CachedActorMesh.FocusTarget.transform);
-                Pose actorPose = GetActorPreviewPositionData();
+            CamShotConfig shot = node.NodeConvodata.ShotConfig;
 
-                previewRenderer.RenderPreview(windowRect, camPose, actorPose, actorMeshManager.CachedActorMesh);
-            }
-        }
+            Pose camPose = cameraWrapper.CalculateCameraShot(shot);
 
-        private Pose GetActorPreviewPositionData()
-        {
-            Vector3 pos = actorMeshManager.CachedActorMesh.FocusTarget.transform.position;
-
-            Vector3 midPoint = cameraPoseCalculator.CalculateMidPreviewPoint();
-            Vector3 direction = pos - midPoint;
-
-            direction.y = 0;
-
-            // Check if the direction vector is valid (non-zero), prevents warning message being spammed to console.
-            Quaternion rotation = (direction.sqrMagnitude > Mathf.Epsilon) ? Quaternion.LookRotation(direction) : Quaternion.identity;
-
-            return new Pose(Vector3.zero, rotation);
+            previewRenderer.RenderPreview(windowRect, camPose, ActorDatas);
 
         }
     }

@@ -2,6 +2,8 @@
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
@@ -17,7 +19,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
 
         public void ActorsLookAtEachOther()
         {
-            Vector3 midPoint = CameraCalculator.CalculateMidPoint();
+            List<Vector3> focusTargets = NodeManager.Instance.ActorsInScene().Select(x => x.ActorGO.transform.root.position).ToList();
+
+            Vector3 midPoint = CameraCalculator.CalculateMidPoint(focusTargets);
             foreach (ActorInfo actorInfo in NodeManager.Instance.ActorsInScene())
             {
                 actorInfo.ActorGO.transform.root.LookAt(new Vector3(midPoint.x, actorInfo.ActorGO.transform.root.position.y, midPoint.z));

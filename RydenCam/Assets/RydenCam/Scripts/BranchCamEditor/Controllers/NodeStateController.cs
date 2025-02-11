@@ -8,6 +8,7 @@ using Assets.RydenCam.Scripts.DialogueGameUI;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using Assets.RydenCam.Scripts.BranchCamEditor.Controllers;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 
 namespace RydenCam.BranchCamEditor.Controllers
 {
@@ -147,7 +148,7 @@ namespace RydenCam.BranchCamEditor.Controllers
         {
             if (CurrentNode is ITalkable posNode)
             {
-                Pose placement = CamCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig);
+                Pose placement = CamCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig, new PreviewActorPositionData(posNode));
                 dialogueCamera.transform.SetPositionAndRotation(placement.position, placement.rotation);
             }
         }
