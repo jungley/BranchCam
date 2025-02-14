@@ -38,7 +38,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             NodeColor = colorref;
 
             ActorEditorDropdownIndex = node?.NodeConvodata?.Actor?.ActorName is string actorName
-                ? NodeManager.Instance.ActorsInScene().FindIndex(actor => actor.ActorName == actorName)
+                ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
                 : -1;
 
         }
@@ -98,7 +98,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             EditorGUILayout.Space();
             GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 
-            int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.ActorsInScene().Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+            int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
             EditorGUILayout.Space(20);
             //Call when changed
             if (indexx != ActorEditorDropdownIndex)

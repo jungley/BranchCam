@@ -27,8 +27,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public void AssignNewActor(int actorIndex)
         {
-            var actor = NodeManager.Instance.ActorsInScene()[actorIndex].ActorID;
-            node.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene().Where(x => x.ActorID == actor).FirstOrDefault();
+            var actor = NodeManager.Instance.ActorsInScene[actorIndex].ActorID;
+            node.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene.Where(x => x.ActorID == actor).FirstOrDefault();
             node.NodeConvodata.ShotConfig.actor = node.NodeConvodata.Actor.ActorName;
         }
 

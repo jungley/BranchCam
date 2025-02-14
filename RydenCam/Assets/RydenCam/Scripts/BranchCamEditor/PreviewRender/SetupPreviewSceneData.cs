@@ -26,20 +26,21 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             }
             else
             {
-                int actorCount = NodeManager.Instance.ActorsInScene().Count;
+                int actorCount = NodeManager.Instance.ActorsInScene.Count;
 
                 if (actorCount == 1)
                 {
-                    ActorInfo actor = NodeManager.Instance.ActorsInScene()[0];
+                    ActorInfo actor = NodeManager.Instance.ActorsInScene[0];
 
                     PreviewActorDatas.Add(new PreviewActorData
                     {
                         ActorPositionData = new PreviewActorPositionData
                         {
+                            MeshOriginPoint = Vector3.zero,
                             ActorPosition = actor.ActorGO.transform.localPosition,
                             ActorName = actor.ActorName,
                             ActorRotation = Quaternion.identity,
-                            ForwardN = Vector3.forward
+                            ForwardN = Vector3.forward,
                         },
 
                         MeshMat = CacheActorMeshes(actor.ActorGO)
@@ -47,15 +48,12 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                 }
                 else if (actorCount == 2)
                 {
-                    ActorInfo firstActor = NodeManager.Instance.ActorsInScene()[0];
-                    ActorInfo secondActor = NodeManager.Instance.ActorsInScene()[1];    
+                    ActorInfo firstActor = NodeManager.Instance.ActorsInScene[0];
+                    ActorInfo secondActor = NodeManager.Instance.ActorsInScene[1];    
 
                     // Move the second actor along the Z-axis by 5 units
                     Vector3 firstActorPosition = firstActor.ActorGO.transform.localPosition;
                     Vector3 secondActorPosition = secondActor.ActorGO.transform.localPosition;
-
-                    //Move along the line between the two actors
-                    secondActorPosition.z += defaultPreviewDistance;
 
 
                     // Add the first actor's information to the PreviewActorDatas list
@@ -63,7 +61,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     {
                         ActorPositionData = new PreviewActorPositionData
                         {
-                            ActorPosition = firstActor.ActorGO.transform.localPosition,
+                            MeshOriginPoint = Vector3.zero,
+                            ActorPosition = firstActorPosition,
                             ActorRotation = Quaternion.identity,
                             ActorName = firstActor.ActorName,
                             ForwardN = Vector3.forward,
@@ -78,10 +77,12 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     {
                         ActorPositionData = new PreviewActorPositionData
                         {
-                            ActorPosition = secondActorPosition,
-                            ActorRotation = Quaternion.identity,
+                            //Move along the line between the two actors
+                            MeshOriginPoint = new Vector3(0, 0, defaultPreviewDistance),
+                            ActorPosition = new Vector3(secondActorPosition.x, secondActorPosition.y, secondActorPosition.z + defaultPreviewDistance),
+                            ActorRotation = Quaternion.Euler(0, 180, 0),
                             ActorName = secondActor.ActorName,
-                            ForwardN = Vector3.forward //?
+                            ForwardN = new Vector3(0, 0, -1)
                         },
 
                         MeshMat = CacheActorMeshes(secondActor.ActorGO)
@@ -98,6 +99,25 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return PreviewActorDatas;
         }
 
+        public static void ApplyOppositeActor(PreviewActorData actorData, string oppActorName)
+        {
+            //RS TODO: Apply the opposite actor to the preview scene
+        }
+
+        /// <summary>
+        /// Creates the unlit material for the Preview Window
+        /// </summary>
+        /// <param name="material"></param>
+        /// <returns></returns>
+        private static Material CreateUnlitMaterial(Material material)
+        {
+            Material unlitMat = new Material(Shader.Find("Unlit/Texture"));
+            unlitMat.mainTexture = material.mainTexture;
+            unlitMat.SetInt("_ShadowCastingMode", (int)UnityEngine.Rendering.ShadowCastingMode.Off);
+
+            return unlitMat;
+        }
+
         private static  List<(Mesh Mesh, Material Mat)> CacheActorMeshes(GameObject focusTarget)
         {
             if (focusTarget == null)
@@ -112,7 +132,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             foreach (var obj in objsToRender)
             {
                 var mesh = GetMesh(obj);
-                var mat = GetMaterial(obj);
+                var mat = CreateUnlitMaterial(GetMaterial(obj));
 
                 meshMatList.Add((mesh, mat));
             }
@@ -127,6 +147,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return meshChildren.ToArray();
         }
 
+        //RS TODO THIS IS OFF with cube example
+        //Need to apply scale if it's adjusted
+        //Need to apply parent mesh 
         private static void FindMeshChildren(Transform parent, List<GameObject> meshChildren)
         {
             if (parent == null) return;

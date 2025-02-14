@@ -8,6 +8,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Camera
     {
         public string ActorName { get; set; }
 
+        public Vector3 MeshOriginPoint { get; set; }
+
         public Vector3 ActorPosition { get; set; }
         public Quaternion ActorRotation { get; set; }
         public Vector3 ForwardN { get; set; }

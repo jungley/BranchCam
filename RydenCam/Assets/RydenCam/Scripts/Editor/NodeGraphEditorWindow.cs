@@ -254,7 +254,7 @@ public class NodeGraphEditorWindow : EditorWindow
         }
         else if (e.Action == NotifyCollectionChangedAction.Reset)
         {
-            NodeDrawers.Clear();
+            NodeDrawers?.Clear();
         }
     }
 
@@ -398,11 +398,11 @@ public class NodeGraphEditorWindow : EditorWindow
             });
         }
         //Needs to Add an Actor
-        else if(!NodeManager.Instance.ActorsInScene().Any())
+        else if(!NodeManager.Instance.ActorsInScene.Any())
         {
             menu.AddItem(new GUIContent("Must add an actor in the Start Node"), false, () => { });
         }
-        else if (NodeManager.Instance.ActorsInScene().Any(actor => actor.ActorGO == null))
+        else if (NodeManager.Instance.ActorsInScene.Any(actor => actor.ActorGO == null))
         {
             menu.AddItem(new GUIContent("One of the actors have not been assigned in the Start Node."), false, () => { });
         }

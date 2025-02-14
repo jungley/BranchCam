@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -56,7 +57,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             EditorGUILayout.LabelField("Type", inspectorText, GUILayout.Width(50));
             GUILayout.BeginHorizontal("box");
-            CameraGoal selected_goal = (CameraGoal)EditorGUILayout.EnumPopup(conversationData.ShotConfig.GoalType, GUILayout.Width(140));
+
+            bool filteredEnabled = NodeManager.Instance.ActorsInScene.Count == 1;
+            CameraGoal[] allowedGoals = new CameraGoal[] { CameraGoal.Portrait, CameraGoal.Custom };
+            CameraGoal selected_goal = EnumPopupExtensions.EnumPopup(conversationData.ShotConfig.GoalType, filteredEnabled, width:140, allowedGoals);
+
             if (conversationData.ShotConfig.GoalType != selected_goal)
             {
                 conversationData.ShotConfig.GoalType = selected_goal;
@@ -65,7 +70,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
             {
-                var actors = NodeManager.Instance.ActorsInScene()
+                var actors = NodeManager.Instance.ActorsInScene
                     .Where(x => x.ActorName != conversationData.Actor.ActorName)
                     .Select(x => x.ActorName)
                     .ToList();

@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
 using System.Linq;
@@ -48,6 +49,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     if(talkable.NodeConvodata.Actor?.ActorID == actor.ActorID)
                     {
                         talkable.NodeConvodata.Actor = null;
+                        talkable.NodeConvodata.ShotConfig = new CamShotConfig();
                     }
                 }
             }

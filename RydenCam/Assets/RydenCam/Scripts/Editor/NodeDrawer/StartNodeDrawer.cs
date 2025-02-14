@@ -144,7 +144,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     EditorGUILayout.EndHorizontal();
 
 
-                    foreach (var actorInfo in NodeManager.Instance.ActorsInScene())
+                    foreach (var actorInfo in NodeManager.Instance.ActorsInScene)
                     {
                         EditorGUILayout.BeginHorizontal();
                         EditorGUILayout.LabelField(actorInfo.ActorName, inspectorTextBold);

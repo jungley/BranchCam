@@ -44,21 +44,27 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawPreviewWindow()
         {
+            
             var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
-            /* TODO use Cached Image render result
+            /* TODO use Cached Image render result */
+            
             if (previewRenderer.CachedRenderTexture != null)
             {
                 GUI.DrawTexture(windowRect, previewRenderer.CachedRenderTexture);
                 return;
             } 
-            */
+            
             
             ComposePreviewImage(windowRect);
+            
         }
 
         public void ComposePreviewImage(Rect windowRect)
         {
             CamShotConfig shot = node.NodeConvodata.ShotConfig;
+
+            //RS TODO Preview should handle local custom
+            if (shot.IsCustomSet) return;
 
             Pose camPose = cameraWrapper.CalculateCameraShot(shot);
 

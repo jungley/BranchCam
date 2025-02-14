@@ -37,7 +37,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
         */
 
         //Default Constructor
-        public CamShotConfig(string targetGameObjectName)
+        public CamShotConfig(string targetGameObjectName = "")
         {
             actor = targetGameObjectName;
             GoalType = CameraGoal.Portrait;

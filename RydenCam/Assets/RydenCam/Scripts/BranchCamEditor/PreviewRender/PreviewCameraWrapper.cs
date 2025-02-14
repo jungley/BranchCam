@@ -1,4 +1,5 @@
 ﻿using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.Common;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -26,13 +27,27 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return cameraCalculator.CalculateMidPoint(previewFocusPositions);
         }
 
+        /*
+        private void applyOppositeActor()
+        {
+            if (shotConfig.GoalType == CameraGoal.FrameShare
+                || shotConfig.GoalType == CameraGoal.OverShoulder)
+            {
+                //Apply the Opposite actor
+            }
+        }
+        */
+
 
         public Pose CalculateCameraShot(CamShotConfig shotConfig)
         {
-            PreviewActorData actorData = actorDatas.Where(actorData => shotConfig.actor == actorData.ActorPositionData.ActorName).FirstOrDefault();  
+            PreviewActorData actorData = actorDatas.Where(actorData => shotConfig.actor == actorData.ActorPositionData.ActorName).FirstOrDefault();
 
-            return cameraCalculator.CalculatePlacement(shotConfig, actorData.ActorPositionData); 
-
+            if (actorData == null) return new Pose();
+            
+            return cameraCalculator.CalculatePlacement(shotConfig, actorData.ActorPositionData);
+            
+            
      
 
             //Im not sure why we have this here below

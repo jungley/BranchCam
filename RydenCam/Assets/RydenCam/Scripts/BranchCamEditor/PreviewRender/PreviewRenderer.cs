@@ -43,11 +43,11 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     if (meshMat.Mesh == null) continue;
 
                     // Use custom matrix for actor pose
-                    Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.ActorPosition, actor.ActorPositionData.ActorRotation, Vector3.one);
+                    Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.MeshOriginPoint, actor.ActorPositionData.ActorRotation, Vector3.one);
                     previewRenderUtility.DrawMesh(meshMat.Mesh, customMatrix, meshMat.Mat, 0);
                 }
             }
-            
+
             previewRenderUtility.Render();
 
             CachedRenderTexture = previewRenderUtility.EndPreview();
