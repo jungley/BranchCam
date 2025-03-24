@@ -4,16 +4,16 @@ using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DecisionNodeDrawer : NodeDrawerBase
+    internal class DecisionNodeDrawer : TalkableDrawerNode
     {
         private DecisionNode node  { get; set; }
-        private DecisionNodeCommand command { get; set; }
         private DialoguePreview<DecisionNode> preview { get; set; }
         private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
 
@@ -38,6 +38,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
+            TextAreaRect = new Dictionary<int, Rect>();
+
             ColorUtility.TryParseHtmlString("#990099", out Color colorref);
             NodeColor = colorref;
 
@@ -54,9 +56,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         {
             command.CustomCameraCommand.ClearCameraSceneObject();
         }
-        
+
         public override void DrawNode(int index)
         {
+
+            int buffer = 42;
             GUI.backgroundColor = Color.gray;
 
             WindowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight),
@@ -70,12 +74,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                         : node.NodeConvodata.Actor.ActorName,
                         labelStyleHead_Node);
 
+                     TextAreaRect.Clear();
                      for (int decisionIndex = 0; decisionIndex < node.DecisionOptions.Count; decisionIndex++)
                      {
                          GUILayout.BeginHorizontal();
                             GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
-                            node.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(node.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: node.NodeWidth - 25);
-                            GUILayout.EndHorizontal();
+                         node.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(WindowRect, TextAreaRect, decisionIndex, ref buffer, node.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: node.NodeWidth - 25);
+                         GUILayout.EndHorizontal();
                          GUILayout.Space(5);
 
                      }
@@ -85,7 +90,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                      Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                      if (GUI.Button(deleteButtonRect, "X"))
                      {
-                         command.RemoveNode(node);
+                         command.RemoveNode();
                      }
 
                      DrawConnectionPoints();
@@ -105,7 +110,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         {
             EditorGUILayout.LabelField("Decision Info", labelStyleHead_Panel);
             EditorGUILayout.Space();
-            GUILayout.Label("Actor", inspectorText, GUILayout.Width(150));
+            GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 
             int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex,  NodeManager.Instance.StartNode.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
 
@@ -124,33 +129,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             EditorGUILayout.Space();
 
-            if (GUILayout.Button("Add Choice", GUILayout.Width(80), GUILayout.Height(25)) && node.PointOut.Count < 9)
-            {
-                command.AddDecisionOption();
-            }
-
-            scrollPosInspector = EditorGUILayout.BeginScrollView(scrollPosInspector, GUILayout.Width(250), GUILayout.Height(280));
-
-            //Loop through choices
-            for (int i = 0; i < node.DecisionOptions.Count; i++)
-            {
-                using (var decisionChoiceListings = new GUILayout.HorizontalScope())
-                {
-                    EditorGUILayout.LabelField("Choice " + (i + 1), inspectorText, GUILayout.Width(195));
-                    if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(20)))
-                    {
-                        ConnectionManager.Instance.Remove(node.PointOut[i]);
-                        command.RemoveDecisionOption(i);
-                        break;
-                    }
-                }
-                node.DecisionOptions[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(node.DecisionOptions[i], textAreaStyleInspector, areaHeight:120, textWidth:200 );
-            }
-            EditorGUILayout.EndScrollView();
-
-
-            //Color Banner but cant dyanically change position when file button shifts everything down
-            //GUI.DrawTextureWithTexCoords(new Rect(0, 443, 250.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
 
             nodeCameraOptionsDrawer.DrawUICamCompOptions();        
         }

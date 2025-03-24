@@ -12,6 +12,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using Assets.RydenCam.Scripts.BranchCamCC;
+using System;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -48,11 +49,15 @@ public class NodeGraphEditorWindow : EditorWindow
 
 
 
-    //Panels
+    //Panel Styles
     private static GUIStyle panelstyle_inspector;
     private static GUIStyle panelstyle_button;
-    private static Rect ButtonPanelArea;
-    private static Rect InspectorPanelArea;
+
+
+    //Define areas for clicking 
+    private Rect ButtonPanelArea => new Rect(Math.Abs(panX), Math.Abs(panY), Screen.width, 30);
+    
+    private Rect InspectorPanelArea => new Rect(Math.Abs(panX), Math.Abs(panY), ActiveNodeDrawView != null ? ActiveNodeDrawView.InspectorWidth : 230, Math.Abs(panY) + 1000);
 
     //Text Style
     private static GUIStyle inspectorText;
@@ -68,7 +73,6 @@ public class NodeGraphEditorWindow : EditorWindow
         }
 
 
-        DrawGrid(gridSpacing: 20f, gridOpacity: 0.5f, gridColor: Color.white);
 
         GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
 
@@ -88,14 +92,40 @@ public class NodeGraphEditorWindow : EditorWindow
 
         DrawInspector();
 
+        //For Debugging Purposes
+        //GUI.Box(InspectorPanelArea, CreateSolidTextureFromRect(InspectorPanelArea, Color.red));
 
     }
 
+    /*
+     * For Debugging Purposes
+    public Texture2D CreateSolidTextureFromRect(Rect rect, Color color)
+    {
+        // Create a new texture with width and height taken from the Rect
+        int width = Mathf.FloorToInt(rect.width);
+        int height = Mathf.FloorToInt(rect.height);
+
+        Texture2D texture = new Texture2D(width, height);
+
+        // Create an array of colors, fill it with the provided color
+        Color[] colorArray = new Color[width * height];
+        for (int i = 0; i < colorArray.Length; i++)
+        {
+            colorArray[i] = color;
+        }
+
+        // Set the pixels of the texture
+        texture.SetPixels(colorArray);
+        texture.Apply(); // Apply the changes to the texture
+
+        return texture;
+    }
+    */
     private void MousePan()
     {
         var mousePosition = Event.current.mousePosition;
 
-        //mouse not over 
+       //Prevent panning in Inspector Panel and Button Ribbon 
         if (InspectorPanelArea.Contains(mousePosition)) return;
         
         if(ButtonPanelArea.Contains(mousePosition)) return; 
@@ -182,10 +212,6 @@ public class NodeGraphEditorWindow : EditorWindow
         inspectorText = new GUIStyle();
         inspectorText.normal.textColor = Color.white;
         inspectorText.fontSize = 15;
-
-        //Define areas for clicking
-        ButtonPanelArea = new Rect(0, 0, 1000, 30);
-        InspectorPanelArea = new Rect(0, 0, 200, 1000);
 
         panelstyle_button = new GUIStyle();
         panelstyle_button.normal.background = targetTextureButtonHeader;
@@ -305,20 +331,38 @@ public class NodeGraphEditorWindow : EditorWindow
         }
     }
 
-
     //Because of event lifecycle, clicking has to be checked before DrawNodes()-> GUI.DragWindow() in NodeDrawer
     private void HandleInputClicks()
     {
         Event e = Event.current;
         Vector2 mousePos = e.mousePosition;
-
-        if (e.type == EventType.MouseDown && e.button == 1) //Right Click
+        if (InspectorPanelArea.Contains(e.mousePosition))
         {
-            ShowContextMenu(mousePos);
-            e.Use();
+            return;
         }
 
-        if (e.button == 0 && e.type == EventType.MouseDown) //Left Click
+        if (e.type == EventType.MouseDown)
+        {
+            SetActiveNode(e.mousePosition);
+        }
+
+        // Check for right-click
+        if (e.type == EventType.MouseDown && e.button == 1)
+        {
+
+            if(ActiveNodeDrawView is TalkableDrawerNode drawer)
+            {
+                drawer.ShowAddRemoveMenu(mousePos);
+            }
+            else
+            {
+                ShowContextMenu(mousePos);
+                e.Use();
+            }
+        }
+
+        // Check for left-click
+        if (e.type == EventType.MouseDown && e.button == 0)
         {
 
             // Check if any node contains the mouse position
@@ -333,10 +377,23 @@ public class NodeGraphEditorWindow : EditorWindow
                 return;
             }
 
-            // Set the active node
-            NodeManager.Instance.ActiveNode = selectedNodeDrawer.Node;
-
             HandleConnectionPointSelected(e.mousePosition);
+        }
+    }
+
+    // Method to set the active node based on mouse position
+    private void SetActiveNode(Vector2 mousePosition)
+    {
+        var selectedNodeDrawer = NodeDrawers
+            .FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(mousePosition));
+
+        NodeManager.Instance.ActiveNode = (selectedNodeDrawer != null) ? selectedNodeDrawer.Node : null;
+        
+        if(NodeManager.Instance.ActiveNode == null)
+        {
+            GUI.FocusControl(null);
+            //Force a repaint to ensure the UI is updated
+            GetWindow<NodeGraphEditorWindow>().Repaint();
         }
     }
 
@@ -424,38 +481,4 @@ public class NodeGraphEditorWindow : EditorWindow
         menu.ShowAsContext();
     }
 
-
-
-    private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
-    {
-        /*
-        GUI.DrawTexture(new Rect(0, 0, maxSize.x, maxSize.y), tex, ScaleMode.StretchToFill);
-
-        Vector2 offset = new Vector2(panX, panY);
-        Vector2 drag = new Vector2(0, 0);
-
-        int widthDivs = Mathf.CeilToInt((position.width + 1000) / gridSpacing);
-        int heightDivs = Mathf.CeilToInt((position.height + 1000) / gridSpacing);
-
-        Handles.BeginGUI();
-        Handles.color = new Color(gridColor.r, gridColor.g, gridColor.b, gridOpacity);
-
-        offset += drag * 0.5f;
-        Vector3 newOffset = new Vector3(offset.x % gridSpacing, offset.y % gridSpacing, 0);
-
-        for (int i = 0; i < widthDivs; i++)
-        {
-            Handles.DrawLine(new Vector3(gridSpacing * i, -gridSpacing, 0) + newOffset, new Vector3(gridSpacing * i, position.height, 0f) + newOffset);
-        }
-
-        for (int j = 0; j < heightDivs; j++)
-        {
-            Handles.DrawLine(new Vector3(-gridSpacing, gridSpacing * j, 0) + newOffset, new Vector3(position.width, gridSpacing * j, 0f) + newOffset);
-        }
-
-        Handles.color = Color.white;
-        Handles.EndGUI();
-        */
-
-    }
 }

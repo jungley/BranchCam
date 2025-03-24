@@ -8,11 +8,11 @@ using UnityEngine.SceneManagement;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
-    public class StartNodeCommand : INodeCommand
+    public class StartNodeCommand : NodeCommand
     {
         private StartNode node { get; set; }
 
-        public StartNodeCommand(Node _node)
+        public StartNodeCommand(Node _node) : base(_node)
         {
             node = _node as StartNode;
         }
@@ -35,7 +35,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     }
                 }
             }
-            
         }
 
         public void RemoveActor(int index)
@@ -105,16 +104,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                 actor.PreDefinedStartPosition = new Pose(actor.ActorGO.transform.root.position, actor.ActorGO.transform.root.rotation);
             }
             node.UnitySceneName = SceneManager.GetActiveScene().name;
-        }
-
-
-
-        public void RemoveNode(Node node)
-        {
-            NodeManager.Instance.RemoveNode(node);
-            ConnectionManager.Instance.RemoveAssociatedConnections(node);
-            NodeManager.Instance.ActiveNode = null;
-
         }
     }
 }

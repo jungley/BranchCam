@@ -13,6 +13,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private StartNode startNode { get; set; }
         private StartNodeCommand startCommand { get; set; }
 
+        public override float InspectorWidth => 335;
+
         public StartNodeDrawer(Node node) : base(node)
         {
             startNode = node as StartNode;
@@ -46,7 +48,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                         if (GUI.Button(deleteButtonRect, "X"))
                         {
-                            startCommand.RemoveNode(startNode);
+                            startCommand.RemoveNode();
                         }
 
                         DrawConnectionPoints();

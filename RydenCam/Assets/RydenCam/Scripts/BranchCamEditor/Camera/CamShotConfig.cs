@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Extensions;
+using System;
 
 namespace RydenCam.BranchCamEditor.BranchCam
 {
@@ -66,6 +67,10 @@ namespace RydenCam.BranchCamEditor.BranchCam
                        actor == other.actor &&
                        GlobalCustomCamPos.IsEqual(other.GlobalCustomCamPos) &&
                        LocalRelativeActorPos.IsEqual(other.LocalRelativeActorPos);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(GoalType, GoalDistance, GoalAngle, GoalCustomType, oppositeActor, actor, GlobalCustomCamPos, LocalRelativeActorPos);
         }
     }
 }

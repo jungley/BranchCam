@@ -16,7 +16,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         private ConversationData convoData { get; set; }
 
         public static GameObject tempCustomCamera { get; set; }
-
+        
         public static string customCamLock_nodeId;
 
         //Called when a node is selected

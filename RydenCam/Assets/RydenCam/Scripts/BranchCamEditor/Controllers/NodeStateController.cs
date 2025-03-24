@@ -156,9 +156,9 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void EndSequence()
         {
             SetupManager.ReturnActorsToOriginalPositionsIfEnabled();
-            SetupManager.SetDepthOfField(false);
+            SetupManager.SetDepthOfField(enabled: false);
             UIView.ClearPanels();
-            ToggleRelevantObjects(false);
+            ToggleRelevantObjects(visibility: false);
             PreviousDialogue.Clear();
             IsDialogueRunning = false;
             ValidInputs.IsDecionsMakingLocked = false;
