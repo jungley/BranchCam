@@ -38,13 +38,15 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             foreach (var actor in actorsToRender)
             {
 
-                foreach (var meshMat in actor.MeshMat)
+                //Vector3 parentScale = actor.ActorPositionData
+
+                foreach (var meshMatScale in actor.MeshMatScale)
                 {
-                    if (meshMat.Mesh == null) continue;
+                    if (meshMatScale.Mesh == null) continue;
 
                     // Use custom matrix for actor pose
-                    Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.MeshOriginPoint, actor.ActorPositionData.ActorRotation, Vector3.one);
-                    previewRenderUtility.DrawMesh(meshMat.Mesh, customMatrix, meshMat.Mat, 0);
+                    Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.MeshOriginPoint, actor.ActorPositionData.ActorRotation, Vector3.one);//meshMatScale.Scale);
+                    previewRenderUtility.DrawMesh(meshMatScale.Mesh, customMatrix, meshMatScale.Mat, 0);
                 }
             }
 

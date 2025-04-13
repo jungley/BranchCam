@@ -36,13 +36,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             currentCommand.UpdateCustomCamera();
         }
 
-
-
-
-
         public void DrawUICamCompOptions()
         {
-
             ConversationData conversationData = currentNode.NodeConvodata;
 
             EditorGUILayout.Space();
@@ -75,13 +70,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     .Select(x => x.ActorName)
                     .ToList();
 
-                int OppActorIndex = actors.IndexOf(conversationData.ShotConfig.oppositeActor);
+                int OppActorIndex = actors.IndexOf(conversationData.ShotConfig.OppositeActor);
                 if (OppActorIndex == -1) OppActorIndex = 0;
 
                 if (actors.Count > 0)
                 {
                     OppActorIndex = EditorGUILayout.Popup(OppActorIndex, actors.ToArray(), GUILayout.Width(70));
-                    conversationData.ShotConfig.oppositeActor = actors[OppActorIndex];
+                    conversationData.ShotConfig.OppositeActor = actors[OppActorIndex];
                 }
             }
             GUILayout.EndHorizontal();

@@ -1,5 +1,4 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
-using RydenCam.Common;
 using UnityEngine;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using System.Collections.Generic;
@@ -15,7 +14,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         private N node;
 
-        public List<PreviewActorData> ActorDatas { get; set; }
+        public List<PreviewActorData> ActorDatas => SetupPreviewSceneData.PreviewActorDatas;
 
         public DialoguePreview(N node)
         {
@@ -28,11 +27,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             previewRenderer = new PreviewRenderer();
 
-            //Set the Actor meshes local to the preview scene
-            ActorDatas = SetupPreviewSceneData.Initialize();
+            SetupPreviewSceneData.CalculateActorsinPreviewSpace();
+
             cameraWrapper = new PreviewCameraWrapper(ActorDatas);
-
-
         }
 
         public void UpdateShotRender()
@@ -44,16 +41,16 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawPreviewWindow()
         {
-            
             var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
             /* TODO use Cached Image render result */
             
+            /*
             if (previewRenderer.CachedRenderTexture != null)
             {
                 GUI.DrawTexture(windowRect, previewRenderer.CachedRenderTexture);
                 return;
-            } 
-            
+            }
+            */
             
             ComposePreviewImage(windowRect);
             

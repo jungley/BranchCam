@@ -1,11 +1,8 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
-using Cinemachine.Utility;
-using Ink.Parsed;
-using RydenCam.BranchCamEditor.Controllers;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using RydenCam.SequenceData;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -35,7 +32,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
         }
 
 
-        public Pose CalculatePlacement(CamShotConfig shot, PreviewActorPositionData actorPositionData)
+        public Pose CalculatePlacement(CamShotConfig shot, PreviewActorPositionData actorPositionData, bool calculateInGame = false)
         {
             switch (shot.GoalType)
             {
@@ -43,10 +40,10 @@ namespace RydenCam.BranchCamEditor.BranchCam
                     return CalculatePortrait(shot, actorPositionData);
 
                 case CameraGoal.OverShoulder:
-                    return CalculateOverShoulder(shot, actorPositionData); 
+                    return CalculateOverShoulder(shot, actorPositionData, calculateInGame); 
 
                 case CameraGoal.FrameShare:
-                    return CalculateFrameShare(shot, actorPositionData);
+                    return CalculateFrameShare(shot, actorPositionData, calculateInGame);
 
                 case CameraGoal.Custom:
                     return CalculateCustom(shot);
@@ -63,7 +60,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
             if (shot.GoalCustomType == CustomCameraType.Local)
             {
-                GameObject target = GameObject.Find(shot.actor);
+                GameObject target = GameObject.Find(shot.Actor);
                 Vector3 pos_result = target.transform.position - shot.LocalRelativeActorPos;
                 Vector3 localCamPos = (shot.GlobalCustomCamPos + pos_result);
                 return new Pose(localCamPos, shot.GlobalCustomCamRot);
@@ -130,15 +127,38 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return new Pose(camPos, camRot);
         }
 
-        private Pose CalculateOverShoulder(CamShotConfig shot, PreviewActorPositionData posData)
+        public PreviewActorPositionData AssignOppositeActor(CamShotConfig shot, bool calculateInGame)
         {
+            PreviewActorPositionData oppPreviewActorPosData = null;
+            if (shot.OppositeActor != string.Empty)
+            {
 
-            Vector3 targPos = posData.OppPosition;
+                if (calculateInGame)
+                {
+                    oppPreviewActorPosData = new PreviewActorPositionData(shot.OppositeActor);             
+                }
+                else
+                {
+                    oppPreviewActorPosData = SetupPreviewSceneData.PreviewActorDatas
+                        .FirstOrDefault(x => x.ActorPositionData.ActorName == shot.OppositeActor)
+                        ?.ActorPositionData;
+                }
+            }
+            return oppPreviewActorPosData;
+        }
+
+
+        private Pose CalculateOverShoulder(CamShotConfig shot, PreviewActorPositionData posData, bool calculateInGame = false)
+        {
+            PreviewActorPositionData oppActorData = AssignOppositeActor(shot, calculateInGame);
+            if (oppActorData == null) return new Pose();
+
+            Vector3 targPos = oppActorData.ActorPosition;
             Vector3 camPos = posData.ActorPosition;
             float angleHeight = CamSettings.GetAngle(shot);
             camPos -= posData.ForwardN * CamSettings.GetDistance(shot);
 
-            Vector3 rightN = Vector3.Cross(posData.OppForwardN, Vector3.up).normalized; 
+            Vector3 rightN = Vector3.Cross(oppActorData.ForwardN, Vector3.up).normalized; 
             Vector3 option1 = camPos + rightN * CamSettings.GetDistance(shot);
             Vector3 option2 = camPos - rightN * CamSettings.GetDistance(shot);
             
@@ -148,17 +168,20 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
             camPos = new Vector3(camPos.x, camPos.y + angleHeight, camPos.z);
 
-            Vector3 midpoint = (posData.ActorPosition + posData.OppPosition) / 2;
+            Vector3 midpoint = (posData.ActorPosition + oppActorData.ActorPosition) / 2;
             Quaternion camRot = Quaternion.LookRotation(midpoint - camPos);
 
             return new Pose(camPos, camRot);
         }
 
-        private Pose CalculateFrameShare(CamShotConfig shot, PreviewActorPositionData posData)
+        private Pose CalculateFrameShare(CamShotConfig shot, PreviewActorPositionData posData, bool calculateInGame = false)
         {
-            float actorDistance = Vector3.Distance(posData.ActorPosition, posData.OppPosition);
-            Vector3 actorADirN = (posData.ActorPosition - posData.OppPosition).normalized;
-            Vector3 MidPoint = posData.OppPosition + actorADirN * (actorDistance / 2);
+            PreviewActorPositionData oppActorData = AssignOppositeActor(shot, calculateInGame);
+            if (oppActorData == null) return new Pose();
+
+            float actorDistance = Vector3.Distance(posData.ActorPosition, oppActorData.ActorPosition);
+            Vector3 actorADirN = (posData.ActorPosition - oppActorData.ActorPosition).normalized;
+            Vector3 MidPoint = oppActorData.ActorPosition + actorADirN * (actorDistance / 2);
 
             Vector3 PDir1 = Quaternion.AngleAxis(90, Vector3.up) * actorADirN;
             Vector3 PDir2 = Quaternion.AngleAxis(-90, Vector3.up) * actorADirN;

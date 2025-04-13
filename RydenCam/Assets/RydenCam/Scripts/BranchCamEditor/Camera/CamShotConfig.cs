@@ -14,8 +14,8 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public CameraAngle GoalAngle;
         public CustomCameraType GoalCustomType;
 
-        public string oppositeActor;
-        public string actor;
+        public string OppositeActor;
+        public string Actor;
 
         public bool IsCustomSet;
 
@@ -40,7 +40,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
         //Default Constructor
         public CamShotConfig(string targetGameObjectName = "")
         {
-            actor = targetGameObjectName;
+            Actor = targetGameObjectName;
             GoalType = CameraGoal.Portrait;
             GoalDistance = CameraDistance.Mid;
             GoalAngle = CameraAngle.EyeLevel;
@@ -63,14 +63,14 @@ namespace RydenCam.BranchCamEditor.BranchCam
                        GoalDistance == other.GoalDistance &&
                        GoalAngle == other.GoalAngle &&
                        GoalCustomType == other.GoalCustomType &&
-                       oppositeActor == other.oppositeActor &&
-                       actor == other.actor &&
+                       OppositeActor == other.OppositeActor &&
+                       Actor == other.Actor &&
                        GlobalCustomCamPos.IsEqual(other.GlobalCustomCamPos) &&
                        LocalRelativeActorPos.IsEqual(other.LocalRelativeActorPos);
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(GoalType, GoalDistance, GoalAngle, GoalCustomType, oppositeActor, actor, GlobalCustomCamPos, LocalRelativeActorPos);
+            return HashCode.Combine(GoalType, GoalDistance, GoalAngle, GoalCustomType, OppositeActor, Actor, GlobalCustomCamPos, LocalRelativeActorPos);
         }
     }
 }

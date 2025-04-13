@@ -1,17 +1,16 @@
-﻿using System;
+﻿using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Extensions
 {
-    public static class StringExtensions
+    public static class TransformExtensions
     {
-        public static bool ConvertToBool(this string input)
+        public static Transform FindMostParent(this Transform transform)
         {
-            if (string.Equals(input, "true", StringComparison.OrdinalIgnoreCase))
-                return true;
-            else if (string.Equals(input, "false", StringComparison.OrdinalIgnoreCase))
-                return false;
-            else
-                throw new ArgumentException("Invalid string representation for boolean: " + input);
+            while (transform.parent != null)
+            {
+                transform = transform.parent;
+            }
+            return transform; 
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     if (node.NodeConvodata.Actor == null)
                     {
                         node.NodeConvodata.Actor = firstActor;
-                        node.NodeConvodata.ShotConfig.actor = firstActor.ActorName;
+                        node.NodeConvodata.ShotConfig.Actor = firstActor.ActorName;
                     }
                 }
             }

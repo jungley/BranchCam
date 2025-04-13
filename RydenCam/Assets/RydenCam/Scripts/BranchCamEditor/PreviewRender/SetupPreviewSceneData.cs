@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
 using System.Collections;
@@ -12,9 +13,12 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
         private static float defaultPreviewDistance = 5.0f;
 
-        public static List<PreviewActorData> Initialize()
+
+        public static List<PreviewActorData> PreviewActorDatas { get; set; }
+
+        public static void CalculateActorsinPreviewSpace()
         {
-            List<PreviewActorData> PreviewActorDatas = new List<PreviewActorData>();
+            PreviewActorDatas = new List<PreviewActorData>();
 
 
             PreviewActorPositionData positionData = new PreviewActorPositionData();
@@ -43,9 +47,10 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                             ForwardN = Vector3.forward,
                         },
 
-                        MeshMat = CacheActorMeshes(actor.ActorGO)
+                        MeshMatScale = CacheActorMeshes(actor.ActorGO)
                     });
                 }
+
                 else if (actorCount == 2)
                 {
                     ActorInfo firstActor = NodeManager.Instance.ActorsInScene[0];
@@ -68,7 +73,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                             ForwardN = Vector3.forward,
                         },
 
-                        MeshMat = CacheActorMeshes(firstActor.ActorGO)
+                        MeshMatScale = CacheActorMeshes(firstActor.ActorGO)
 
                     });
 
@@ -85,23 +90,16 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                             ForwardN = new Vector3(0, 0, -1)
                         },
 
-                        MeshMat = CacheActorMeshes(secondActor.ActorGO)
+                        MeshMatScale = CacheActorMeshes(secondActor.ActorGO)
                     });
                 }
                 else if (actorCount > 2)
                 {
                     //RS TODO Position them in a circle
+                    //Default distance specified the diameter of the circle
                 }
-
-
-
             }
-            return PreviewActorDatas;
-        }
-
-        public static void ApplyOppositeActor(PreviewActorData actorData, string oppActorName)
-        {
-            //RS TODO: Apply the opposite actor to the preview scene
+            return;
         }
 
         /// <summary>
@@ -118,7 +116,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return unlitMat;
         }
 
-        private static  List<(Mesh Mesh, Material Mat)> CacheActorMeshes(GameObject focusTarget)
+        private static  List<(Mesh Mesh, Material Mat, Vector3 Scale)> CacheActorMeshes(GameObject focusTarget)
         {
             if (focusTarget == null)
             {
@@ -126,15 +124,16 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                 return null;
             }
 
-            var objsToRender = GetChildrenWithMeshes(focusTarget.transform.parent);
-            var meshMatList = new List<(Mesh Mesh, Material Mat)>();
+            var objsToRender = GetChildrenWithMeshes(focusTarget.transform.FindMostParent());
+            var meshMatList = new List<(Mesh Mesh, Material Mat, Vector3 Scale)>();
 
             foreach (var obj in objsToRender)
             {
                 var mesh = GetMesh(obj);
                 var mat = CreateUnlitMaterial(GetMaterial(obj));
+                var scale = obj.transform.FindMostParent().localScale;
 
-                meshMatList.Add((mesh, mat));
+                meshMatList.Add((mesh, mat, scale));
             }
 
             return meshMatList;
@@ -143,17 +142,21 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
         private static GameObject[] GetChildrenWithMeshes(Transform actorParent)
         {
             var meshChildren = new List<GameObject>();
-            FindMeshChildren(actorParent, meshChildren);
+            FindMeshesInHierarchy(actorParent, meshChildren);
             return meshChildren.ToArray();
         }
 
-        //RS TODO THIS IS OFF with cube example
-        //Need to apply scale if it's adjusted
-        //Need to apply parent mesh 
-        private static void FindMeshChildren(Transform parent, List<GameObject> meshChildren)
+        private static void FindMeshesInHierarchy(Transform parent, List<GameObject> meshChildren)
         {
             if (parent == null) return;
 
+            // Check if the parent object itself has a MeshRenderer or SkinnedMeshRenderer
+            if (parent.GetComponent<MeshRenderer>() != null || parent.GetComponent<SkinnedMeshRenderer>() != null)
+            {
+                meshChildren.Add(parent.gameObject);
+            }
+
+            // Now check the children recursively
             foreach (Transform child in parent)
             {
                 if (child.GetComponent<MeshRenderer>() != null || child.GetComponent<SkinnedMeshRenderer>() != null)
@@ -162,7 +165,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                 }
 
                 // Recursively search through all children
-                FindMeshChildren(child, meshChildren);
+                FindMeshesInHierarchy(child, meshChildren);
             }
         }
 

@@ -27,44 +27,18 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return cameraCalculator.CalculateMidPoint(previewFocusPositions);
         }
 
-        /*
-        private void applyOppositeActor()
-        {
-            if (shotConfig.GoalType == CameraGoal.FrameShare
-                || shotConfig.GoalType == CameraGoal.OverShoulder)
-            {
-                //Apply the Opposite actor
-            }
-        }
-        */
 
 
         public Pose CalculateCameraShot(CamShotConfig shotConfig)
         {
-            PreviewActorData actorData = actorDatas.Where(actorData => shotConfig.actor == actorData.ActorPositionData.ActorName).FirstOrDefault();
+            PreviewActorData actorData = actorDatas
+                .Where(actorData => shotConfig.Actor == actorData.ActorPositionData.ActorName)
+                .FirstOrDefault();
 
             if (actorData == null) return new Pose();
             
             return cameraCalculator.CalculatePlacement(shotConfig, actorData.ActorPositionData);
             
-            
-     
-
-            //Im not sure why we have this here below
-            /*
-
-            // Calculate the relative position to the actor, ignoring y-axis differences.
-            Vector3 relativePosition = new Vector3(actorFocusObjPosition.x - initialCamPose.position.x, 0, actorFocusObjPosition.z - initialCamPose.position.z);
-
-            // Adjust the camera's position to maintain the initial y-position.
-            Vector3 finalPosition = relativePosition + new Vector3(0, initialCamPose.position.y, 0);
-
-            // Rotate the camera to face the actor.
-            Quaternion finalRotation = Quaternion.Euler(initialCamPose.rotation.eulerAngles + new Vector3(0, 180f, 0));
-            
-
-            return new Pose(finalPosition, finalRotation);
-            */
         }
 
     }

@@ -25,7 +25,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         {
             var actor = NodeManager.Instance.ActorsInScene[actorIndex].ActorID;
             talkableNode.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene.Where(x => x.ActorID == actor).FirstOrDefault();
-            talkableNode.NodeConvodata.ShotConfig.actor = talkableNode.NodeConvodata.Actor.ActorName;
+            talkableNode.NodeConvodata.ShotConfig.Actor = talkableNode.NodeConvodata.Actor.ActorName;
         }
 
     }
