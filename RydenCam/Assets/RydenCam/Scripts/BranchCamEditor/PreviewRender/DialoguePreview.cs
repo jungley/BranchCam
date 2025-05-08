@@ -60,8 +60,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             CamShotConfig shot = node.NodeConvodata.ShotConfig;
 
-            //RS TODO Preview should handle local custom
-            if (shot.IsCustomSet) return;
+            if (shot.GoalType == Common.CameraGoal.Custom) return;
 
             Pose camPose = cameraWrapper.CalculateCameraShot(shot);
 

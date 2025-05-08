@@ -12,30 +12,18 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public CameraGoal GoalType;
         public CameraDistance GoalDistance;
         public CameraAngle GoalAngle;
-        public CustomCameraType GoalCustomType;
 
         public string OppositeActor;
         public string Actor;
 
+        /// <summary>
+        /// True if the custom camera position and rotation are set.
+        /// </summary>
         public bool IsCustomSet;
 
         public Vector3 GlobalCustomCamPos;
         public Quaternion GlobalCustomCamRot;
-        public Vector3 LocalRelativeActorPos;
-        public Quaternion LocalRelativeActorRot;
 
-        //RS TODO
-        //For Custom Shots
-        /*
-        public CamShotConfig(string a, CustomCameraType customtype, Vector3 pos, Quaternion rot)
-        {
-            actor = a;
-            GoalType = CameraGoal.Custom;
-            GoalCustomType = customtype;
-            GlobalCustomCamPos = pos;
-            GlobalCustomCamRot = rot;
-        }
-        */
 
         //Default Constructor
         public CamShotConfig(string targetGameObjectName = "")
@@ -44,12 +32,9 @@ namespace RydenCam.BranchCamEditor.BranchCam
             GoalType = CameraGoal.Portrait;
             GoalDistance = CameraDistance.Mid;
             GoalAngle = CameraAngle.EyeLevel;
-            GoalCustomType = CustomCameraType.None;
             
             GlobalCustomCamPos = Vector3.zero;
             GlobalCustomCamRot = Quaternion.identity;
-            LocalRelativeActorPos = Vector3.zero;
-            LocalRelativeActorRot = Quaternion.identity;
         }
 
         public override bool Equals(object obj)
@@ -59,18 +44,16 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
             CamShotConfig other = (CamShotConfig)obj;
 
-                return GoalType == other.GoalType &&
-                       GoalDistance == other.GoalDistance &&
-                       GoalAngle == other.GoalAngle &&
-                       GoalCustomType == other.GoalCustomType &&
-                       OppositeActor == other.OppositeActor &&
-                       Actor == other.Actor &&
-                       GlobalCustomCamPos.IsEqual(other.GlobalCustomCamPos) &&
-                       LocalRelativeActorPos.IsEqual(other.LocalRelativeActorPos);
+            return GoalType == other.GoalType &&
+                   GoalDistance == other.GoalDistance &&
+                   GoalAngle == other.GoalAngle &&
+                   OppositeActor == other.OppositeActor &&
+                   Actor == other.Actor &&
+                   GlobalCustomCamPos.IsEqual(other.GlobalCustomCamPos);
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(GoalType, GoalDistance, GoalAngle, GoalCustomType, OppositeActor, Actor, GlobalCustomCamPos, LocalRelativeActorPos);
+            return HashCode.Combine(GoalType, GoalDistance, GoalAngle, OppositeActor, Actor, GlobalCustomCamPos);
         }
     }
 }

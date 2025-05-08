@@ -138,8 +138,6 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public abstract void DrawNodeInspector();
 
-        public abstract void DeSelect();
-
         public void HighlightSelctedNode()
         {
             Rect expandedRect = new Rect(

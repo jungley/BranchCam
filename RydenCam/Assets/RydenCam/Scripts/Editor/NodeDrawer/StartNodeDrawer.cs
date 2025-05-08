@@ -62,10 +62,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
 
-        public override void DeSelect()
-        {
 
-        }
 
         public override void DrawNodeInspector()
         {

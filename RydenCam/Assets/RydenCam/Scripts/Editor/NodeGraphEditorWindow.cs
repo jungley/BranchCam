@@ -20,7 +20,22 @@ using System;
 public class NodeGraphEditorWindow : EditorWindow
 {
     private NodeGraphViewModel viewModel;
-    private NodeDrawerBase ActiveNodeDrawView { get; set; }
+
+    private NodeDrawerBase activeNodeDrawView { get; set; }
+    private NodeDrawerBase ActiveNodeDrawView
+    {
+        get => activeNodeDrawView;
+        set
+        {
+            if(value != activeNodeDrawView)
+            {
+                if(activeNodeDrawView is IClearable clearable)
+                {
+                    clearable.Clear();
+                }
+            }
+            activeNodeDrawView = value;        }
+    }
 
     //Window Properties
     static float panX = 0;
@@ -44,7 +59,7 @@ public class NodeGraphEditorWindow : EditorWindow
 
     private RibbonBuilder ribbonBuilder { get; set; }
 
-    List<NodeDrawerBase> NodeDrawers { get; set; }
+    List<NodeDrawerBase> NodeDrawers { get; set; } = new List<NodeDrawerBase>();
     List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
 
@@ -164,17 +179,11 @@ public class NodeGraphEditorWindow : EditorWindow
 
     public void OnActiveNodeUpdated(object sender, PropertyChangedEventArgs e)
     {
-        ActiveNodeDrawView?.DeSelect();
-       
         if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
         {
             ActiveNodeDrawView = NodeDrawers.FirstOrDefault(x => x.Node == NodeManager.Instance.ActiveNode);
         }
-
     }
-
-
-
 
     [MenuItem("BranchCam/Launch Editor")]
     public static void OpenWindow()

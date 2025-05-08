@@ -66,11 +66,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         }
 
-        public override void DeSelect()
-        {
-
-        }
-
         public override void DrawNodeInspector()
         {
             EditorGUILayout.LabelField("Action Info", labelStyleHead_Panel);

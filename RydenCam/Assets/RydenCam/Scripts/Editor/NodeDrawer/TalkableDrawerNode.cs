@@ -40,7 +40,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             menu.AddItem(new GUIContent("Remove"), false, () =>
             {
                 command.RemoveSpeakingEntry(index);
-
             });
             menu.ShowAsContext();
         }

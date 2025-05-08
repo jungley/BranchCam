@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DialogueNodeDrawer : TalkableDrawerNode
+    internal class DialogueNodeDrawer : TalkableDrawerNode, IClearable
     {
         private DialogueNode node { get; set; }
         private DialoguePreview<DialogueNode> preview { get; set; }
@@ -29,7 +29,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             preview = new DialoguePreview<DialogueNode>(node);
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.OnPropertyChange += () => preview.UpdateShotRender();
+            nodeCameraOptionsDrawer.UpdateShotRender += () => preview.UpdateShotRender();
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -42,11 +42,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
                 : -1;
 
-        }
-
-        public override void DeSelect()
-        {
-            command.CustomCameraCommand.ClearCameraSceneObject();
         }
 
         public override void DrawNode(int index)
@@ -111,6 +106,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             nodeCameraOptionsDrawer.DrawUICamCompOptions();
 
+        }
+
+        public void Clear()
+        {
+            command.CustomCameraCommand.ClearCameraSceneObject();
         }
     }
 }

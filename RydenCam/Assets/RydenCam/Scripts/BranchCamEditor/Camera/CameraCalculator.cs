@@ -53,25 +53,11 @@ namespace RydenCam.BranchCamEditor.BranchCam
              }
         }
 
-        //RS TODO HERE fix global and local
         private Pose CalculateCustom(CamShotConfig shot)
         {
             if (!shot.IsCustomSet) return new Pose();
 
-            if (shot.GoalCustomType == CustomCameraType.Local)
-            {
-                GameObject target = GameObject.Find(shot.Actor);
-                Vector3 pos_result = target.transform.position - shot.LocalRelativeActorPos;
-                Vector3 localCamPos = (shot.GlobalCustomCamPos + pos_result);
-                return new Pose(localCamPos, shot.GlobalCustomCamRot);
-            }
-
-            if(shot.GoalCustomType == CustomCameraType.Global)
-            {
-                return new Pose(shot.GlobalCustomCamPos, shot.GlobalCustomCamRot);
-            }
-
-            return new Pose();
+            return new Pose(shot.GlobalCustomCamPos, shot.GlobalCustomCamRot);
         }
 
 

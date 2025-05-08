@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
-    internal class DecisionNodeDrawer : TalkableDrawerNode
+    internal class DecisionNodeDrawer : TalkableDrawerNode, IClearable
     {
         private DecisionNode node  { get; set; }
         private DialoguePreview<DecisionNode> preview { get; set; }
@@ -34,7 +34,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             preview = new DialoguePreview<DecisionNode>(node);
 
             nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(node, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.OnPropertyChange += () => preview.UpdateShotRender();
+            nodeCameraOptionsDrawer.UpdateShotRender += () => preview.UpdateShotRender();
 
             WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
@@ -50,11 +50,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             ActorEditorDropdownIndex = node?.NodeConvodata?.Actor?.ActorName is string actorName
                 ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
                 : -1;
-        }
-
-        public override void DeSelect()
-        {
-            command.CustomCameraCommand.ClearCameraSceneObject();
         }
 
         public override void DrawNode(int index)
@@ -157,6 +152,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 labelRect.x += 6; // Adjust it to be at the center of the point
                 GUI.Label(labelRect, (i + 1).ToString(), decisionOptionNumber);
             }
+        }
+
+        public void Clear()
+        {
+            command.CustomCameraCommand.ClearCameraSceneObject();
         }
     }
 }
