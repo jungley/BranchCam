@@ -30,6 +30,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             SetupPreviewSceneData.CalculateActorsinPreviewSpace();
 
             cameraWrapper = new PreviewCameraWrapper(ActorDatas);
+
+            previewRenderer.CachedRenderTexture = null;
         }
 
         public void UpdateShotRender()
@@ -42,14 +44,13 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         public void DrawPreviewWindow()
         {
             var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
-            /* TODO use Cached Image render result */
-            
-            /*
+     /*
             if (previewRenderer.CachedRenderTexture != null)
             {
                 GUI.DrawTexture(windowRect, previewRenderer.CachedRenderTexture);
                 return;
-            }
+            }    
+            
             */
             
             ComposePreviewImage(windowRect);
@@ -60,11 +61,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             CamShotConfig shot = node.NodeConvodata.ShotConfig;
 
-            if (shot.GoalType == Common.CameraGoal.Custom) return;
-
             Pose camPose = cameraWrapper.CalculateCameraShot(shot);
 
-            previewRenderer.RenderPreview(windowRect, camPose, ActorDatas);
+            previewRenderer.RenderPreview(windowRect, camPose, ActorDatas ,shot);
 
         }
     }

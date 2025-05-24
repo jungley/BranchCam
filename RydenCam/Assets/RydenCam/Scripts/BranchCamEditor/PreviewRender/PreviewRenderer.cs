@@ -1,7 +1,6 @@
-﻿using Ink.Parsed;
-using System.Collections;
+﻿using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.Common;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,35 +27,79 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             }
         }
 
-        public void RenderPreview(Rect windowRect, Pose camPose, List<PreviewActorData> actorsToRender)
+        public static Texture2D RenderGlobalSceneFromPosition(Vector3 camPosition, Quaternion camRotation, int width, int height)
         {
-            previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
+            // Create temporary camera
+            GameObject tempCamGO = new GameObject("TempCamera");
+            UnityEngine.Camera tempCam = tempCamGO.AddComponent<UnityEngine.Camera>(); // Explicitly specify UnityEngine.Camera
 
-            previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
+            tempCam.enabled = false; // Prevent it from interfering with scene rendering
+
+            // Set position & rotation
+            tempCam.transform.position = camPosition;
+            tempCam.transform.rotation = camRotation;
+
+            // Create RenderTexture
+            RenderTexture rt = new RenderTexture(width, height, 24);
+            tempCam.targetTexture = rt;
+
+            // Render
+            tempCam.Render();
+
+            // Read pixels into Texture2D
+            RenderTexture.active = rt;
+            Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            tex.Apply();
+
+            // Clean up
+            RenderTexture.active = null;
+            tempCam.targetTexture = null;
+            Object.DestroyImmediate(rt);
+            Object.DestroyImmediate(tempCamGO);
+
+            return tex;
+        }
 
 
-            foreach (var actor in actorsToRender)
+        public void RenderPreview(Rect windowRect, Pose camPose, List<PreviewActorData> actorsToRender, CamShotConfig shot)
+        {
+            if (shot.GoalType == CameraGoal.Custom)
             {
+                if (!shot.IsCustomSet) return;
 
-                //Vector3 parentScale = actor.ActorPositionData
-
-                foreach (var meshMatScale in actor.MeshMatScale)
-                {
-                    if (meshMatScale.Mesh == null) continue;
-
-                    // Use custom matrix for actor pose
-                    Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.MeshOriginPoint, actor.ActorPositionData.ActorRotation, Vector3.one);//meshMatScale.Scale);
-                    previewRenderUtility.DrawMesh(meshMatScale.Mesh, customMatrix, meshMatScale.Mat, 0);
-                }
+                CachedRenderTexture = RenderGlobalSceneFromPosition(camPose.position, camPose.rotation, (int)windowRect.width, (int)windowRect.height);
+                
+                GUI.DrawTexture(windowRect, CachedRenderTexture);
             }
+            else
+            {
+                previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
 
-            previewRenderUtility.Render();
+                previewRenderUtility.camera.transform.SetPositionAndRotation(camPose.position, camPose.rotation);
 
-            CachedRenderTexture = previewRenderUtility.EndPreview();
 
-            GUI.DrawTexture(windowRect, CachedRenderTexture);
+                foreach (var actor in actorsToRender)
+                {
 
-            previewRenderUtility.Cleanup();
+                    foreach (var meshMatScale in actor.MeshMatScale)
+                    {
+                        if (meshMatScale.Mesh == null) continue;
+
+                        // Use custom matrix for actor pose
+                        Matrix4x4 customMatrix = Matrix4x4.TRS(actor.ActorPositionData.MeshOriginPoint, actor.ActorPositionData.ActorRotation, Vector3.one);//meshMatScale.Scale);
+                        previewRenderUtility.DrawMesh(meshMatScale.Mesh, customMatrix, meshMatScale.Mat, 0);
+                    }
+                }
+
+                previewRenderUtility.Render();
+
+                CachedRenderTexture = previewRenderUtility.EndPreview();
+
+                GUI.DrawTexture(windowRect, CachedRenderTexture);
+
+                previewRenderUtility.Cleanup();
+            }
         }
     }
 }
