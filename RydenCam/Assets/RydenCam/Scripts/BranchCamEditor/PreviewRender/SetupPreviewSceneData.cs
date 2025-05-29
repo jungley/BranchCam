@@ -11,7 +11,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
     public static class SetupPreviewSceneData
     {
 
-        private static float defaultPreviewDistance = 5.0f;
+        private static float defaultPreviewDistance = 2.0f;
 
 
         public static List<PreviewActorData> PreviewActorDatas { get; set; }
@@ -21,7 +21,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             PreviewActorDatas = new List<PreviewActorData>();
 
 
-            PreviewActorPositionData positionData = new PreviewActorPositionData();
+            ActorPositionWrapper positionData = new ActorPositionWrapper();
             //Set the Position Data
 
             if (NodeManager.Instance.StartNode.StartPositionsEnabled)
@@ -38,7 +38,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
                     PreviewActorDatas.Add(new PreviewActorData
                     {
-                        ActorPositionData = new PreviewActorPositionData
+                        ActorPositionData = new ActorPositionWrapper
                         {
                             MeshOriginPoint = Vector3.zero,
                             ActorPosition = actor.ActorGO.transform.localPosition,
@@ -56,7 +56,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     ActorInfo firstActor = NodeManager.Instance.ActorsInScene[0];
                     ActorInfo secondActor = NodeManager.Instance.ActorsInScene[1];    
 
-                    // Move the second actor along the Z-axis by 5 units
                     Vector3 firstActorPosition = firstActor.ActorGO.transform.localPosition;
                     Vector3 secondActorPosition = secondActor.ActorGO.transform.localPosition;
 
@@ -64,7 +63,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     // Add the first actor's information to the PreviewActorDatas list
                     PreviewActorDatas.Add(new PreviewActorData
                     {
-                        ActorPositionData = new PreviewActorPositionData
+                        ActorPositionData = new ActorPositionWrapper
                         {
                             MeshOriginPoint = Vector3.zero,
                             ActorPosition = firstActorPosition,
@@ -80,7 +79,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     // Add the second actor's information to the PreviewActorDatas list
                     PreviewActorDatas.Add(new PreviewActorData
                     {
-                        ActorPositionData = new PreviewActorPositionData
+                        ActorPositionData = new ActorPositionWrapper
                         {
                             //Move along the line between the two actors
                             MeshOriginPoint = new Vector3(0, 0, defaultPreviewDistance),
@@ -95,8 +94,36 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                 }
                 else if (actorCount > 2)
                 {
-                    //RS TODO Position them in a circle
-                    //Default distance specified the diameter of the circle
+                    float radius = defaultPreviewDistance; // Radius of the circle
+                    float angleStep = 360f / actorCount;
+
+                    for (int i = 0; i < actorCount; i++)
+                    {
+                        ActorInfo actor = NodeManager.Instance.ActorsInScene[i];
+                        float angle = i * angleStep * Mathf.Deg2Rad;
+
+                        // Compute position/origin point on the circle
+                        float x = radius * Mathf.Cos(angle);
+                        float z = radius * Mathf.Sin(angle);
+                        Vector3 originPoint = new Vector3(x, 0, z);
+
+                        // Face the center (opposite of the position vector)
+                        Vector3 forward = -originPoint.normalized;
+
+                        PreviewActorDatas.Add(new PreviewActorData
+                        {
+                            ActorPositionData = new ActorPositionWrapper
+                            {
+                                MeshOriginPoint = originPoint,
+                                ActorPosition = actor.ActorGO.transform.localPosition + originPoint,
+                                ActorRotation = Quaternion.LookRotation(forward),
+                                ActorName = actor.ActorName,
+                                ForwardN = forward
+                            },
+
+                            MeshMatScale = CacheActorMeshes(actor.ActorGO)
+                        });
+                    }
                 }
             }
             return;

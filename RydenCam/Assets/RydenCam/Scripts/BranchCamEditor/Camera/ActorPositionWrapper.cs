@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Camera
 {  
-    public class PreviewActorPositionData
+    /// <summary>
+    /// Used in Preview Window and In Game
+    /// </summary>
+    public class ActorPositionWrapper
     {
         public string ActorName { get; set; }
 
@@ -15,7 +18,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Camera
         public Vector3 ForwardN { get; set; }
 
 
-        public PreviewActorPositionData(ITalkable node)
+        public ActorPositionWrapper(ITalkable node)
         {
             ActorName = node.NodeConvodata.Actor.ActorGO.name;
             ActorPosition = node.NodeConvodata.Actor.ActorGO.transform.position;
@@ -23,7 +26,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Camera
             ForwardN = node.NodeConvodata.Actor.ActorGO.transform.forward;
         }
 
-        public PreviewActorPositionData(string actorName)
+        public ActorPositionWrapper(string actorName)
         {
             GameObject actorGO = GameObject.Find(actorName);
             if (actorGO != null)
@@ -36,7 +39,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Camera
         }
 
         //Preview Render
-        public PreviewActorPositionData()
+        public ActorPositionWrapper()
         {
         }
     }

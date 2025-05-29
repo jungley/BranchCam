@@ -57,7 +57,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             tempCam.targetTexture = null;
             Object.DestroyImmediate(rt);
             Object.DestroyImmediate(tempCamGO);
-
+            
             return tex;
         }
 

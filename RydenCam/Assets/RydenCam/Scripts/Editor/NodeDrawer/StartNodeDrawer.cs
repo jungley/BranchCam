@@ -156,7 +156,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     EditorGUILayout.Space(10f);
 
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Look at each other", GUILayout.Height(40f));
+                    EditorGUILayout.LabelField("Look at each other (Override Rotations)", GUILayout.Height(40f));
                     startNode.OverrideRotation = EditorGUILayout.Toggle(startNode.OverrideRotation, GUILayout.Width(40f), GUILayout.Height(40f));
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.Space(5f);

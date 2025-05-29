@@ -44,15 +44,17 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         public void DrawPreviewWindow()
         {
             var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
-     /*
+            /* TODO: Implement Render Caching, weirdness with Unity Editor GUI and RenderTextures
+             * If performance hit is not too bad, might not do caching
+             * The workaround might be literally saving the Texture to a file
             if (previewRenderer.CachedRenderTexture != null)
             {
                 GUI.DrawTexture(windowRect, previewRenderer.CachedRenderTexture);
                 return;
-            }    
+            } 
             
             */
-            
+
             ComposePreviewImage(windowRect);
             
         }
