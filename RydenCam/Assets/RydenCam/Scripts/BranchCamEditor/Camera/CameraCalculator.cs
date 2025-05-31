@@ -59,59 +59,44 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
             return new Pose(shot.GlobalCustomCamPos, shot.GlobalCustomCamRot);
         }
-
-
-        // Helper function to calculate orbit position around a target
-        private Vector3 CalculateOrbitPosition(Vector3 targetPos, Vector3 camPos, float angle)
-        {
-            Vector3 direction = camPos - targetPos;
-            float distance = direction.magnitude;
-            direction.Normalize();
-
-            // Rotation matrix for Y-axis rotation
-            float cosAngle = Mathf.Cos(angle * Mathf.Deg2Rad);
-            float sinAngle = Mathf.Sin(angle * Mathf.Deg2Rad);
-
-            // Rotate the direction vector
-            Vector3 rotatedDirection = new Vector3(
-                cosAngle * direction.x - sinAngle * direction.z,
-                direction.y,
-                sinAngle * direction.x + cosAngle * direction.z
-            );
-
-            return targetPos + rotatedDirection * distance;
-        }
-
-
         private Pose CalculatePortrait(CamShotConfig shot, ActorPositionWrapper posData)
         {
-            // Retrieve shot parameters
-            Vector3 targPos = posData.ActorPosition;
-            Vector3 forwardN = posData.ForwardN;
+            Vector3 targetPos = posData.ActorPosition;
+            Vector3 forward = posData.ForwardN;
             float distance = CamSettings.GetDistance(shot);
             float angleHeight = CamSettings.GetAngle(shot);
             float biasX = CamSettings.DefaultBiasX;
             float orbitAngle = CamSettings.DefaultOrbitAngle;
 
-            // Calculate initial camera position
-            Vector3 camPos = targPos + forwardN * distance;
+            // Initial elevated camera position in front of the target
+            Vector3 camPos = targetPos + forward * distance;
             camPos.y += angleHeight;
 
-            // Compute two possible camera positions based on orbit angle
-            Vector3 option1 = CalculateOrbitPosition(targPos, camPos, orbitAngle);
-            Vector3 option2 = CalculateOrbitPosition(targPos, camPos, -orbitAngle);
+            // Rotate direction vector around Y axis
+            Vector3 Orbit(Vector3 center, Vector3 dir, float angleDeg)
+            {
+                float rad = angleDeg * Mathf.Deg2Rad;
+                float cos = Mathf.Cos(rad);
+                float sin = Mathf.Sin(rad);
 
-            Vector3 ChosenSideMarker = SetSide(ActorsInScene.Select(x => x.position).ToList());
-            camPos = ChosenSideMarker.GetClosest(option1, option2);
+                Vector3 dirNorm = (dir - center).normalized;
+                return center + new Vector3(
+                    cos * dirNorm.x - sin * dirNorm.z,
+                    dirNorm.y,
+                    sin * dirNorm.x + cos * dirNorm.z
+                ) * (dir - center).magnitude;
+            }
 
-            // Calculate camera rotation
-            Quaternion camRot = Quaternion.LookRotation(targPos - camPos);
+            Vector3 option1 = Orbit(targetPos, camPos, orbitAngle);
+            Vector3 option2 = Orbit(targetPos, camPos, -orbitAngle);
+            Vector3 chosenPos = SetSide(ActorsInScene.Select(x => x.position).ToList()).GetClosest(option1, option2);
 
-            // Apply bias
-            camPos += camRot * Vector3.right * biasX;
+            Quaternion camRot = Quaternion.LookRotation(targetPos - chosenPos);
+            chosenPos += camRot * Vector3.right * biasX;
 
-            return new Pose(camPos, camRot);
-        }
+            return new Pose(chosenPos, camRot);
+        } 
+        
 
         public ActorPositionWrapper GetOppositeActor(CamShotConfig shot, bool calculateInGame)
         {

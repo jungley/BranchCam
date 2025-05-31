@@ -20,7 +20,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
         /// True if the custom camera position and rotation are set.
         /// </summary>
         public bool IsCustomSet;
-
+        public bool TogglePreviewRenderSceneView;
         public Vector3 GlobalCustomCamPos;
         public Quaternion GlobalCustomCamRot;
 

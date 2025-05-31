@@ -8,6 +8,8 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 {
+    //RS TODO this is constantly being called
+    //should only be called when something has changed
     public static class SetupPreviewSceneData
     {
 
@@ -26,106 +28,121 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
             if (NodeManager.Instance.StartNode.StartPositionsEnabled)
             {
-                //RS TODO: This needs to be set relative with StartNode's manual positions if that is enabled
-            }
-            else
-            {
-                int actorCount = NodeManager.Instance.ActorsInScene.Count;
-
-                if (actorCount == 1)
+                foreach(var actor in NodeManager.Instance.ActorsInScene)
                 {
-                    ActorInfo actor = NodeManager.Instance.ActorsInScene[0];
+                    PreviewActorDatas.Add(new PreviewActorData
+                    {
+                        ActorPositionData = new ActorPositionWrapper
+                        {
+                            MeshOriginPoint = actor.PreDefinedStartPosition.position,
+                            ActorPosition = actor.ActorGO.transform.localPosition + actor.PreDefinedStartPosition.position,
+                            ActorName = actor.ActorName,
+                            ActorRotation = actor.PreDefinedStartPosition.rotation,//actor.PreDefinedStartPosition.rotation,
+                            ForwardN = actor.PreDefinedStartPosition.forward
+                        },
+                        MeshMatScale = CacheActorMeshes(actor.ActorGO)
+                    });
+                }
+
+                return;
+            }
+
+            int actorCount = NodeManager.Instance.ActorsInScene.Count;
+
+            if (actorCount == 1)
+            {
+                ActorInfo actor = NodeManager.Instance.ActorsInScene[0];
+
+                PreviewActorDatas.Add(new PreviewActorData
+                {
+                    ActorPositionData = new ActorPositionWrapper
+                    {
+                        MeshOriginPoint = Vector3.zero,
+                        ActorPosition = actor.ActorGO.transform.localPosition,
+                        ActorName = actor.ActorName,
+                        ActorRotation = Quaternion.identity,
+                        ForwardN = Vector3.forward,
+                    },
+
+                    MeshMatScale = CacheActorMeshes(actor.ActorGO)
+                });
+            }
+
+            else if (actorCount == 2)
+            {
+                ActorInfo firstActor = NodeManager.Instance.ActorsInScene[0];
+                ActorInfo secondActor = NodeManager.Instance.ActorsInScene[1];
+
+                Vector3 firstActorPosition = firstActor.ActorGO.transform.localPosition;
+                Vector3 secondActorPosition = secondActor.ActorGO.transform.localPosition;
+
+
+                // Add the first actor's information to the PreviewActorDatas list
+                PreviewActorDatas.Add(new PreviewActorData
+                {
+                    ActorPositionData = new ActorPositionWrapper
+                    {
+                        MeshOriginPoint = Vector3.zero,
+                        ActorPosition = firstActorPosition,
+                        ActorRotation = Quaternion.identity,
+                        ActorName = firstActor.ActorName,
+                        ForwardN = Vector3.forward,
+                    },
+
+                    MeshMatScale = CacheActorMeshes(firstActor.ActorGO)
+
+                });
+
+                // Add the second actor's information to the PreviewActorDatas list
+                PreviewActorDatas.Add(new PreviewActorData
+                {
+                    ActorPositionData = new ActorPositionWrapper
+                    {
+                        //Move along the line between the two actors
+                        MeshOriginPoint = new Vector3(0, 0, defaultPreviewDistance),
+                        ActorPosition = new Vector3(secondActorPosition.x, secondActorPosition.y, secondActorPosition.z + defaultPreviewDistance),
+                        ActorRotation = Quaternion.Euler(0, 180, 0),
+                        ActorName = secondActor.ActorName,
+                        ForwardN = new Vector3(0, 0, -1)
+                    },
+
+                    MeshMatScale = CacheActorMeshes(secondActor.ActorGO)
+                });
+            }
+            else if (actorCount > 2)
+            {
+                float radius = defaultPreviewDistance; // Radius of the circle
+                float angleStep = 360f / actorCount;
+
+                for (int i = 0; i < actorCount; i++)
+                {
+                    ActorInfo actor = NodeManager.Instance.ActorsInScene[i];
+                    float angle = i * angleStep * Mathf.Deg2Rad;
+
+                    // Compute position/origin point on the circle
+                    float x = radius * Mathf.Cos(angle);
+                    float z = radius * Mathf.Sin(angle);
+                    Vector3 originPoint = new Vector3(x, 0, z);
+
+                    // Face the center (opposite of the position vector)
+                    Vector3 forward = -originPoint.normalized;
 
                     PreviewActorDatas.Add(new PreviewActorData
                     {
                         ActorPositionData = new ActorPositionWrapper
                         {
-                            MeshOriginPoint = Vector3.zero,
-                            ActorPosition = actor.ActorGO.transform.localPosition,
+                            MeshOriginPoint = originPoint,
+                            ActorPosition = actor.ActorGO.transform.localPosition + originPoint,
+                            ActorRotation = Quaternion.LookRotation(forward),
                             ActorName = actor.ActorName,
-                            ActorRotation = Quaternion.identity,
-                            ForwardN = Vector3.forward,
+                            ForwardN = forward
                         },
 
                         MeshMatScale = CacheActorMeshes(actor.ActorGO)
                     });
                 }
-
-                else if (actorCount == 2)
-                {
-                    ActorInfo firstActor = NodeManager.Instance.ActorsInScene[0];
-                    ActorInfo secondActor = NodeManager.Instance.ActorsInScene[1];    
-
-                    Vector3 firstActorPosition = firstActor.ActorGO.transform.localPosition;
-                    Vector3 secondActorPosition = secondActor.ActorGO.transform.localPosition;
-
-
-                    // Add the first actor's information to the PreviewActorDatas list
-                    PreviewActorDatas.Add(new PreviewActorData
-                    {
-                        ActorPositionData = new ActorPositionWrapper
-                        {
-                            MeshOriginPoint = Vector3.zero,
-                            ActorPosition = firstActorPosition,
-                            ActorRotation = Quaternion.identity,
-                            ActorName = firstActor.ActorName,
-                            ForwardN = Vector3.forward,
-                        },
-
-                        MeshMatScale = CacheActorMeshes(firstActor.ActorGO)
-
-                    });
-
-                    // Add the second actor's information to the PreviewActorDatas list
-                    PreviewActorDatas.Add(new PreviewActorData
-                    {
-                        ActorPositionData = new ActorPositionWrapper
-                        {
-                            //Move along the line between the two actors
-                            MeshOriginPoint = new Vector3(0, 0, defaultPreviewDistance),
-                            ActorPosition = new Vector3(secondActorPosition.x, secondActorPosition.y, secondActorPosition.z + defaultPreviewDistance),
-                            ActorRotation = Quaternion.Euler(0, 180, 0),
-                            ActorName = secondActor.ActorName,
-                            ForwardN = new Vector3(0, 0, -1)
-                        },
-
-                        MeshMatScale = CacheActorMeshes(secondActor.ActorGO)
-                    });
-                }
-                else if (actorCount > 2)
-                {
-                    float radius = defaultPreviewDistance; // Radius of the circle
-                    float angleStep = 360f / actorCount;
-
-                    for (int i = 0; i < actorCount; i++)
-                    {
-                        ActorInfo actor = NodeManager.Instance.ActorsInScene[i];
-                        float angle = i * angleStep * Mathf.Deg2Rad;
-
-                        // Compute position/origin point on the circle
-                        float x = radius * Mathf.Cos(angle);
-                        float z = radius * Mathf.Sin(angle);
-                        Vector3 originPoint = new Vector3(x, 0, z);
-
-                        // Face the center (opposite of the position vector)
-                        Vector3 forward = -originPoint.normalized;
-
-                        PreviewActorDatas.Add(new PreviewActorData
-                        {
-                            ActorPositionData = new ActorPositionWrapper
-                            {
-                                MeshOriginPoint = originPoint,
-                                ActorPosition = actor.ActorGO.transform.localPosition + originPoint,
-                                ActorRotation = Quaternion.LookRotation(forward),
-                                ActorName = actor.ActorName,
-                                ForwardN = forward
-                            },
-
-                            MeshMatScale = CacheActorMeshes(actor.ActorGO)
-                        });
-                    }
-                }
             }
+
             return;
         }
 

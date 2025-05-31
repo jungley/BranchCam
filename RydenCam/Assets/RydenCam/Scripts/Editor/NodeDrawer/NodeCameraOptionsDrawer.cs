@@ -33,6 +33,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             //When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
             currentCommand.PlaceCustomCam(node.NodeConvodata);
+
         }
 
         public void DrawUICamCompOptions()
@@ -166,8 +167,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     float rotZ = Mathf.Round(rotationData.z * 100) / 100;
 
                     // Create a formatted string with the position data
+                    GUILayout.Space(10);
                     GUILayout.Label($"Position Set ✓ X:{posX:0.00} Y:{posY:0.00} Z:{posZ:0.00}");
                     GUILayout.Label($"Rotation Set ✓ X:{rotX:0.00} Y:{rotY:0.00} Z:{rotZ:0.00}");
+                    GUILayout.Space(5);
+
+                    currentNode.NodeConvodata.ShotConfig.TogglePreviewRenderSceneView = GUILayout.Toggle(currentNode.NodeConvodata.ShotConfig.TogglePreviewRenderSceneView, "Toggle Custom Scene View");
                 }
             }
         }
