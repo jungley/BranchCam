@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
@@ -35,6 +36,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     }
                 }
             }
+
+            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
         }
 
         public void RemoveActor(int index)
@@ -55,6 +58,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
             //Remove Actor from Actors List
             node.ActorsInScene.RemoveAt(index);
+
+            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 
         }
 

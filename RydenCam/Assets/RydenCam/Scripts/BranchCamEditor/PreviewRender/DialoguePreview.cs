@@ -3,6 +3,7 @@ using UnityEngine;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using System.Collections.Generic;
 using RydenCam.BranchCamEditor.BranchCam;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
@@ -27,7 +28,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             previewRenderer = new PreviewRenderer();
 
-            SetupPreviewSceneData.CalculateActorsinPreviewSpace();
+            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 
             cameraWrapper = new PreviewCameraWrapper(ActorDatas);
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using RydenCam.Common;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 
 namespace RydenCam.SequenceData
 {
@@ -33,8 +32,6 @@ namespace RydenCam.SequenceData
             {
                 _actorGO = value;
                 ActorName = value?.name ?? BranchConstants.UnAssignedActor;
-                //A new Actor has been asigned, recalculate the 3D Scene
-                SetupPreviewSceneData.CalculateActorsinPreviewSpace();
             }
         }
 

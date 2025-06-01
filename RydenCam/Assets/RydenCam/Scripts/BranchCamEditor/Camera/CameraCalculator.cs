@@ -1,5 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
