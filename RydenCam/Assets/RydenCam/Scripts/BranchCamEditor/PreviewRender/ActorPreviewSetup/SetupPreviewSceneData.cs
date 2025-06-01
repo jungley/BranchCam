@@ -3,8 +3,6 @@ using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Generic;
 namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup
 {
-    //RS TODO this is constantly being called
-    //should only be called when something has changed
     public static class SetupPreviewSceneData
     {
         public static List<PreviewActorData> PreviewActorDatas { get; set; }
