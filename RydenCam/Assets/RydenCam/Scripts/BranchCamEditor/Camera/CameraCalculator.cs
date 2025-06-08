@@ -106,7 +106,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             if (calculateInGame)
                 return new ActorPositionWrapper(shot.OppositeActor);
 
-            return SetupPreviewSceneData.PreviewActorDatas
+            return SetupPreviewSceneData.PreviewActorDatas?
                 .FirstOrDefault(x => x.ActorPositionData.ActorName == shot.OppositeActor)
                 ?.ActorPositionData;
         }

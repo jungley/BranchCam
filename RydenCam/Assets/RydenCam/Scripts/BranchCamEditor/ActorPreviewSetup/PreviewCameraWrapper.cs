@@ -36,9 +36,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                 .FirstOrDefault();
 
             if (actorData == null) return new Pose();
-            
+
             return cameraCalculator.CalculatePlacement(shotConfig, actorData.ActorPositionData);
-            
+
         }
 
     }

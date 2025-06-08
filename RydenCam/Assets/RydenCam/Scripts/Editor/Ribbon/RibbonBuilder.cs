@@ -1,3 +1,4 @@
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -5,8 +6,8 @@ using UnityEngine;
 
 public class RibbonBuilder
 {
-    public Rect ButtonPanelArea => new Rect(0, 0, 1000, 30);
-    private int standardButtonHeight => 30;
+    public Rect ButtonPanelArea => new Rect(0, 0, 1000, 35);
+    private int standardButtonHeight => 35;
     private int standardButtonDropdownHeight => 15;
 
     private static GUIStyle panelstyle_button = new GUIStyle();
@@ -18,6 +19,7 @@ public class RibbonBuilder
 
     private bool showDropdown_file = false;
     private bool showPreview_preview = false;
+
 
     public RibbonBuilder(NodeGraphViewModel viewM)
     {
@@ -116,14 +118,14 @@ public class RibbonBuilder
             {
                 RibbonButtonNames.PreviewRender_CornerPreview, () =>
                 {
-                    //viewModel.ToggleCornerPreviewRender();
+                     PreviewRenderer.EnableCornerPreview = !PreviewRenderer.EnableCornerPreview;
                     showPreview_preview = false;
                 }
             },
             {
                 RibbonButtonNames.PreviewRender_NodePreview, () =>
                 {
-                    //viewModel.ToggleNodePreviewRender();
+                    PreviewRenderer.EnableNodeSidePreview = !PreviewRenderer.EnableNodeSidePreview;
                     showPreview_preview = false;
                 }
             }

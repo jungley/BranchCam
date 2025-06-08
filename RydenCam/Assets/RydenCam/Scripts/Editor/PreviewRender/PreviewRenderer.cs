@@ -10,6 +10,10 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
     {
         public Texture CachedRenderTexture { get; set; }
 
+        public static bool EnableCornerPreview { get; set; } 
+
+        public static bool EnableNodeSidePreview { get; set; }
+
         private PreviewRenderUtility _prevRenderUtility { get; set; }
         private PreviewRenderUtility previewRenderUtility
         {
@@ -57,7 +61,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             tempCam.targetTexture = null;
             Object.DestroyImmediate(rt);
             Object.DestroyImmediate(tempCamGO);
-            
+
             return tex;
         }
 
