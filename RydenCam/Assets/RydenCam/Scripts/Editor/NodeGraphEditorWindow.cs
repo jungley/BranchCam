@@ -26,7 +26,7 @@ namespace RydenCam.Editor
         private NodeGraphViewModel viewModel;
 
         private NodeDrawerBase activeNodeDrawView { get; set; }
-        private NodeDrawerBase ActiveNodeDrawView
+        public NodeDrawerBase ActiveNodeDrawView
         {
             get => activeNodeDrawView;
             set
@@ -44,11 +44,7 @@ namespace RydenCam.Editor
 
         //Window Properties
 
-        private Vector2 mouseDownPos { get; set; }
-        private bool isDragging { get; set; }
-        private bool isPanning { get; set; }
 
-        private const float dragThreshold = 5f;
 
         public static float panX = 0;
         public static float panY = 0;
@@ -71,8 +67,8 @@ namespace RydenCam.Editor
 
         private RibbonBuilder ribbonBuilder { get; set; }
 
-        List<NodeDrawerBase> NodeDrawers { get; set; } = new List<NodeDrawerBase>();
-        List<ConnectionDrawer> ConnectionDrawers { get; set; }
+        public List<NodeDrawerBase> NodeDrawers { get; set; } = new List<NodeDrawerBase>();
+        public List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
 
 
@@ -105,7 +101,7 @@ namespace RydenCam.Editor
 
             DrawUserDragConnectionCurve();
 
-            HandleInputClicks();
+            viewModel.HandleInputClicks();
 
             DrawNodes();
 
@@ -173,7 +169,7 @@ namespace RydenCam.Editor
                         Repaint();
                     }
                 }
-            }
+            } 
         }
 
 
@@ -353,136 +349,6 @@ namespace RydenCam.Editor
         }
 
 
-        private void HandleInputClicks()
-        {
-            Event e = Event.current;
-            Vector2 mousePos = e.mousePosition;
-
-            switch (e.type)
-            {
-                case EventType.MouseDown:
-                    if (e.button == 0)
-                        HandleLeftMouseDown(mousePos);
-                    else if (e.button == 1)
-                        HandleRightMouseDown(mousePos);
-                    break;
-
-                case EventType.MouseDrag:
-                    if (e.button == 0)
-                        UpdateDragState(mousePos);
-                    break;
-
-                case EventType.MouseUp:
-                    if (e.button == 0)
-                        HandleLeftMouseUp(mousePos);
-                    break;
-            }
-        }
-
-        private void HandleLeftMouseDown(Vector2 mousePos)
-        {
-            isDragging = false;
-
-            if (!isPanning)
-            {
-                SetActiveNode(mousePos); 
-            }
-
-            if (ActiveNodeDrawView == null)
-            {
-                viewModel.SelectedConnectionPoint = null;
-                viewModel.IsDrawingHandle = false;
-                Repaint();
-            }
-            else
-            {
-                HandleConnectionPointSelected(mousePos);
-            }
-        }
-
-        private void HandleLeftMouseUp(Vector2 mousePos)
-        {
-            if (!isDragging && !isPanning)
-            {
-                SetActiveNode(mousePos); 
-            }
-
-            isDragging = false;
-            isPanning = false;
-        }
-
-        private void UpdateDragState(Vector2 currentMousePos)
-        {
-            if (Vector2.Distance(mouseDownPos, currentMousePos) > dragThreshold)
-            {
-                isDragging = true;
-                isPanning = true; 
-            }
-        }
-
-        private void HandleRightMouseDown(Vector2 mousePos)
-        {
-            if (ActiveNodeDrawView is TalkableDrawerNode drawer)
-            {
-                drawer.ShowAddRemoveMenu(mousePos);
-            }
-            else
-            {
-                ShowContextMenu(mousePos);
-            }
-
-            Event.current.Use();
-        }
-
-
-        // Method to set the active node based on mouse position
-        private void SetActiveNode(Vector2 mousePosition)
-        {
-            var selectedNodeDrawer = NodeDrawers
-                .FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(mousePosition));
-
-            NodeManager.Instance.ActiveNode = (selectedNodeDrawer != null) ? selectedNodeDrawer.Node : null;
-
-            if(NodeManager.Instance.ActiveNode == null)
-            {
-                GUI.FocusControl(null);
-                //Force a repaint to ensure the UI is updated
-                GetWindow<NodeGraphEditorWindow>().Repaint();
-            }
-        }
-
-        //maybe move to viewModel?
-        public void HandleConnectionPointSelected(Vector2 mousePos)
-        {
-            ConnectionPoint selectedPoint = ActiveNodeDrawView?.GetHandlePoint(mousePos);
-            if(selectedPoint != null)
-            {
-                //Clicked on the connection point start to draw Handle
-                if (!viewModel.IsDrawingHandle)
-                {
-                    viewModel.SelectedConnectionPoint = selectedPoint;
-                    viewModel.IsDrawingHandle = true;
-                    return;
-                }
-                //Already Drawing a curve, point been selected now a second one is
-                else
-                {
-                    ConnectionPoint fromPoint = ActiveNodeDrawView.GetHandlePoint(mousePos);
-
-                    if (fromPoint.Type != viewModel?.SelectedConnectionPoint.Type)
-                    {
-                        //Remove Connections the point its connected to is already connected.
-                        if (ConnectionManager.Instance.IsOutConnected(fromPoint, viewModel.SelectedConnectionPoint))
-                        {
-                            ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, viewModel.SelectedConnectionPoint);
-                        }
-
-                        ConnectionManager.Instance.AddConnection(fromPoint, viewModel.SelectedConnectionPoint);
-                        viewModel.IsDrawingHandle = false;
-                    }
-                }
-            }
-        }
 
         private void DrawUserDragConnectionCurve()
         {
@@ -496,44 +362,6 @@ namespace RydenCam.Editor
             }
         }
 
-
-        private void ShowContextMenu(Vector2 mousePosition)
-        {
-            GenericMenu menu = new GenericMenu();
-
-            if (!NodeManager.StartNodeAdded)
-            {
-                menu.AddItem(new GUIContent("Add Start Node"), false, () =>
-                {
-                    viewModel.AddNode(mousePosition, NodeType.StartNode);
-                });
-            }
-            //Needs to Add an Actor
-            else if(!NodeManager.Instance.ActorsInScene.Any())
-            {
-                menu.AddItem(new GUIContent("Must add an actor in the Start Node"), false, () => { });
-            }
-            else if (NodeManager.Instance.ActorsInScene.Any(actor => actor.ActorGO == null))
-            {
-                menu.AddItem(new GUIContent("One of the actors have not been assigned in the Start Node."), false, () => { });
-            }
-            else
-            {
-                menu.AddItem(new GUIContent("Add Dialogue Node"), false, () =>
-                {
-                    viewModel.AddNode(mousePosition, NodeType.DialogueNode);
-                });
-                menu.AddItem(new GUIContent("Add Decision Node"), false, () =>
-                {
-                    viewModel.AddNode(mousePosition, NodeType.DecisionNode);
-                });
-                menu.AddItem(new GUIContent("Add Action Node"), false, () =>
-                {
-                    viewModel.AddNode(mousePosition, NodeType.ActionNode);
-                });
-            }
-            menu.ShowAsContext();
-        }
 
     }
 }
