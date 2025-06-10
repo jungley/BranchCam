@@ -51,7 +51,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
                     if (GUI.Button(deleteButtonRect, "X"))
                     {
-                        command.RemoveNode(node);
+                        command.RemoveNode();
                     }
 
                     DrawConnectionPoints();
@@ -63,11 +63,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             if(IsActive) HighlightSelctedNode();
 
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
-
-        }
-
-        public override void DeSelect()
-        {
 
         }
 

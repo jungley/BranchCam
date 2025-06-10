@@ -1,4 +1,6 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
+using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
 using System.Linq;
@@ -7,11 +9,11 @@ using UnityEngine.SceneManagement;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
-    public class StartNodeCommand : INodeCommand
+    public class StartNodeCommand : NodeCommand
     {
         private StartNode node { get; set; }
 
-        public StartNodeCommand(Node _node)
+        public StartNodeCommand(Node _node) : base(_node)
         {
             node = _node as StartNode;
         }
@@ -30,11 +32,12 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     if (node.NodeConvodata.Actor == null)
                     {
                         node.NodeConvodata.Actor = firstActor;
-                        node.NodeConvodata.ShotConfig.actor = firstActor.ActorName;
+                        node.NodeConvodata.ShotConfig.Actor = firstActor.ActorName;
                     }
                 }
             }
-            
+
+            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
         }
 
         public void RemoveActor(int index)
@@ -48,12 +51,15 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     if(talkable.NodeConvodata.Actor?.ActorID == actor.ActorID)
                     {
                         talkable.NodeConvodata.Actor = null;
+                        talkable.NodeConvodata.ShotConfig = new CamShotConfig();
                     }
                 }
             }
 
             //Remove Actor from Actors List
             node.ActorsInScene.RemoveAt(index);
+
+            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 
         }
 
@@ -103,16 +109,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                 actor.PreDefinedStartPosition = new Pose(actor.ActorGO.transform.root.position, actor.ActorGO.transform.root.rotation);
             }
             node.UnitySceneName = SceneManager.GetActiveScene().name;
-        }
-
-
-
-        public void RemoveNode(Node node)
-        {
-            NodeManager.Instance.RemoveNode(node);
-            ConnectionManager.Instance.RemoveAssociatedConnections(node);
-            NodeManager.Instance.ActiveNode = null;
-
         }
     }
 }

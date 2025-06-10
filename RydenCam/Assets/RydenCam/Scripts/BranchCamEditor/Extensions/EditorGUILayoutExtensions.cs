@@ -1,29 +1,42 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+﻿
 using System;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Extensions
 {
     public static class EditorGUILayoutExtensions
     {
-        public static string SetTextAreaExpandable(string dialogueText, GUIStyle style, float areaHeight = 0, float textWidth = 0)
+        public static string SetTextAreaExpandable(Rect nodeWindow, Dictionary<int, Rect> textAreaRect, int index, ref int buffer, string dialogueText, GUIStyle style, float areaHeight = 0, float textWidth = 0)
         {
-            // Calculate the required height for the text content
-            float textHeight = GetTextAreaHeight(dialogueText, textWidth);
-            float calculatedHeight = Math.Max(textHeight + 10, areaHeight);
+            float calculatedHeight = calculateTextAreaHeight(dialogueText, textWidth, areaHeight);
+            dialogueText = drawTextArea(dialogueText, style, textWidth, calculatedHeight);
+            updateTextAreaRect(nodeWindow, textAreaRect, index, ref buffer, textWidth, calculatedHeight);
 
-            dialogueText = EditorGUILayout.TextArea(dialogueText, style, GUILayout.Width(textWidth), GUILayout.Height(calculatedHeight));
             return dialogueText;
         }
 
         public static float GetTextAreaHeight(string dialogueText, float textWidth = 0)
         {
-            // Calculate the required height for the text content
-            float textHeight = GUI.skin.GetStyle("TextArea").CalcHeight(new GUIContent(dialogueText), textWidth);
-            return textHeight;
+            return GUI.skin.GetStyle("TextArea").CalcHeight(new GUIContent(dialogueText), textWidth);
+        }
+
+        private static float calculateTextAreaHeight(string dialogueText, float textWidth, float areaHeight)
+        {
+            float textHeight = GetTextAreaHeight(dialogueText, textWidth);
+            return Math.Max(textHeight + 10, areaHeight);
+        }
+
+        private static string drawTextArea(string dialogueText, GUIStyle style, float textWidth, float calculatedHeight)
+        {
+            return EditorGUILayout.TextArea(dialogueText, style, GUILayout.Width(textWidth), GUILayout.Height(calculatedHeight));
+        }
+
+        private static void updateTextAreaRect(Rect nodeWindow, Dictionary<int, Rect> textAreaRect, int index, ref int buffer, float textWidth, float calculatedHeight)
+        {
+            textAreaRect[index] = new Rect(5 + nodeWindow.x, buffer + nodeWindow.y, textWidth, calculatedHeight);
+            buffer += (int)calculatedHeight + 7;
         }
     }
 }

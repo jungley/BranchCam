@@ -1,5 +1,4 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
-using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using System;
 using System.Linq;
@@ -8,11 +7,11 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
-    public class ActionNodeCommand : INodeCommand
+    public class ActionNodeCommand : NodeCommand
     {
         private ActionNode node { get; set; }
 
-        public ActionNodeCommand(Node _node)
+        public ActionNodeCommand(Node _node) : base(_node)
         {
             node = _node as ActionNode;
         }
@@ -74,13 +73,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     BranchLog.Error("Error with calling method", e);
                 }
             }
-        }
-
-        public void RemoveNode(Node node)
-        {
-            NodeManager.Instance.RemoveNode(node);
-            ConnectionManager.Instance.RemoveAssociatedConnections(node);
-            NodeManager.Instance.ActiveNode = null;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Assets.RydenCam.Scripts.Editor
     {
         public Node Node;
 
-        protected INodeCommand Command;
+        protected NodeCommand Command;
 
         protected GUIStyle labelStyle { get; set; }
 
@@ -92,6 +92,8 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public Color NodeColor { get; set; }
 
+        public virtual float InspectorWidth => 245;
+
         public int WindowId { get; set; }
 
 
@@ -135,8 +137,6 @@ namespace Assets.RydenCam.Scripts.Editor
         public abstract void DrawNode(int index);
 
         public abstract void DrawNodeInspector();
-
-        public abstract void DeSelect();
 
         public void HighlightSelctedNode()
         {

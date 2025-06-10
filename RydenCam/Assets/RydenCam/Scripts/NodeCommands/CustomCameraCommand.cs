@@ -1,7 +1,9 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.SequenceData;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,75 +13,76 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     //setting the node camera information in the Graph editor
     public class CustomCameraCommand
     {
-        public Node Node { get; }
+        public ITalkable Node { get; }
 
         private ConversationData convoData { get; set; }
 
-        public static GameObject tempCustomCamera { get; set; }
+        private static GameObject _customCameraObject;
+        public static event Action<GameObject> OnCustomCameraChanged;
 
-        public static string customCamLock_nodeId;
-
-        //Called when a node is selected
-        public CustomCameraCommand(Node node)
+        public static GameObject CustomCameraObject
         {
-            Node = node;
-            var talkable = node as ITalkable;
-            convoData = talkable.NodeConvodata; 
-        }
-
-        public void Update()
-        {
-
-            if (tempCustomCamera != null)
+            get => _customCameraObject;
+            set
             {
-                convoData.ShotConfig.GlobalCustomCamPos = tempCustomCamera.transform.position;
-                convoData.ShotConfig.GlobalCustomCamRot = tempCustomCamera.transform.rotation;
-            }
-        }
-
-
-        public GameObject ResetPosition(ConversationData nodeConvodata)
-        {
-            GameObject camReference = GameObject.Find(BranchConstants.CustomCamera);
-            PlaceCamera(nodeConvodata, camReference);
-            return camReference;
-        }
-
-        //This is for when the user clicks off or selects another node.
-        //If the other node is also a node that uses custom camera, it will not use the position of the previously
-        //created custom camera.
-        public void EnsureUniqueCustomCameraSelection(Node curr)
-        {
-            /*
-            foreach (Node node in nodes)
-            {
-                if (node != curr)
+                if (_customCameraObject != value)
                 {
-                    node.SetCustomCameraPosition = null;
+                    _customCameraObject = value;
+                    OnCustomCameraChanged?.Invoke(_customCameraObject);
                 }
             }
-            */
         }
 
-        public void SetCustomCameraPosition()
+        public bool IsCustomSet
         {
-            if (tempCustomCamera == null) return;
+            get => convoData.ShotConfig.IsCustomSet;
+            set => convoData.ShotConfig.IsCustomSet = value;
+        }
+        
 
-            EnsureUniqueCustomCameraSelection(Node);
-            convoData.ShotConfig.GlobalCustomCamPos = tempCustomCamera.transform.position;
-            convoData.ShotConfig.GlobalCustomCamRot = tempCustomCamera.transform.rotation;
-            GameObject target = GameObject.Find(convoData.Actor.ActorName);
-            convoData.ShotConfig.LocalRelativeActorPos = target.transform.position;
-            convoData.ShotConfig.LocalRelativeActorRot = target.transform.rotation;
+        public static Pose LastKnownPosition { get; set; }
+        /// <summary>
+        /// If the custom camera is active in the scene
+        /// </summary>
+        public static bool IsCustomCameraActive
+        {
+            get
+            {
+                if (CustomCameraObject == null) return false;
+                return CustomCameraObject.activeSelf;
+            }
+        }
+
+        //Called when a node is selected
+        public CustomCameraCommand(ITalkable node)
+        {
+            convoData = node.NodeConvodata;
+        }
+
+        //Need to update this to use an event
+        //RS TODO
+        public void UpdateSavedPosition()
+        {
+
+            if (CustomCameraObject != null)
+            {
+                if (CustomCameraObject.GetPose() != LastKnownPosition)
+                {
+                    convoData.ShotConfig.GlobalCustomCamPos = CustomCameraObject.transform.position;
+                    convoData.ShotConfig.GlobalCustomCamRot = CustomCameraObject.transform.rotation;
+
+                    LastKnownPosition = new Pose(convoData.ShotConfig.GlobalCustomCamPos, convoData.ShotConfig.GlobalCustomCamRot);
+                }
+            }
         }
 
 
-
-        public void UpdateCustomCamera()
+        public void AssignCustomCameraPosition()
         {
-            ITalkable talk = Node as ITalkable;
-           
-            PlaceCustomCam(talk.NodeConvodata);
+            if (CustomCameraObject == null) return;
+
+            convoData.ShotConfig.GlobalCustomCamPos = CustomCameraObject.transform.position;
+            convoData.ShotConfig.GlobalCustomCamRot = CustomCameraObject.transform.rotation;
         }
 
 
@@ -88,7 +91,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             GameObject obj = GameObject.Find(BranchConstants.CustomCamera);
             if (obj != null) GameObject.DestroyImmediate(obj);
 
-            tempCustomCamera = null;
+            CustomCameraObject = null;
         }
 
         public void ClearCamera()
@@ -97,14 +100,13 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
             convoData.ShotConfig.GlobalCustomCamPos = Vector3.zero;
             convoData.ShotConfig.GlobalCustomCamRot = Quaternion.identity;
-            convoData.ShotConfig.IsCustomSet = false;
+            IsCustomSet = false;
         }
 
         public void PlaceCustomCam(ConversationData nodeConvodata)
         {
-            if (nodeConvodata.ShotConfig.GoalType == CameraGoal.Custom && tempCustomCamera == null)
+            if (nodeConvodata.ShotConfig.GoalType == CameraGoal.Custom && !IsCustomCameraActive)
             {
-
                 //Instantiate the CustomCamera Prefab
                 UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath(BranchConstants.CamPrefabPath, typeof(GameObject));
                 UnityEngine.Object obj = PrefabUtility.InstantiatePrefab(prefab);
@@ -113,34 +115,15 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                 nodeConvodata.ShotConfig.IsCustomSet = true;
 
                 //Place the Camera
-                PlaceCamera(nodeConvodata, cameraObject);
-                Selection.activeObject = cameraObject;
-                tempCustomCamera = cameraObject;
-            }
-
-
-        }
-
-        public void PlaceCamera(ConversationData nodeConvodata, GameObject obj)
-        {
-            if (obj is GameObject gameObjectRef)
-            {
-                if (nodeConvodata.ShotConfig.GoalCustomType == CustomCameraType.Local)
+                if (obj is GameObject gameObjectRef)
                 {
-                    //Local
-                    GameObject target = GameObject.Find(nodeConvodata.Actor.ActorName);
-                    Vector3 pos_result = target.transform.position - nodeConvodata.ShotConfig.LocalRelativeActorPos;
-                    gameObjectRef.transform.position = nodeConvodata.ShotConfig.LocalRelativeActorPos + pos_result;
-                    gameObjectRef.transform.rotation = nodeConvodata.ShotConfig.LocalRelativeActorRot;
-                }
-                else if (nodeConvodata.ShotConfig.GoalCustomType == CustomCameraType.Global || nodeConvodata.ShotConfig.GoalCustomType == CustomCameraType.None)
-                {
-                    //Global
                     gameObjectRef.transform.position = nodeConvodata.ShotConfig.GlobalCustomCamPos;
                     gameObjectRef.transform.rotation = nodeConvodata.ShotConfig.GlobalCustomCamRot;
                 }
+
+                Selection.activeObject = cameraObject;
+                CustomCameraObject = cameraObject;
             }
         }
-
     }
 }

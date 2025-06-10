@@ -13,6 +13,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
         private StartNode startNode { get; set; }
         private StartNodeCommand startCommand { get; set; }
 
+        public override float InspectorWidth => 335;
+
         public StartNodeDrawer(Node node) : base(node)
         {
             startNode = node as StartNode;
@@ -46,7 +48,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                         if (GUI.Button(deleteButtonRect, "X"))
                         {
-                            startCommand.RemoveNode(startNode);
+                            startCommand.RemoveNode();
                         }
 
                         DrawConnectionPoints();
@@ -60,10 +62,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
 
-        public override void DeSelect()
-        {
 
-        }
 
         public override void DrawNodeInspector()
         {
@@ -144,7 +143,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     EditorGUILayout.EndHorizontal();
 
 
-                    foreach (var actorInfo in NodeManager.Instance.ActorsInScene())
+                    foreach (var actorInfo in NodeManager.Instance.ActorsInScene)
                     {
                         EditorGUILayout.BeginHorizontal();
                         EditorGUILayout.LabelField(actorInfo.ActorName, inspectorTextBold);
@@ -157,7 +156,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     EditorGUILayout.Space(10f);
 
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Look at each other", GUILayout.Height(40f));
+                    EditorGUILayout.LabelField("Look at each other (Override Rotations)", GUILayout.Height(40f));
                     startNode.OverrideRotation = EditorGUILayout.Toggle(startNode.OverrideRotation, GUILayout.Width(40f), GUILayout.Height(40f));
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.Space(5f);

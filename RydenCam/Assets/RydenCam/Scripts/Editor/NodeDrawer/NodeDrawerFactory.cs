@@ -11,7 +11,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
     public static class NodeDrawerFactory
     {
-
         public static NodeDrawerBase CreateNodeDrawer(Node node)
         {
             if (node == null) return null;

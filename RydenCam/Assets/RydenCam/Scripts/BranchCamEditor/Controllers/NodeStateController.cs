@@ -8,6 +8,7 @@ using Assets.RydenCam.Scripts.DialogueGameUI;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using Assets.RydenCam.Scripts.BranchCamEditor.Controllers;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 
 namespace RydenCam.BranchCamEditor.Controllers
 {
@@ -23,9 +24,10 @@ namespace RydenCam.BranchCamEditor.Controllers
             //Set Up Sequence
             controller.ToggleRelevantObjects(true);
 
-            controller.SetupManager.SetPreDefinedActorPositions(controller.CurrentNode as StartNode);
-            controller.SetupManager.ActorsLookAtEachOther();
-            controller.SetupManager.SetDepthOfField(true);
+            controller.DirectorManager.SetUpScene();
+
+            controller.DirectorManager.SetPreDefinedActorPositions();
+            controller.DirectorManager.SetDepthOfField(true);
 
             controller.CurrentNode = controller.CurrentNode.GetNextNode();
             controller.TraverseNodeNetwork();
@@ -47,6 +49,7 @@ namespace RydenCam.BranchCamEditor.Controllers
 
             if (dialogueNode.NodeConvodata.DialogTextList.Count == 0) return;
 
+            //Display Dialogue
             controller.DialogueIndex++;
             if (controller.DialogueIndex < dialogueNode.NodeConvodata.DialogTextList.Count)
             {
@@ -54,8 +57,11 @@ namespace RydenCam.BranchCamEditor.Controllers
                 controller.UIView.DisplayDialogueText(currentDialogue);
                 controller.PreviousDialogue.Push(currentDialogue);
             }
-            controller.SetCamera();
 
+            //Camera and Rotation(s)
+            controller.DirectorManager.SetCameraAndActorRotations(controller.CurrentNode);
+
+            //Get Next Node
             if (controller.DialogueIndex == dialogueNode.NodeConvodata.DialogTextList.Count -1)
             {
                 controller.DialogueIndex = -1;
@@ -69,7 +75,9 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void Traverse(NodeStateController controller)
         {
             controller.UIView.DisplayDecisionNode();
-            controller.SetCamera();
+
+            controller.DirectorManager.SetCameraAndActorRotations(controller.CurrentNode);
+
             ValidInputs.IsDecionsMakingLocked = true;
         }
     }
@@ -87,7 +95,7 @@ namespace RydenCam.BranchCamEditor.Controllers
     [ExecuteAlways]
     public class NodeStateController
     {
-        private CinemachineVirtualCamera dialogueCamera;
+        public CinemachineVirtualCamera DialogueCamera { get; set; }
 
         public Node CurrentNode { get; set; }
         public int DialogueIndex { get; set; } = -1;
@@ -98,13 +106,13 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public bool IsDialogueRunning { get; set; } = false;
 
-        public SequenceSetupManager SetupManager { get; set; }
+        public DirectorManager DirectorManager { get; set; }
 
         public NodeStateController(GameObject dcamera, GameObject dcameraBrain)
         {
-            dialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
+            DialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
             CamCalculator = new CameraCalculator();
-            SetupManager = new SequenceSetupManager(CamCalculator);
+            DirectorManager = new DirectorManager(CamCalculator, DialogueCamera);
             UIView = new InGameDialogUIView(this);
         }
 
@@ -143,21 +151,12 @@ namespace RydenCam.BranchCamEditor.Controllers
             };
         }
 
-        public void SetCamera()
-        {
-            if (CurrentNode is ITalkable posNode)
-            {
-                Pose placement = CamCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig);
-                dialogueCamera.transform.SetPositionAndRotation(placement.position, placement.rotation);
-            }
-        }
-
         public void EndSequence()
         {
-            SetupManager.ReturnActorsToOriginalPositionsIfEnabled();
-            SetupManager.SetDepthOfField(false);
+            DirectorManager.ReturnActorsToOriginalPositionsIfEnabled();
+            DirectorManager.SetDepthOfField(enabled: false);
             UIView.ClearPanels();
-            ToggleRelevantObjects(false);
+            ToggleRelevantObjects(visibility: false);
             PreviousDialogue.Clear();
             IsDialogueRunning = false;
             ValidInputs.IsDecionsMakingLocked = false;
@@ -165,7 +164,7 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void ToggleRelevantObjects(bool visibility)
         {
-            dialogueCamera.enabled = visibility;
+            DialogueCamera.enabled = visibility;
         }
     }
 }

@@ -16,6 +16,5 @@ namespace RydenCam.Common
     public enum CameraGoal { Portrait, OverShoulder, FrameShare, Custom };
     public enum CameraDistance { Close, Mid, Far };
     public enum CameraAngle { EyeLevel, Low, High };
-    public enum CustomCameraType {None, Global, Local };
 
 }

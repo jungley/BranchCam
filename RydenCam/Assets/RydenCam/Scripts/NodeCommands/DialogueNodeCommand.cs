@@ -1,43 +1,31 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Managers;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
-    public class DialogueNodeCommand : INodeCommand, IHasCustomCameraCommand
+    public class DialogueNodeCommand : TalkableCommand
     {
         private DialogueNode node { get; set; }
 
-        public CustomCameraCommand CustomCameraCommand { get; set; }
-
-        public DialogueNodeCommand(Node _node)
+        public DialogueNodeCommand(Node _node) : base(_node)    
         {
             node = _node as DialogueNode;
             CustomCameraCommand = new CustomCameraCommand(node);
         }
 
-        public void AddDialogue()
+        public override void AddSpeakingEntry(int index)
         {
-            node.NodeConvodata.DialogTextList.Add(string.Empty);
+            node.NodeConvodata.DialogTextList.Insert(index, string.Empty);
         }
 
-        public void RemoveDialogue(int dialogueIndex)
+        public override void RemoveSpeakingEntry(int index)
         {
-            node.NodeConvodata.DialogTextList.RemoveAt(dialogueIndex);
+            node.NodeConvodata.DialogTextList.RemoveAt(index);
+
         }
 
-        public void AssignNewActor(int actorIndex)
-        {
-            var actor = NodeManager.Instance.ActorsInScene()[actorIndex].ActorID;
-            node.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene().Where(x => x.ActorID == actor).FirstOrDefault();
-            node.NodeConvodata.ShotConfig.actor = node.NodeConvodata.Actor.ActorName;
-        }
-
-        public void RemoveNode(Node node)
-        {
-            NodeManager.Instance.RemoveNode(node);
-            ConnectionManager.Instance.RemoveAssociatedConnections(node);
-            NodeManager.Instance.ActiveNode = null;
-        }
     }
 }

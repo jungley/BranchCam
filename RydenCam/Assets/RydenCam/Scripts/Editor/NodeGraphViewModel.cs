@@ -1,4 +1,6 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.Editor.NodeDrawer;
+using Assets.RydenCam.Scripts.Editor;
 using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
@@ -6,9 +8,20 @@ using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Common;
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
+using RydenCam.Editor;
 
 public class NodeGraphViewModel
 {
+
+    private Vector2 clickStartPos { get; set; }
+    private bool isPanning { get; set; }
+    private const float dragThreshold = 0.001f;
+
+    //Need a reference to the window
+    private NodeGraphEditorWindow editorWindow { get; set; }
+
+
     public bool IsDrawingHandle { get; set; }
 
     public static bool RedrawPreviewWindows { get; set; }
@@ -17,7 +30,7 @@ public class NodeGraphViewModel
 
     public NodeGraphViewModel()
     {
-
+        editorWindow = EditorWindow.GetWindow<NodeGraphEditorWindow>();
     }
 
 
@@ -123,6 +136,181 @@ public class NodeGraphViewModel
     public void ToggleNodePreviewRender()
     {
         //RS TODO
+    }
+
+
+
+    public void HandleInputClicks()
+    {
+        Event e = Event.current;
+        Vector2 mousePos = e.mousePosition;
+
+        switch (e.type)
+        {
+            case EventType.MouseDown:
+                HandleMouseDown(e.button, mousePos);
+                break;
+
+            case EventType.MouseDrag:
+                if (e.button == 0)
+                    UpdateDragState(mousePos);
+                break;
+
+            case EventType.MouseUp:
+                if (e.button == 0)
+                    HandleLeftMouseUp(mousePos);
+                break;
+        }
+    }
+
+    private void HandleMouseDown(int button, Vector2 mousePos)
+    {
+        if (button == 0)
+            HandleLeftMouseDown(mousePos);
+        else if (button == 1)
+            HandleRightMouseDown(mousePos);
+    }
+
+    private void HandleLeftMouseDown(Vector2 mousePos)
+    {
+        clickStartPos = mousePos;
+        isPanning = false;
+
+        var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
+        if (clickedNodeDrawer == null)
+            return;
+
+        NodeManager.Instance.ActiveNode = clickedNodeDrawer.Node;
+        HandleConnectionPointSelected(mousePos);
+    }
+
+    private void HandleLeftMouseUp(Vector2 mousePos)
+    {
+        if (isPanning)
+        {
+            isPanning = false;
+            return;
+        }
+
+        var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
+        NodeManager.Instance.ActiveNode = clickedNodeDrawer?.Node;
+
+        if (clickedNodeDrawer == null)
+        {
+            ClearConnectionSelection();
+            editorWindow.Repaint();
+        }
+    }
+
+    private void UpdateDragState(Vector2 currentMousePos)
+    {
+        if (Vector2.Distance(clickStartPos, currentMousePos) > dragThreshold)
+        {
+            isPanning = true;
+        }
+    }
+
+    private void HandleRightMouseDown(Vector2 mousePos)
+    {
+
+        var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
+
+        if (clickedNodeDrawer is TalkableDrawerNode drawer)
+            drawer.ShowAddRemoveMenu(mousePos);
+        else
+            ShowContextMenu(mousePos);
+
+        Event.current.Use();
+    }
+
+    private NodeDrawerBase GetNodeUnderMouse(Vector2 mousePos)
+    {
+        return editorWindow.NodeDrawers.FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(mousePos));
+    }
+
+    private void ClearConnectionSelection()
+    {
+        SelectedConnectionPoint = null;
+        IsDrawingHandle = false;
+    }
+
+    //maybe move to viewModel?
+    public void HandleConnectionPointSelected(Vector2 mousePosition)
+    {
+        var selectedNodeDrawer = editorWindow.NodeDrawers
+           .FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(mousePosition));
+
+        if (selectedNodeDrawer == null) return;
+
+        NodeManager.Instance.ActiveNode = (selectedNodeDrawer != null) ? selectedNodeDrawer.Node : null;
+
+
+        ConnectionPoint selectedPoint = editorWindow.ActiveNodeDrawView?.GetHandlePoint(mousePosition);
+        if (selectedPoint != null)
+        {
+            //Clicked on the connection point start to draw Handle
+            if (!IsDrawingHandle)
+            {
+                SelectedConnectionPoint = selectedPoint;
+                IsDrawingHandle = true;
+                return;
+            }
+            //Already Drawing a curve, point been selected now a second one is
+            else
+            {
+                ConnectionPoint fromPoint = editorWindow.ActiveNodeDrawView.GetHandlePoint(mousePosition);
+
+                if (fromPoint.Type != SelectedConnectionPoint.Type)
+                {
+                    //Remove Connections the point its connected to is already connected.
+                    if (ConnectionManager.Instance.IsOutConnected(fromPoint, SelectedConnectionPoint))
+                    {
+                        ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, SelectedConnectionPoint);
+                    }
+
+                    ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
+                    IsDrawingHandle = false;
+                }
+            }
+        }
+    }
+
+    private void ShowContextMenu(Vector2 mousePosition)
+    {
+        GenericMenu menu = new GenericMenu();
+
+        if (!NodeManager.StartNodeAdded)
+        {
+            menu.AddItem(new GUIContent("Add Start Node"), false, () =>
+            {
+                AddNode(mousePosition, NodeType.StartNode);
+            });
+        }
+        //Needs to Add an Actor
+        else if (!NodeManager.Instance.ActorsInScene.Any())
+        {
+            menu.AddItem(new GUIContent("Must add an actor in the Start Node"), false, () => { });
+        }
+        else if (NodeManager.Instance.ActorsInScene.Any(actor => actor.ActorGO == null))
+        {
+            menu.AddItem(new GUIContent("One of the actors have not been assigned in the Start Node."), false, () => { });
+        }
+        else
+        {
+            menu.AddItem(new GUIContent("Add Dialogue Node"), false, () =>
+            {
+                AddNode(mousePosition, NodeType.DialogueNode);
+            });
+            menu.AddItem(new GUIContent("Add Decision Node"), false, () =>
+            {
+                AddNode(mousePosition, NodeType.DecisionNode);
+            });
+            menu.AddItem(new GUIContent("Add Action Node"), false, () =>
+            {
+                AddNode(mousePosition, NodeType.ActionNode);
+            });
+        }
+        menu.ShowAsContext();
     }
 
     public void AddNode(Vector2 position, NodeType nodeType)

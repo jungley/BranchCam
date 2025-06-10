@@ -6,6 +6,7 @@ using System.Linq;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Node = Assets.RydenCam.Scripts.BranchCamCC.Node;
 
 namespace RydenCam.BranchCamEditor.Managers
 {
@@ -99,11 +100,9 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
-        public List<ActorInfo> ActorsInScene()
-        {
-            var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
-            return startNode?.ActorsInScene ?? new List<ActorInfo>();
-        }
+        public List<ActorInfo> ActorsInScene => StartNode?.ActorsInScene.Where(actor => actor.ActorGO != null).ToList() ?? new List<ActorInfo>();
+            
+        
 
         public void ClearActorsInScene()
         {

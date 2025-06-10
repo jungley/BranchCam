@@ -1,3 +1,4 @@
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -5,8 +6,8 @@ using UnityEngine;
 
 public class RibbonBuilder
 {
-    public Rect ButtonPanelArea => new Rect(0, 0, 1000, 30);
-    private int standardButtonHeight => 30;
+    public Rect ButtonPanelArea => new Rect(0, 0, 1000, 35);
+    private int standardButtonHeight => 35;
     private int standardButtonDropdownHeight => 15;
 
     private static GUIStyle panelstyle_button = new GUIStyle();
@@ -14,9 +15,11 @@ public class RibbonBuilder
     private NodeGraphViewModel viewModel;
 
     private Dictionary<string, Action> fileOptions;
-    private Dictionary<string, Action> utilityOptions;
+    private Dictionary<string, Action> previewOptions;
+
     private bool showDropdown_file = false;
-    private bool showDropdown_utility = false;
+    private bool showPreview_preview = false;
+
 
     public RibbonBuilder(NodeGraphViewModel viewM)
     {
@@ -29,12 +32,13 @@ public class RibbonBuilder
     {
         using (var horizontalScope = new GUILayout.HorizontalScope(panelstyle_button, GUILayout.Width(EditorGUIUtility.currentViewWidth), GUILayout.Height(30)))
         {
-
             DrawDropdown(RibbonButtonNames.File, new string[] { RibbonButtonNames.New, RibbonButtonNames.Open, RibbonButtonNames.Save, RibbonButtonNames.SaveAs }, fileOptions, visibilityToggle: ref showDropdown_file);
 
-            DrawDropdown(RibbonButtonNames.Utility, new string[] { RibbonButtonNames.GlobalSettings, RibbonButtonNames.PreviewRender }, utilityOptions, visibilityToggle: ref showDropdown_utility);
-
             DrawButton(name: RibbonButtonNames.Save, buttonWidth: 65, standardButtonHeight, action: viewModel.Save);
+
+            DrawDropdown(RibbonButtonNames.PreviewRender, new string[] { RibbonButtonNames.PreviewRender_CornerPreview, RibbonButtonNames.PreviewRender_NodePreview }, previewOptions, visibilityToggle: ref showPreview_preview, width: 130);
+
+            DrawButton(name: RibbonButtonNames.GlobalSettings, buttonWidth: 65, standardButtonHeight, action: viewModel.LocateGlobalSettings);
 
             DrawButton(name: RibbonButtonNames.InkleScriptView, buttonWidth: 120, standardButtonHeight, action: null); /* future TODO action */
         }
@@ -48,15 +52,15 @@ public class RibbonBuilder
         }
     }
 
-    private void DrawDropdown(string label, string[] options, Dictionary<string, Action> actionLookup, ref bool visibilityToggle)
+    private void DrawDropdown(string label, string[] options, Dictionary<string, Action> actionLookup, ref bool visibilityToggle, int width = 100)
     {
-        using (var scope = new GUILayout.VerticalScope(GUILayout.Width(100)))
+        using (var scope = new GUILayout.VerticalScope(GUILayout.Width(width)))
         {
             // Add some space from top, formatting issue
             GUILayout.Space(2);
 
             // Draw the main button
-            if (GUILayout.Button(label, GUILayout.Width(100), GUILayout.Height(standardButtonHeight)))
+            if (GUILayout.Button(label, GUILayout.Width(width), GUILayout.Height(standardButtonHeight)))
             {
                 visibilityToggle = !visibilityToggle;
             }
@@ -65,7 +69,7 @@ public class RibbonBuilder
             {
                 foreach (var option in options)
                 {
-                    DrawButton(name: option, buttonWidth: 100,  standardButtonDropdownHeight, action: actionLookup[option]);
+                    DrawButton(name: option, buttonWidth: width, standardButtonDropdownHeight, action: actionLookup[option]);
                 }
             }
         }
@@ -106,21 +110,23 @@ public class RibbonBuilder
             }
         };
 
-        //For Utility Options
-        utilityOptions = new Dictionary<string, Action>
+
+
+        //For Preview Options
+        previewOptions = new Dictionary<string, Action>
         {
             {
-                RibbonButtonNames.GlobalSettings, () =>
+                RibbonButtonNames.PreviewRender_CornerPreview, () =>
                 {
-                    viewModel.LocateGlobalSettings();
-                    showDropdown_utility = false;
+                     PreviewRenderer.EnableCornerPreview = !PreviewRenderer.EnableCornerPreview;
+                    showPreview_preview = false;
                 }
             },
             {
-                RibbonButtonNames.PreviewRender, () =>
+                RibbonButtonNames.PreviewRender_NodePreview, () =>
                 {
-                    viewModel.ToggleNodePreviewRender();
-                    showDropdown_utility = false;
+                    PreviewRenderer.EnableNodeSidePreview = !PreviewRenderer.EnableNodeSidePreview;
+                    showPreview_preview = false;
                 }
             }
         };
@@ -132,6 +138,9 @@ public class RibbonBuilder
         public static string Utility => "Utility";
         public static string GlobalSettings => "Global Settings";
         public static string PreviewRender => "Preview Render";
+        public static string PreviewRender_CornerPreview => "Corner Preview";
+        public static string PreviewRender_NodePreview => "Node Preview";
+
         public static string InkleScriptView => "Inkle Script View";
         public static string SaveAs => "Save As";
         public static string Save => "Save";

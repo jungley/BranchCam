@@ -9,15 +9,15 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
     [System.Serializable]
     public class StartNode : Node
     {
-        //Actors In Scene
+        /// <summary>
+        /// Actors in Scene, Start Position Data set in <see cref="ActorInfo"/>
+        /// </summary>
         public List<ActorInfo> ActorsInScene;
 
         //start Position variables
         public bool StartPositionsEnabled;
         public bool OverrideRotation;
         public bool ReturnToOriginalPositions;
-        public List<Pose> OriginalPositions;
-        public List<Pose> SetStartPositions;
 
         //Scene Information
         public string UnitySceneName;
