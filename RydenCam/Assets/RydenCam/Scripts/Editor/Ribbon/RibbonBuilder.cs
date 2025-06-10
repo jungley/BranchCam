@@ -38,7 +38,7 @@ public class RibbonBuilder
 
             DrawDropdown(RibbonButtonNames.PreviewRender, new string[] { RibbonButtonNames.PreviewRender_CornerPreview, RibbonButtonNames.PreviewRender_NodePreview }, previewOptions, visibilityToggle: ref showPreview_preview, width: 130);
 
-            DrawButton(name: RibbonButtonNames.GlobalSettings, buttonWidth: 65, standardButtonHeight, action: viewModel.LocateGlobalSettings);
+            DrawButton(name: RibbonButtonNames.GlobalSettings, buttonWidth: 100, standardButtonHeight, action: viewModel.LocateGlobalSettings);
 
             DrawButton(name: RibbonButtonNames.InkleScriptView, buttonWidth: 120, standardButtonHeight, action: null); /* future TODO action */
         }
@@ -118,14 +118,14 @@ public class RibbonBuilder
             {
                 RibbonButtonNames.PreviewRender_CornerPreview, () =>
                 {
-                     PreviewRenderer.EnableCornerPreview = !PreviewRenderer.EnableCornerPreview;
+                    viewModel.ToggleCornerPreviewRender();
                     showPreview_preview = false;
                 }
             },
             {
                 RibbonButtonNames.PreviewRender_NodePreview, () =>
                 {
-                    PreviewRenderer.EnableNodeSidePreview = !PreviewRenderer.EnableNodeSidePreview;
+                    viewModel.ToggleNodePreviewRender();
                     showPreview_preview = false;
                 }
             }

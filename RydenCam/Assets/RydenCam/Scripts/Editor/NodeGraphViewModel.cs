@@ -10,6 +10,8 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using RydenCam.Editor;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
+using System;
 
 public class NodeGraphViewModel
 {
@@ -135,7 +137,12 @@ public class NodeGraphViewModel
 
     public void ToggleNodePreviewRender()
     {
-        //RS TODO
+        PreviewRenderer.EnableNodeSidePreview = !PreviewRenderer.EnableNodeSidePreview;
+    }
+
+    public void ToggleCornerPreviewRender()
+    {
+        PreviewRenderer.EnableCornerPreview = !PreviewRenderer.EnableCornerPreview;
     }
 
 
@@ -180,6 +187,7 @@ public class NodeGraphViewModel
         if (clickedNodeDrawer == null)
             return;
 
+
         NodeManager.Instance.ActiveNode = clickedNodeDrawer.Node;
         HandleConnectionPointSelected(mousePos);
     }
@@ -192,12 +200,19 @@ public class NodeGraphViewModel
             return;
         }
 
+        //Click over inspector area
+        if (editorWindow.InspectorPanelArea.Contains(new Vector2(Math.Abs(mousePos.x), Math.Abs(mousePos.y))))
+        {
+            return;
+        }
+
         var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
         NodeManager.Instance.ActiveNode = clickedNodeDrawer?.Node;
 
         if (clickedNodeDrawer == null)
         {
             ClearConnectionSelection();
+            GUI.FocusControl(null);
             editorWindow.Repaint();
         }
     }
@@ -234,7 +249,6 @@ public class NodeGraphViewModel
         IsDrawingHandle = false;
     }
 
-    //maybe move to viewModel?
     public void HandleConnectionPointSelected(Vector2 mousePosition)
     {
         var selectedNodeDrawer = editorWindow.NodeDrawers

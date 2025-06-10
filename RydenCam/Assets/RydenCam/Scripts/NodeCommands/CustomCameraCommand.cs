@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -39,8 +40,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             set => convoData.ShotConfig.IsCustomSet = value;
         }
         
-
-        public static Pose LastKnownPosition { get; set; }
         /// <summary>
         /// If the custom camera is active in the scene
         /// </summary>
@@ -57,23 +56,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public CustomCameraCommand(ITalkable node)
         {
             convoData = node.NodeConvodata;
-        }
-
-        //Need to update this to use an event
-        //RS TODO
-        public void UpdateSavedPosition()
-        {
-
-            if (CustomCameraObject != null)
-            {
-                if (CustomCameraObject.GetPose() != LastKnownPosition)
-                {
-                    convoData.ShotConfig.GlobalCustomCamPos = CustomCameraObject.transform.position;
-                    convoData.ShotConfig.GlobalCustomCamRot = CustomCameraObject.transform.rotation;
-
-                    LastKnownPosition = new Pose(convoData.ShotConfig.GlobalCustomCamPos, convoData.ShotConfig.GlobalCustomCamRot);
-                }
-            }
         }
 
 
@@ -107,18 +89,26 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         {
             if (nodeConvodata.ShotConfig.GoalType == CameraGoal.Custom && !IsCustomCameraActive)
             {
-                //Instantiate the CustomCamera Prefab
                 UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath(BranchConstants.CamPrefabPath, typeof(GameObject));
-                UnityEngine.Object obj = PrefabUtility.InstantiatePrefab(prefab);
-                GameObject cameraObject = (GameObject)obj;
+                UnityEngine.Object prefabObj = PrefabUtility.InstantiatePrefab(prefab);
+                GameObject cameraObject = (GameObject)prefabObj;
 
                 nodeConvodata.ShotConfig.IsCustomSet = true;
 
-                //Place the Camera
-                if (obj is GameObject gameObjectRef)
+                if (prefabObj is GameObject gameObjectRef)
                 {
                     gameObjectRef.transform.position = nodeConvodata.ShotConfig.GlobalCustomCamPos;
                     gameObjectRef.transform.rotation = nodeConvodata.ShotConfig.GlobalCustomCamRot;
+
+                    // Add watcher and subscribe
+                    var watcher = gameObjectRef.GetComponent<CustomCameraTransformWatcher>();
+                    watcher.SetPose(nodeConvodata.ShotConfig.GlobalCustomCamPos, nodeConvodata.ShotConfig.GlobalCustomCamRot);
+                    watcher.OnTransformChanged += pose =>
+                    {
+                        nodeConvodata.ShotConfig.GlobalCustomCamPos = pose.position;
+                        nodeConvodata.ShotConfig.GlobalCustomCamRot = pose.rotation;
+                    };
+                    
                 }
 
                 Selection.activeObject = cameraObject;

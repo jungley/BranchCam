@@ -80,7 +80,7 @@ namespace RydenCam.Editor
         //Define areas for clicking 
         private Rect ButtonPanelArea => new Rect(Math.Abs(panX), Math.Abs(panY), Screen.width, 30);
 
-        private Rect InspectorPanelArea => new Rect(Math.Abs(panX), Math.Abs(panY), ActiveNodeDrawView != null ? ActiveNodeDrawView.InspectorWidth : 230, Math.Abs(panY) + 1000);
+        public Rect InspectorPanelArea => new Rect(Math.Abs(panX), Math.Abs(panY), ActiveNodeDrawView != null ? ActiveNodeDrawView.InspectorWidth : 230, Math.Abs(panY) + 1000);
 
         //Text Style
         private static GUIStyle inspectorText;
@@ -114,36 +114,8 @@ namespace RydenCam.Editor
             ribbonBuilder.DrawRibbon();
 
             DrawInspector();
-
-            //For Debugging Purposes
-            //GUI.Box(InspectorPanelArea, CreateSolidTextureFromRect(InspectorPanelArea, Color.red));
-
         }
 
-        /*
-         * For Debugging Purposes
-        public Texture2D CreateSolidTextureFromRect(Rect rect, Color color)
-        {
-            // Create a new texture with width and height taken from the Rect
-            int width = Mathf.FloorToInt(rect.width);
-            int height = Mathf.FloorToInt(rect.height);
-
-            Texture2D texture = new Texture2D(width, height);
-
-            // Create an array of colors, fill it with the provided color
-            Color[] colorArray = new Color[width * height];
-            for (int i = 0; i < colorArray.Length; i++)
-            {
-                colorArray[i] = color;
-            }
-
-            // Set the pixels of the texture
-            texture.SetPixels(colorArray);
-            texture.Apply(); // Apply the changes to the texture
-
-            return texture;
-        }
-        */
         private void MousePan()
         {
             var mousePosition = Event.current.mousePosition;
@@ -347,8 +319,6 @@ namespace RydenCam.Editor
                 connectionDrawer.Draw();
             }
         }
-
-
 
         private void DrawUserDragConnectionCurve()
         {

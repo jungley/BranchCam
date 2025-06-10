@@ -31,7 +31,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             inspectorText = _inspectorText;
             labelStyleHead_Panel = _labelStyleHead_Panel;
 
-            //When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
+            //RS TODO? When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
             currentCommand.PlaceCustomCam(node.NodeConvodata);
 
         }
@@ -114,11 +114,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 GUILayout.EndHorizontal();
 
                 EditorGUILayout.Space();
-
-                //Set Camera Position if it has not already been set
-                //If user clicks from one custom node to another custom node, camera needs to be updated
-                //RS TODO Make this an event
-                currentCommand.UpdateSavedPosition();
 
                 //If the camera is not set but position has been set, place it
                 if (CustomCameraCommand.CustomCameraObject == null && currentCommand.IsCustomSet)
