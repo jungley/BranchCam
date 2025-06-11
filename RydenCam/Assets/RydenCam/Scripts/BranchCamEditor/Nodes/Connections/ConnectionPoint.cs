@@ -18,6 +18,27 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public Rect LocalBounds;
         public static Color Color => new Color(0, 0.8f, 0, 1);
 
+        private Vector2 globalPoint { get; set; }
+        public Vector2 GlobalPoint
+        {
+            get
+            {
+                if (Node != null)
+                {
+                    float globalXPos = (Node.EditorPosition.x) + LocalBounds.center.x;
+                    float globalYPos = (Node.EditorPosition.y) + LocalBounds.center.y;
+                    globalPoint = new Vector2(globalXPos, globalYPos);
+                }
+
+                return globalPoint;
+
+            }
+            set
+            {
+                globalPoint = value;
+            }
+        }
+
         private Node node { get; set; }
         public Node Node 
         {
@@ -70,28 +91,6 @@ namespace RydenCam.BranchCamEditor.Nodes.Connections
         public void ClearPointer()
         {
             ConnectedTo = null;
-        }
-
-
-        private Vector2 globalPoint { get; set; }
-        public Vector2 GlobalPoint
-        {
-            get
-            {
-                if (Node != null)
-                { 
-                    float globalXPos = (Node.EditorPosition.x) + LocalBounds.center.x;
-                    float globalYPos = (Node.EditorPosition.y) + LocalBounds.center.y;
-                    globalPoint = new Vector2(globalXPos, globalYPos);
-                }
-
-                return globalPoint;
-
-            }
-            set
-            {
-                globalPoint = value;
-            }
         }
 
     }

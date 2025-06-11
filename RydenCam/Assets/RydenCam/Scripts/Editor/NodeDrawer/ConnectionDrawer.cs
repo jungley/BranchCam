@@ -8,153 +8,107 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 {
     public class ConnectionDrawer
     {
-        private Connection connection;
-        private ConnectionRenderer renderer;
+        private readonly Connection connection;
+        private static readonly ConnectionRenderer renderer = new ConnectionRenderer();
+
+
 
         public ConnectionDrawer(Connection connection = null)
         {
             this.connection = connection;
-            renderer = new ConnectionRenderer();
         }
 
+        /// <summary>
+        /// Draws the stored connection.
+        /// </summary>
         public void Draw()
         {
-            renderer.Draw(connection);
+            if (connection != null)
+                renderer.Draw(connection);
         }
 
-        public void DrawFromUserHandle(ConnectionPoint selectedConnectionPoint, Vector2 mousePosition)
+        /// <summary>
+        /// Draws a temporary connection from a selected point to the current mouse position.
+        /// </summary>
+        public void DrawUserHandle(ConnectionPoint selectedConnectionPoint, Vector2 mousePosition)
         {
             var userHandlePoint = new ConnectionPoint(null, ConnectionPointType.UserHandleOnGUI)
             {
                 GlobalPoint = mousePosition
             };
-
-            var newConnection = new Connection(selectedConnectionPoint, userHandlePoint);
-            renderer.Draw(newConnection, isUserDrawing: true);
+            var tempConnection = new Connection(selectedConnectionPoint, userHandlePoint);
+            renderer.Draw(tempConnection, isUserDrawing: true);
         }
     }
 
     public class ConnectionRenderer
     {
         private static Texture2D arrowImageLoaded;
-
         private static Texture2D ArrowImage
         {
             get
             {
                 if (arrowImageLoaded == null)
-                {
                     arrowImageLoaded = Resources.Load("arrowImage2") as Texture2D;
-                }
                 return arrowImageLoaded;
             }
         }
 
         public void Draw(Connection connection, bool isUserDrawing = false)
         {
-            Vector2 inGlobalPoint = GetInGlobalPoint(connection, isUserDrawing);
-            Vector2 outGlobalPoint = GetOutGlobalPoint(connection, isUserDrawing);
+            // 1. Get connection points
+            var (start, end) = GetConnectionPoints(connection, isUserDrawing);
 
-            Vector3 startPos = new Vector3(inGlobalPoint.x, inGlobalPoint.y, 0);
-            Vector3 endPos = new Vector3(outGlobalPoint.x, outGlobalPoint.y, 0);
+            // 2. Highlight the node in green is over the node
 
-
-            if (ShouldDrawGotoCurve(connection))
+            // 3. Draw the connection curve
+            if (ShouldDrawGotoCurve(connection, start, end, isUserDrawing))
             {
-                DrawGotoCurve(connection);
+                DrawGotoCurve(connection, start, end);
             }
             else
             {
-                Handles.DrawBezier(startPos, endPos, startPos, endPos, Color.green, null, 5);
-                CheckAndHandleClickToRemoveConnection(connection, inGlobalPoint, outGlobalPoint);
-                DrawArrow(endPos, startPos, isUserDrawing);
+                DrawBezierCurve(start, end);
+                DrawRemoveButton(connection, start, end);
+                DrawArrow(end, start, isUserDrawing);
             }
-
         }
 
-        public void DrawArrow(Vector2 startPos, Vector2 endPos, bool isUserDrawing = false)
+        private (Vector2 start, Vector2 end) GetConnectionPoints(Connection connection, bool isUserDrawing)
         {
-            //Arrow needs to be switched in draw mode
-            if(isUserDrawing)
+            if (isUserDrawing)
             {
-                Vector3 temp = startPos;
-                startPos = endPos;
-                endPos = temp;
+                var inPoint = connection.GetInPoint() ?? connection.GetOutPoint();
+                var outPoint = connection.GetUserHandlePoint();
+                return (inPoint.GlobalPoint, outPoint.GlobalPoint);
             }
-
-            float angle = Mathf.Atan2(endPos.y - startPos.y, endPos.x - startPos.x) * Mathf.Rad2Deg - 90;
-            GUIUtility.RotateAroundPivot(angle, endPos);
-            GUI.DrawTexture(new Rect(endPos.x - 10, endPos.y - 25, 20, 20), ArrowImage, ScaleMode.StretchToFill, true, 20.0F);
-            GUIUtility.RotateAroundPivot(-angle, endPos);
+            else
+            {
+                return (connection.GetInPoint().GlobalPoint, connection.GetOutPoint().GlobalPoint);
+            }
         }
 
-        private Vector2 GetInGlobalPoint(Connection connection, bool isUserDrawing)
-        {
-            return isUserDrawing
-                ? (connection.GetInPoint() ?? connection.GetOutPoint()).GlobalPoint
-                : connection.GetInPoint().GlobalPoint;
-        }
-
-        private Vector2 GetOutGlobalPoint(Connection connection, bool isUserDrawing)
-        {
-            return isUserDrawing
-                ? connection.GetUserHandlePoint().GlobalPoint
-                : connection.GetOutPoint().GlobalPoint;
-        }
-
-        private bool ShouldDrawGotoCurve(Connection connection)
+        private bool ShouldDrawGotoCurve(Connection connection, Vector2 start, Vector2 end, bool isUserDrawing)
         {
             var pointIn = connection.GetInPoint() ?? connection.GetUserHandlePoint();
             var pointOut = connection.GetOutPoint() ?? connection.GetUserHandlePoint();
 
-            bool isPointInLower = pointIn.GlobalPoint.y < pointOut.GlobalPoint.y;
-            bool isValidGotoConnectionCurve =
-                (pointOut.Type == ConnectionPointType.Out && pointIn.Type == ConnectionPointType.In) ||
-                (pointOut.Type == ConnectionPointType.Out && pointIn.Type == ConnectionPointType.UserHandleOnGUI);
+            bool isValidGoto = pointOut.Type == ConnectionPointType.Out &&
+                               (pointIn.Type == ConnectionPointType.In || pointIn.Type == ConnectionPointType.UserHandleOnGUI);
 
-            return isPointInLower && isValidGotoConnectionCurve;
+            bool isPointInLower = isUserDrawing ? start.y > end.y : start.y < end.y;
+
+            return isPointInLower && isValidGoto;
         }
 
-        private void DrawGotoCurve(Connection connection)
+        private void DrawBezierCurve(Vector2 start, Vector2 end)
         {
-            Vector2 result_01 = connection.Point_A.GlobalPoint;
-            Vector3 startPos = new Vector3(result_01.x, result_01.y, 0);
-            Vector2 result_02 = connection.Point_B.GlobalPoint;
-            Vector3 endPos = new Vector3(result_02.x, result_02.y, 0);
-            Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
-            float arc;
-            float handlearc;
-            if (endPos.x <= startPos.x)
-            {
-                arc = -600.0f;
-                handlearc = 300.0f;
-            }
-            else
-            {
-                arc = 600.0f;
-                handlearc = -300.0f;
-            }
-            center.x += arc;
-            Vector3[] vector3array = new Vector3[] { startPos, center, endPos };
-            vector3array = MakeSmoothCurve(vector3array, 90.0f);
-            Handles.color = Color.green;
-            Handles.DrawAAPolyLine(5.0f, vector3array);
-            center.x += handlearc;
-
-            
-            if (Handles.Button(center, Quaternion.identity, 8, 20, Handles.RectangleHandleCap))
-            {
-                connection.Point_A.ClearPointer();
-                connection.Point_B.ClearPointer();
-                connection.RemoveConnection();
-            }
-            return;
+            Handles.DrawBezier(start, end, start, end, Color.green, null, 5);
         }
 
-        private void CheckAndHandleClickToRemoveConnection(Connection connection, Vector2 inGlobalPoint, Vector2 outGlobalPoint, bool isGotoConnection = false)
+        private void DrawRemoveButton(Connection connection, Vector2 start, Vector2 end)
         {
-            Vector2 midpoint = (inGlobalPoint + outGlobalPoint) * 0.5f;
-
+            Vector2 midpoint = (start + end) * 0.5f;
             Handles.color = Color.green;
             if (Handles.Button(new Vector3(midpoint.x, midpoint.y, 0), Quaternion.identity, 8, 20, Handles.RectangleHandleCap))
             {
@@ -162,13 +116,45 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                 connection.Point_B.ClearPointer();
                 connection.RemoveConnection();
             }
+        }
 
+        private void DrawArrow(Vector2 start, Vector2 end, bool isUserDrawing)
+        {
+            if (isUserDrawing)
+                (start, end) = (end, start);
+
+            float angle = Mathf.Atan2(end.y - start.y, end.x - start.x) * Mathf.Rad2Deg - 90;
+            GUIUtility.RotateAroundPivot(angle, end);
+            GUI.DrawTexture(new Rect(end.x - 10, end.y - 25, 20, 20), ArrowImage, ScaleMode.StretchToFill, true, 20.0F);
+            GUIUtility.RotateAroundPivot(-angle, end);
+        }
+
+        private void DrawGotoCurve(Connection connection, Vector2 start, Vector2 end)
+        {
+            Vector3 startPos = start;
+            Vector3 endPos = end;
+            Vector3 center = new Vector3((startPos.x + endPos.x) / 2, (endPos.y + startPos.y) / 2);
+
+            float arc = endPos.x <= startPos.x ? -600.0f : 600.0f;
+            float handleArc = endPos.x <= startPos.x ? 300.0f : -300.0f;
+            center.x += arc;
+
+            Vector3[] curvePoints = MakeSmoothCurve(new[] { startPos, center, endPos }, 90.0f);
+            Handles.color = Color.green;
+            Handles.DrawAAPolyLine(5.0f, curvePoints);
+
+            center.x += handleArc;
+            if (Handles.Button(center, Quaternion.identity, 8, 20, Handles.RectangleHandleCap))
+            {
+                connection.Point_A.ClearPointer();
+                connection.Point_B.ClearPointer();
+                connection.RemoveConnection();
+            }
         }
 
         private Vector3[] MakeSmoothCurve(Vector3[] points, float smoothness)
         {
             if (smoothness < 1.0f) smoothness = 1.0f;
-
             int pointsLength = points.Length;
             int curvedLength = (pointsLength * Mathf.RoundToInt(smoothness)) - 1;
             List<Vector3> curvedPoints = new List<Vector3>(curvedLength);

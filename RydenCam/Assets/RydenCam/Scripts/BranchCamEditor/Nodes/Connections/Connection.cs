@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using UnityEngine;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Managers;

@@ -325,10 +325,10 @@ namespace RydenCam.Editor
             if (viewModel.IsDrawingHandle)
             {
                 var selectedPoint = viewModel.SelectedConnectionPoint;
-                var globalPoint = Event.current.mousePosition;
+                var globalMousePoint = Event.current.mousePosition;
 
                 var drawer = new ConnectionDrawer();
-                drawer.DrawFromUserHandle(selectedPoint, globalPoint);
+                drawer.DrawUserHandle(selectedPoint, globalMousePoint);
             }
         }
 
