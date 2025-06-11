@@ -10,6 +10,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     {
         private DialogueNode node { get; set; }
 
+        public override int SpeakingEntriesCount => node.NodeConvodata.DialogTextList.Count;
+
         public DialogueNodeCommand(Node _node) : base(_node)    
         {
             node = _node as DialogueNode;
@@ -23,7 +25,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public override void RemoveSpeakingEntry(int index)
         {
-            node.NodeConvodata.DialogTextList.RemoveAt(index);
+           node.NodeConvodata.DialogTextList.RemoveAt(index);
 
         }
 

@@ -10,6 +10,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     {
         private DecisionNode node { get; set; }
 
+        public override int SpeakingEntriesCount => node.DecisionOptions.Count;
+
         public DecisionNodeCommand(Node _node) : base(_node)
         {
             node = _node as DecisionNode;

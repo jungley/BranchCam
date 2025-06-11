@@ -21,6 +21,8 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public abstract void RemoveSpeakingEntry(int index);
         public CustomCameraCommand CustomCameraCommand { get; set; }
 
+        public abstract int SpeakingEntriesCount { get; }
+
         public void AssignNewActor(int actorIndex)
         {
             var actor = NodeManager.Instance.ActorsInScene[actorIndex].ActorID;

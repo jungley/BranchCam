@@ -31,8 +31,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             inspectorText = _inspectorText;
             labelStyleHead_Panel = _labelStyleHead_Panel;
 
-            //RS TODO? When Load conversation happens, the tempcamera gameobject appears, dont want this to happen
-            currentCommand.PlaceCustomCam(node.NodeConvodata);
 
         }
 

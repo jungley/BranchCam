@@ -37,10 +37,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             {
                 command.AddSpeakingEntry(index + 1);
             });
-            menu.AddItem(new GUIContent("Remove"), false, () =>
+            if (command.SpeakingEntriesCount > 1)
             {
-                command.RemoveSpeakingEntry(index);
-            });
+                menu.AddItem(new GUIContent("Remove"), false, () =>
+                {
+                    command.RemoveSpeakingEntry(index);
+                });
+            }
             menu.ShowAsContext();
         }
     }
