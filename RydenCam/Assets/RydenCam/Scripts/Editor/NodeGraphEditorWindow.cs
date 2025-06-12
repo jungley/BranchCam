@@ -99,11 +99,12 @@ namespace RydenCam.Editor
 
             GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
 
-            DrawUserDragConnectionCurve();
 
             viewModel.HandleInputClicks();
 
             DrawNodes();
+
+            DrawUserDragConnectionCurve();
 
             DrawConnections();
 
@@ -329,6 +330,14 @@ namespace RydenCam.Editor
 
                 var drawer = new ConnectionDrawer();
                 drawer.DrawUserHandle(selectedPoint, globalMousePoint);
+
+                NodeDrawerBase nodeDrawer = NodeDrawers.FirstOrDefault(node => node.WindowRect.Contains(globalMousePoint));
+                if(nodeDrawer != null)
+                {
+                    nodeDrawer.CreateHighlightTexture(Color.green);
+                    nodeDrawer.HighlightNode();
+                    nodeDrawer.ClearHighlightTexture();
+                }
             }
         }
 

@@ -48,40 +48,52 @@ namespace Assets.RydenCam.Scripts.Editor
             }
         }
 
-        private Texture2D highlightText { get; set; } 
+        private Texture2D highlightTexCache;
+
         protected Texture2D HighlightTex
         {
             get
             {
-                if (highlightText == null)
+                if (highlightTexCache == null)
                 {
-                    Rect rect = new Rect(WindowRect);
-                    // Create Highlight Texture2D
-                    highlightText = new Texture2D((int)rect.width, (int)rect.height);
-                    int borderwidth = 2;
-                    Color[] textureColors = new Color[highlightText.width * highlightText.height];
-
-                    for (int y = 0; y < highlightText.height; y++)
-                    {
-                        for (int x = 0; x < highlightText.width; x++)
-                        {
-                            // Check if the pixel is within the border region
-                            Color colResult = (x >= (highlightText.width - borderwidth) || x <= borderwidth || y <= borderwidth || y >= (highlightText.height - borderwidth))
-                                ? NodeColor
-                                : Color.clear;
-
-                            textureColors[y * highlightText.width + x] = colResult; // Set the pixel color in the array
-                        }
-                    }
-
-                    // Apply all changes at once for performance reasons
-                    highlightText.SetPixels(textureColors);
-                    highlightText.Apply();
+                    CreateHighlightTexture();
                 }
 
-                return highlightText;
+                return highlightTexCache;
             }
         }
+
+        public void ClearHighlightTexture() => highlightTexCache = null;
+
+        public void CreateHighlightTexture(Color? color = null)
+        {
+            Color NColor = color ?? NodeColor;
+
+            Rect rect = new Rect(WindowRect);
+            int width = (int)rect.width;
+            int height = (int)rect.height;
+            int borderWidth = 2;
+
+            Texture2D texture = new Texture2D(width, height);
+            Color[] colors = new Color[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    bool isBorder = x < borderWidth || x >= width - borderWidth ||
+                                    y < borderWidth || y >= height - borderWidth;
+
+                   
+                    colors[y * width + x] = isBorder ? NColor : Color.clear;
+                }
+            }
+
+            texture.SetPixels(colors);
+            texture.Apply();
+            highlightTexCache = texture;
+        }
+
 
         protected GUIStyle labelStyleHead_Panel { get; set; }
         protected GUIStyle labelStyleHead_Node { get; set; }
@@ -138,16 +150,16 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public abstract void DrawNodeInspector();
 
-        public void HighlightSelctedNode()
+        public void HighlightNode()
         {
             Rect expandedRect = new Rect(
-                WindowRect.x - 2,               // Shift left by 5
-                WindowRect.y - 2,               // Shift down by 5
-                WindowRect.width + 4,           // Increase width by 10 (5 left + 5 right)
-                WindowRect.height + 4           // Increase height by 10 (5 up + 5 down)
+                WindowRect.x - 2,               // Shift left by 5  
+                WindowRect.y - 2,               // Shift down by 5  
+                WindowRect.width + 4,           // Increase width by 10 (5 left + 5 right)  
+                WindowRect.height + 4           // Increase height by 10 (5 up + 5 down)  
             );
 
-           GUI.DrawTextureWithTexCoords(expandedRect, HighlightTex, new Rect(0, 0, 1, 1.0f));
+            GUI.DrawTextureWithTexCoords(expandedRect, HighlightTex, new Rect(0, 0, 1, 1.0f));
         }
 
         public bool IsOverPoint(Vector2 mousePos)
@@ -212,7 +224,6 @@ namespace Assets.RydenCam.Scripts.Editor
 
             return totalHeight;
         }
-
 
         protected void DrawConnectionPoints()
         {

@@ -57,7 +57,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                     }, "");
 
-            if (IsActive) HighlightSelctedNode();
+            if (IsActive) HighlightNode();
 
             Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
         }
