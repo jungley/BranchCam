@@ -33,6 +33,7 @@ namespace RydenCam.BranchCamEditor.Serialization
                             {
                                 case NodeType.StartNode:
                                     StartNode startnode = JsonUtility.FromJson<StartNode>(nodeJsonContent.JsonString);
+                                    startnode.PointIn = null; //Limitation with serialization, JsonUtility cannot save null
                                     deserializedNodes.Add(startnode);
                                     NodeManager.StartNodeAdded = true;
                                     break;

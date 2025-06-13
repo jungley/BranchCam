@@ -17,7 +17,6 @@ namespace Assets.RydenCam.Scripts.Editor
 
     //Responsible for Drawing the UI components of the Node
     //Called from Drawer factory in NodeGraphViewModel
-
     //Draws the node based on the node passed
 
     public abstract class NodeDrawerBase

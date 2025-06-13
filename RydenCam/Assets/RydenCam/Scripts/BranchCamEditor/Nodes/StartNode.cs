@@ -30,7 +30,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         {
             TypeOfNode = NodeType.StartNode;
             ActorsInScene = new List<ActorInfo>();
-            PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) }; 
+            PointIn = null;
+            PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };
             
         }
     }

@@ -249,6 +249,23 @@ public class NodeGraphViewModel
         IsDrawingHandle = false;
     }
 
+    private ConnectionPoint SelectedConnectionPointFromNode(ConnectionPointType incomingType)
+    {
+
+        Node selectedNode = NodeManager.Instance.ActiveNode;
+        // Exclude DecisionNode
+        if (selectedNode.TypeOfNode == NodeType.DecisionNode)
+            return null;
+
+        if (incomingType == ConnectionPointType.Out)
+            return selectedNode.PointIn;
+
+        if (incomingType == ConnectionPointType.In && selectedNode.PointOut != null && selectedNode.PointOut.Count == 1)
+            return selectedNode.PointOut[0];
+
+        return null;
+    }
+
     public void HandleConnectionPointSelected(Vector2 mousePosition)
     {
         var selectedNodeDrawer = editorWindow.NodeDrawers
@@ -257,7 +274,6 @@ public class NodeGraphViewModel
         if (selectedNodeDrawer == null) return;
 
         NodeManager.Instance.ActiveNode = (selectedNodeDrawer != null) ? selectedNodeDrawer.Node : null;
-
 
         ConnectionPoint selectedPoint = editorWindow.ActiveNodeDrawView?.GetHandlePoint(mousePosition);
         if (selectedPoint != null)
@@ -269,22 +285,27 @@ public class NodeGraphViewModel
                 IsDrawingHandle = true;
                 return;
             }
-            //Already Drawing a curve, point been selected now a second one is
-            else
+        }
+        //Already Drawing a line, point been selected now a second one is
+        else
+        {
+            if (SelectedConnectionPoint == null) return;
+
+            ConnectionPoint fromPoint = SelectedConnectionPointFromNode(SelectedConnectionPoint.Type);
+            
+            if (fromPoint == null) return;
+
+            if (fromPoint.Type != SelectedConnectionPoint.Type)
             {
-                ConnectionPoint fromPoint = editorWindow.ActiveNodeDrawView.GetHandlePoint(mousePosition);
-
-                if (fromPoint.Type != SelectedConnectionPoint.Type)
+                //Remove Connections the point its connected to is already connected.
+                if (ConnectionManager.Instance.IsOutConnected(fromPoint, SelectedConnectionPoint))
                 {
-                    //Remove Connections the point its connected to is already connected.
-                    if (ConnectionManager.Instance.IsOutConnected(fromPoint, SelectedConnectionPoint))
-                    {
-                        ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, SelectedConnectionPoint);
-                    }
-
-                    ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
-                    IsDrawingHandle = false;
+                    ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, SelectedConnectionPoint);
                 }
+
+                ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
+                IsDrawingHandle = false;
+                SelectedConnectionPoint = null;
             }
         }
     }
