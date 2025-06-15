@@ -7,12 +7,18 @@ using RydenCam.Common;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using System.Collections.Generic;
 
-namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
+namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
-    internal class ActionNodeDrawer : NodeDrawerBase
+    internal class ActionNodeDrawer : NodeDrawer
     {
-        private ActionNode node { get; set; }
-        private ActionNodeCommand command { get; set; }
+        private ActionNodeCommand actionCommand;
+        private ActionNode actionNode { get; set; }
+        protected override NodeCommand Command => actionCommand;
+        public override Node Node
+        {
+            get => actionNode;
+            set => actionNode = value as ActionNode;
+        }
 
         private Vector2 scrollPosInspector { get; set; }
 
@@ -20,38 +26,39 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
         public ActionNodeDrawer(Node _node) : base(_node)
         {
-            node = _node as ActionNode;
-            command = new ActionNodeCommand(_node);
+            actionNode = _node as ActionNode;
 
-            selectedGameActionDatas = node.GameActionDatas ?? new List<GameActionData>();
+            actionCommand = new ActionNodeCommand(_node);
 
-            WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
+            actionCommand.WindowRect = new Rect(actionNode.EditorPosition.x, actionNode.EditorPosition.y, actionNode.NodeWidth, actionNode.NodeHeight);
+
+            selectedGameActionDatas = actionNode.GameActionDatas ?? new List<GameActionData>();
 
             ColorUtility.TryParseHtmlString("#FE1010", out Color colorref);
-            NodeColor = colorref;
+            Command.NodeColor = colorref;
         }
 
         public override void DrawNode(int index)
         {
             GUI.backgroundColor = Color.gray;
 
-            WindowRect = GUI.Window(index, new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight),
+            actionCommand.WindowRect = GUI.Window(index, new Rect(actionNode.EditorPosition.x, actionNode.EditorPosition.y, actionNode.NodeWidth, actionNode.NodeHeight),
                 (windowId) =>
                 {
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25f), HeaderTexture, new Rect(0, 0, 1, 1));
-                    EditorGUI.LabelField(new Rect(4, 4, node.NodeWidth, node.NodeHeight), "Action", labelStyleHead_Node);
+                    EditorGUI.LabelField(new Rect(4, 4, actionNode.NodeWidth, actionNode.NodeHeight), "Action", labelStyleHead_Node);
 
 
                     //Display Selected Methods
-                    foreach (GameActionData data in node.GameActionDatas)
+                    foreach (GameActionData data in actionNode.GameActionDatas)
                     {
                         EditorGUILayout.LabelField(data.SelectedMethodName, labelStyleHead_Node);
                     }
 
-                    Rect deleteButtonRect = new Rect(node.NodeWidth - 20, 0, 20, 20);
+                    Rect deleteButtonRect = new Rect(actionNode.NodeWidth - 20, 0, 20, 20);
                     if (GUI.Button(deleteButtonRect, "X"))
                     {
-                        command.RemoveNode();
+                        Command.RemoveNode();
                     }
 
                     DrawConnectionPoints();
@@ -60,9 +67,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 }, "");
 
-            if(IsActive) HighlightNode();
+            Command.HighlightIfActive();
 
-            Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
+            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
 
         }
 
@@ -73,11 +80,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
             if (GUILayout.Button("Invoke Command(s)", GUILayout.Width(135), GUILayout.Height(30)))
             {
-                command.InvokeCommands();
+                actionCommand.InvokeCommands();
             }
             if (GUILayout.Button("Add A Command"))
             {
-                command.AddCommand();
+                actionCommand.AddCommand();
             }
 
             scrollPosInspector = EditorGUILayout.BeginScrollView(scrollPosInspector, GUILayout.Width(250), GUILayout.Height(680));
@@ -87,14 +94,14 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                 if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(20)))
                 {
-                    node.GameActionDatas.RemoveAt(node.GameActionDatas.IndexOf(selectedGameActionDatas[index]));
+                    actionNode.GameActionDatas.RemoveAt(actionNode.GameActionDatas.IndexOf(selectedGameActionDatas[index]));
                     break;
                 }
 
                 GameObject checkNewObject = (GameObject) EditorGUILayout.ObjectField("Select GameObject", selectedGameActionDatas[index].GameObj, typeof(GameObject), true);
                 if(checkNewObject!= null && checkNewObject?.name != selectedGameActionDatas[index]?.GameObjectName)
                 {
-                    command.AssignActionObject(checkNewObject, index);
+                    actionCommand.AssignActionObject(checkNewObject, index);
                 }
 
                 //Displaying Parameters / Method info
@@ -103,7 +110,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
                     int checkSelectedIndex = EditorGUILayout.Popup("Select an method:", selectedGameActionDatas[index].SelectedMethodIndex, selectedGameActionDatas[index].MethodNames.ToArray());
                     if (checkSelectedIndex != selectedGameActionDatas[index].SelectedMethodIndex)
                     {
-                        command.AssignMethod(index, checkSelectedIndex);
+                        actionCommand.AssignMethod(index, checkSelectedIndex);
                     }
 
                     //A method is selected

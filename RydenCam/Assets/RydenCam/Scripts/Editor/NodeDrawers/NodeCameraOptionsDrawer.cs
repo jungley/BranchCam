@@ -10,7 +10,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
+namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
 
     //Used In Dialogue and Decision Nodes

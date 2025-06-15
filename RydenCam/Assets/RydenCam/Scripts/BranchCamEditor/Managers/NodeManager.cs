@@ -7,10 +7,11 @@ using Assets.RydenCam.Scripts.BranchCamCC;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Node = Assets.RydenCam.Scripts.BranchCamCC.Node;
+using Assets.RydenCam.Scripts.NodeCommands;
 
 namespace RydenCam.BranchCamEditor.Managers
 {
-    [ExecuteAlways]
+    [ExecuteAlways]    
     public class NodeManager : INotifyPropertyChanged
     {
         private static NodeManager instance;
@@ -25,8 +26,12 @@ namespace RydenCam.BranchCamEditor.Managers
                 return instance;
             }
         }
-
         public ObservableCollection<Node> Nodes { get; set; }
+
+
+        // Add this dictionary to hold NodeCommands
+        private readonly Dictionary<Node, NodeCommand> nodeCommands = new Dictionary<Node, NodeCommand>();
+        public Dictionary<Node, NodeCommand> NodeCommands => nodeCommands;
 
         private Node activeNode { get; set; }
         public Node ActiveNode
@@ -102,46 +107,33 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public List<ActorInfo> ActorsInScene => StartNode?.ActorsInScene.Where(actor => actor.ActorGO != null).ToList() ?? new List<ActorInfo>();
             
-        
-
         public void ClearActorsInScene()
         {
             var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
             if (startNode != null) startNode.ActorsInScene = new List<ActorInfo>();
         }
 
-        /*
+       
+        //NodeCommand Management
 
-        //This is for when the user clicks off or selects another node.
-        //If the other node is also a node that uses custom camera, it will not use the position of the previously
-        //created custom camera.
-        public void EnsureUniqueCustomCameraSelection(EditorBaseNode curr)
+        public void RegisterNodeCommand(Node node, NodeCommand command)
         {
-            foreach (EditorBaseNode node in nodes)
-            {
-                if (node != curr)
-                {
-                    node.SetCustomCameraPosition = null;
-                }
-            }
+            if (node == null || command == null) return;
+            nodeCommands[node] = command;
         }
 
-        //Check on this?
-        //When NodeManager is updated,
-        //The ActorManger should be updated via decorator pattern?
-
-        public void ReplaceActorInfo(string previousActorName, ActorInfo newActorInfo)
+        public void UnregisterNodeCommand(Node node)
         {
-            if (string.IsNullOrEmpty(previousActorName))
-                return;
-
-            foreach (var node in Nodes.OfType<ITalkable>()
-                                        .Where(posNode => posNode.NodeConvodata.Actor.ActorName == previousActorName))
-            {
-                node.NodeConvodata.Actor.ActorName = newActorInfo.ActorName;
-                node.NodeConvodata.Actor.ActorGO = newActorInfo.ActorGO;
-            }
+            if (node == null) return;
+            nodeCommands.Remove(node);
         }
-        */
+
+        public NodeCommand GetNodeCommand(Node node)
+        {
+            if (node == null) return null;
+            nodeCommands.TryGetValue(node, out var command);
+            return command;
+        }
+
     }
 }

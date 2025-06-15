@@ -1,4 +1,4 @@
-﻿namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
+﻿namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
     public interface IClearable
     {

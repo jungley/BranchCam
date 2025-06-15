@@ -6,36 +6,44 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
+namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
-    public class StartNodeDrawer : NodeDrawerBase
+    public class StartNodeDrawer : NodeDrawer
     {
+        private StartNodeCommand startCommand;
         private StartNode startNode { get; set; }
-        private StartNodeCommand startCommand { get; set; }
+        protected override NodeCommand Command => startCommand;
+        public override Node Node
+        {
+            get => startNode;
+            set => startNode = value as StartNode;
+        }
 
         public override float InspectorWidth => 335;
+
 
         public StartNodeDrawer(Node node) : base(node)
         {
             startNode = node as StartNode;
+
             startCommand = new StartNodeCommand(node);
+
+            Command.WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
 
             labelStyle = new GUIStyle();
             labelStyle.fontStyle = FontStyle.Bold;
             labelStyle.fontSize = 10;
 
-            WindowRect = new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight);
-
             ColorUtility.TryParseHtmlString("#009900", out Color colorref);
-            NodeColor = colorref;
+            Command.NodeColor = colorref;
         }
 
         public override void DrawNode(int index)
         {
             GUI.backgroundColor = Color.gray;
 
-            WindowRect =
-                GUI.Window(index, WindowRect,
+            Command.WindowRect =
+                GUI.Window(index, Command.WindowRect,
                     (windowId) =>
                     {
 
@@ -48,7 +56,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                         if (GUI.Button(deleteButtonRect, "X"))
                         {
-                            startCommand.RemoveNode();
+                            Command.RemoveNode();
                         }
 
                         DrawConnectionPoints();
@@ -57,9 +65,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
 
                     }, "");
 
-            if (IsActive) HighlightNode();
+            Command.HighlightIfActive();
 
-            Node.EditorPosition = new Vector2(WindowRect.x, WindowRect.y);
+            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
         }
 
 

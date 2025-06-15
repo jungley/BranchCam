@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Assets.RydenCam.Scripts.Editor;
-using Assets.RydenCam.Scripts.Editor.NodeDrawer;
+using Assets.RydenCam.Scripts.Editor.NodeDrawers;
 using RydenCam.Common;
 using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.Serialization;
@@ -14,6 +14,7 @@ using RydenCam.BranchCamEditor.Nodes.Connections;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using System;
 using System.Net;
+using Assets.RydenCam.Scripts.NodeCommands;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -25,8 +26,8 @@ namespace RydenCam.Editor
     {
         private NodeGraphViewModel viewModel;
 
-        private NodeDrawerBase activeNodeDrawView { get; set; }
-        public NodeDrawerBase ActiveNodeDrawView
+        private NodeDrawer activeNodeDrawView { get; set; }
+        private NodeDrawer ActiveNodeDrawView
         {
             get => activeNodeDrawView;
             set
@@ -43,15 +44,12 @@ namespace RydenCam.Editor
         }
 
         //Window Properties
-
-
-
         public static float panX = 0;
         public static float panY = 0;
         private Rect lastEditorWindowPos;
 
-        static Texture2D _targetTextureInspector { get; set; }
-        static Texture2D TargetTextureInspector
+        private static Texture2D _targetTextureInspector { get; set; }
+        private static Texture2D TargetTextureInspector
         {
             get
             {
@@ -67,8 +65,8 @@ namespace RydenCam.Editor
 
         private RibbonBuilder ribbonBuilder { get; set; }
 
-        public List<NodeDrawerBase> NodeDrawers { get; set; } = new List<NodeDrawerBase>();
-        public List<ConnectionDrawer> ConnectionDrawers { get; set; }
+        private List<NodeDrawer> NodeDrawers { get; set; } = new List<NodeDrawer>();
+        private List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
 
 
@@ -85,7 +83,7 @@ namespace RydenCam.Editor
         //Text Style
         private static GUIStyle inspectorText;
 
-        static bool resourcesInitalized { get; set; } = false;
+        private static bool resourcesInitalized { get; set; } = false;
 
 
         void OnGUI()
@@ -331,16 +329,15 @@ namespace RydenCam.Editor
                 var drawer = new ConnectionDrawer();
                 drawer.DrawUserHandle(selectedPoint, globalMousePoint);
 
-                NodeDrawerBase nodeDrawer = NodeDrawers.FirstOrDefault(node => node.WindowRect.Contains(globalMousePoint));
-                if(nodeDrawer != null)
+                Node node = viewModel.GetNodeFromMousePosition(globalMousePoint);
+                if(node != null)
                 {
-                    nodeDrawer.CreateHighlightTexture(Color.green);
-                    nodeDrawer.HighlightNode();
-                    nodeDrawer.ClearHighlightTexture();
+                    NodeCommand command = NodeManager.Instance.GetNodeCommand(node);
+                    command.CreateHighlightTexture(Color.green);
+                    command.HighlightNode();
+                    command.ClearHighlightTexture();
                 }
             }
         }
-
-
     }
 }

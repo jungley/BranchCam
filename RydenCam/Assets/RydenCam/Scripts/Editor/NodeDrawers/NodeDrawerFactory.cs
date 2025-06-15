@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.NodeCommands;
 using Ink.Parsed;
 using RydenCam.Common;
 using System;
@@ -7,15 +8,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
+namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
     public static class NodeDrawerFactory
     {
-        public static NodeDrawerBase CreateNodeDrawer(Node node)
+        public static NodeDrawer CreateNodeDrawer(Node node) 
         {
             if (node == null) return null;
 
-            switch(node.TypeOfNode)
+            switch (node.TypeOfNode)
             {
                 case NodeType.StartNode:
                     return new StartNodeDrawer(node);

@@ -1,5 +1,5 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
-using Assets.RydenCam.Scripts.Editor.NodeDrawer;
+using Assets.RydenCam.Scripts.Editor.NodeDrawers;
 using Assets.RydenCam.Scripts.Editor;
 using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.Managers;
@@ -12,6 +12,7 @@ using System.Linq;
 using RydenCam.Editor;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using System;
+using Assets.RydenCam.Scripts.NodeCommands;
 
 public class NodeGraphViewModel
 {
@@ -183,14 +184,16 @@ public class NodeGraphViewModel
         clickStartPos = mousePos;
         isPanning = false;
 
-        var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
-        if (clickedNodeDrawer == null)
+        var node = GetNodeUnderMouse(mousePos);
+        if (node == null)
             return;
 
 
-        NodeManager.Instance.ActiveNode = clickedNodeDrawer.Node;
+        NodeManager.Instance.ActiveNode = node;
         HandleConnectionPointSelected(mousePos);
     }
+
+
 
     private void HandleLeftMouseUp(Vector2 mousePos)
     {
@@ -201,15 +204,15 @@ public class NodeGraphViewModel
         }
 
         //Click over inspector area
+        //RS TODO Move InspectorPanelArea to VM?
         if (editorWindow.InspectorPanelArea.Contains(new Vector2(Math.Abs(mousePos.x), Math.Abs(mousePos.y))))
         {
             return;
         }
 
-        var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
-        NodeManager.Instance.ActiveNode = clickedNodeDrawer?.Node;
+        NodeManager.Instance.ActiveNode = GetNodeUnderMouse(mousePos);
 
-        if (clickedNodeDrawer == null)
+        if (NodeManager.Instance.ActiveNode == null)
         {
             ClearConnectionSelection();
             GUI.FocusControl(null);
@@ -227,20 +230,30 @@ public class NodeGraphViewModel
 
     private void HandleRightMouseDown(Vector2 mousePos)
     {
+        Node node = GetNodeUnderMouse(mousePos);
 
-        var clickedNodeDrawer = GetNodeUnderMouse(mousePos);
-
-        if (clickedNodeDrawer is TalkableDrawerNode drawer)
-            drawer.ShowAddRemoveMenu(mousePos);
+        if (node is ITalkable talkableNode)
+        {
+            NodeManager.Instance.NodeCommands.TryGetValue(node, out NodeCommand nodeCommand);
+            TalkableCommand talkableCommand = nodeCommand as TalkableCommand;
+            talkableCommand.ShowAddRemoveMenu(mousePos);
+        }
         else
+        {
             ShowContextMenu(mousePos);
+        }
 
         Event.current.Use();
     }
 
-    private NodeDrawerBase GetNodeUnderMouse(Vector2 mousePos)
+    private Node GetNodeUnderMouse(Vector2 mousePosition)
     {
-        return editorWindow.NodeDrawers.FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(mousePos));
+        // Get the node from NodeManager.Instance.NodeCommands where the mousePos is IN the WindowRect
+        Node node = NodeManager.Instance.NodeCommands
+            .Where(kv => kv.Value.WindowRect.Contains(mousePosition))
+            .Select(kv => kv.Key).FirstOrDefault();
+
+        return node;
     }
 
     private void ClearConnectionSelection()
@@ -255,7 +268,9 @@ public class NodeGraphViewModel
         Node selectedNode = NodeManager.Instance.ActiveNode;
         // Exclude DecisionNode
         if (selectedNode.TypeOfNode == NodeType.DecisionNode)
-            return null;
+        {
+            //get appropriate point based area
+        }
 
         if (incomingType == ConnectionPointType.Out)
             return selectedNode.PointIn;
@@ -266,16 +281,31 @@ public class NodeGraphViewModel
         return null;
     }
 
+    /// <summary>
+    /// Returns the node from the NodeManager based on the mouse position.
+    /// </summary>
+    /// <param name="mousePosition"></param>
+    public Node GetNodeFromMousePosition(Vector2 mousePosition)
+    {
+        Node node = NodeManager.Instance.NodeCommands
+            .Where(kv => kv.Value.WindowRect.Contains(mousePosition))
+            .Select(kv => kv.Key).FirstOrDefault();
+
+        return node;
+    }
+
+
     public void HandleConnectionPointSelected(Vector2 mousePosition)
     {
-        var selectedNodeDrawer = editorWindow.NodeDrawers
-           .FirstOrDefault(nodeDrawer => nodeDrawer.WindowRect.Contains(mousePosition));
+        Node node = GetNodeFromMousePosition(mousePosition);
 
-        if (selectedNodeDrawer == null) return;
+        if (node == null) return;
 
-        NodeManager.Instance.ActiveNode = (selectedNodeDrawer != null) ? selectedNodeDrawer.Node : null;
+        NodeManager.Instance.ActiveNode = node;
 
-        ConnectionPoint selectedPoint = editorWindow.ActiveNodeDrawView?.GetHandlePoint(mousePosition);
+        NodeManager.Instance.NodeCommands.TryGetValue(node, out NodeCommand nodeCommand);
+
+        ConnectionPoint selectedPoint = nodeCommand.GetHandlePoint(mousePosition);
         if (selectedPoint != null)
         {
             //Clicked on the connection point start to draw Handle
@@ -295,18 +325,15 @@ public class NodeGraphViewModel
             
             if (fromPoint == null) return;
 
-            if (fromPoint.Type != SelectedConnectionPoint.Type)
+            //Remove Connections the point its connected to is already connected.
+            if (ConnectionManager.Instance.IsOutConnected(fromPoint, SelectedConnectionPoint))
             {
-                //Remove Connections the point its connected to is already connected.
-                if (ConnectionManager.Instance.IsOutConnected(fromPoint, SelectedConnectionPoint))
-                {
-                    ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, SelectedConnectionPoint);
-                }
-
-                ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
-                IsDrawingHandle = false;
-                SelectedConnectionPoint = null;
+                ConnectionManager.Instance.RemoveConnectionsFromPoints(fromPoint, SelectedConnectionPoint);
             }
+
+            ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
+            IsDrawingHandle = false;
+            SelectedConnectionPoint = null;
         }
     }
 

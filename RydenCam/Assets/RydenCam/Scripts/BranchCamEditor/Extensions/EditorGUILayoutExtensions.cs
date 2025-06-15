@@ -22,6 +22,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Extensions
             return GUI.skin.GetStyle("TextArea").CalcHeight(new GUIContent(dialogueText), textWidth);
         }
 
+
+        //-- Helper methods for calculating height and drawing text area
+
         private static float calculateTextAreaHeight(string dialogueText, float textWidth, float areaHeight)
         {
             float textHeight = GetTextAreaHeight(dialogueText, textWidth);

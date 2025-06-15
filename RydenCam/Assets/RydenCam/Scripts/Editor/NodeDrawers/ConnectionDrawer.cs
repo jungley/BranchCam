@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
+namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
     public class ConnectionDrawer
     {
@@ -59,9 +59,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawer
             // 1. Get connection points
             var (start, end) = GetConnectionPoints(connection, isUserDrawing);
 
-            // 2. Highlight the node in green is over the node
-
-            // 3. Draw the connection curve
+            // 2. Draw the connection curve
             if (ShouldDrawGotoCurve(connection, start, end, isUserDrawing))
             {
                 DrawGotoCurve(connection, start, end);
