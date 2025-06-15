@@ -158,12 +158,12 @@ public class NodeGraphViewModel
             case EventType.MouseDown:
                 HandleMouseDown(e.button, mousePos);
                 break;
-
+       
             case EventType.MouseDrag:
                 if (e.button == 0)
                     UpdateDragState(mousePos);
                 break;
-
+                
             case EventType.MouseUp:
                 if (e.button == 0)
                     HandleLeftMouseUp(mousePos);
@@ -219,7 +219,7 @@ public class NodeGraphViewModel
             editorWindow.Repaint();
         }
     }
-
+   
     private void UpdateDragState(Vector2 currentMousePos)
     {
         if (Vector2.Distance(clickStartPos, currentMousePos) > dragThreshold)
@@ -227,7 +227,7 @@ public class NodeGraphViewModel
             isPanning = true;
         }
     }
-
+    
     private void HandleRightMouseDown(Vector2 mousePos)
     {
         Node node = GetNodeUnderMouse(mousePos);
@@ -262,25 +262,6 @@ public class NodeGraphViewModel
         IsDrawingHandle = false;
     }
 
-    private ConnectionPoint SelectedConnectionPointFromNode(ConnectionPointType incomingType)
-    {
-
-        Node selectedNode = NodeManager.Instance.ActiveNode;
-        // Exclude DecisionNode
-        if (selectedNode.TypeOfNode == NodeType.DecisionNode)
-        {
-            //get appropriate point based area
-        }
-
-        if (incomingType == ConnectionPointType.Out)
-            return selectedNode.PointIn;
-
-        if (incomingType == ConnectionPointType.In && selectedNode.PointOut != null && selectedNode.PointOut.Count == 1)
-            return selectedNode.PointOut[0];
-
-        return null;
-    }
-
     /// <summary>
     /// Returns the node from the NodeManager based on the mouse position.
     /// </summary>
@@ -294,7 +275,7 @@ public class NodeGraphViewModel
         return node;
     }
 
-
+    
     public void HandleConnectionPointSelected(Vector2 mousePosition)
     {
         Node node = GetNodeFromMousePosition(mousePosition);
@@ -303,26 +284,27 @@ public class NodeGraphViewModel
 
         NodeManager.Instance.ActiveNode = node;
 
-        NodeManager.Instance.NodeCommands.TryGetValue(node, out NodeCommand nodeCommand);
+        NodeCommand nodeCommand = NodeManager.Instance.GetNodeCommand(node);
 
-        ConnectionPoint selectedPoint = nodeCommand.GetHandlePoint(mousePosition);
-        if (selectedPoint != null)
+
+        ConnectionPoint selectedStartPoint = nodeCommand.GetSelectedStartPoint(mousePosition);
+        if (selectedStartPoint != null)
         {
             //Clicked on the connection point start to draw Handle
             if (!IsDrawingHandle)
             {
-                SelectedConnectionPoint = selectedPoint;
+                SelectedConnectionPoint = selectedStartPoint;
                 IsDrawingHandle = true;
                 return;
             }
-        }
+        } 
         //Already Drawing a line, point been selected now a second one is
         else
         {
             if (SelectedConnectionPoint == null) return;
 
-            ConnectionPoint fromPoint = SelectedConnectionPointFromNode(SelectedConnectionPoint.Type);
-            
+            ConnectionPoint fromPoint = nodeCommand.SelectedEndPointFromNode(SelectedConnectionPoint.Type);
+
             if (fromPoint == null) return;
 
             //Remove Connections the point its connected to is already connected.
@@ -336,7 +318,7 @@ public class NodeGraphViewModel
             SelectedConnectionPoint = null;
         }
     }
-
+    
     private void ShowContextMenu(Vector2 mousePosition)
     {
         GenericMenu menu = new GenericMenu();

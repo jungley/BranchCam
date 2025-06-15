@@ -1,6 +1,7 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
+using RydenCam.Common;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
@@ -104,7 +105,19 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             highlightTexCache = texture;
         }
 
-        public virtual ConnectionPoint GetHandlePoint(Vector2 mousePos)
+
+        public virtual ConnectionPoint SelectedEndPointFromNode(ConnectionPointType incomingType)
+        {
+            if (incomingType == ConnectionPointType.Out)
+                return Node.PointIn;
+
+            if (incomingType == ConnectionPointType.In && Node.PointOut != null && Node.PointOut.Count == 1)
+                return Node.PointOut[0];
+
+            return null;
+        }
+
+        public ConnectionPoint GetSelectedStartPoint(Vector2 mousePos)
         {
             //Outside the bounds of the node
             if (!WindowRect.Contains(mousePos))
