@@ -1,5 +1,6 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.PreviewRender;
@@ -41,7 +42,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             decisionCommand.WindowRect = new Rect(decisionNode.EditorPosition.x, decisionNode.EditorPosition.y, decisionNode.NodeWidth, decisionNode.NodeHeight);
 
-            decisionCommand.TextAreaRect = new Dictionary<int, Rect>();
+            decisionCommand.TextAreaRectIndex = new TwoWayDictionary<int, Rect>();
 
             ColorUtility.TryParseHtmlString("#990099", out Color colorref);
             Command.NodeColor = colorref;
@@ -72,12 +73,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                         : decisionNode.NodeConvodata.Actor.ActorName,
                         labelStyleHead_Node);
 
-                     decisionCommand.TextAreaRect.Clear();
+                     decisionCommand.TextAreaRectIndex.Clear();
                      for (int decisionIndex = 0; decisionIndex < decisionNode.DecisionOptions.Count; decisionIndex++)
                      {
                          GUILayout.BeginHorizontal();
                             GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
-                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(Command.WindowRect, decisionCommand.TextAreaRect, decisionIndex, ref buffer, decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: decisionNode.NodeWidth - 25);
+                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(Command.WindowRect, decisionCommand.TextAreaRectIndex, decisionIndex, ref buffer, decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: decisionNode.NodeWidth - 25);
                          GUILayout.EndHorizontal();
                          GUILayout.Space(5);
 

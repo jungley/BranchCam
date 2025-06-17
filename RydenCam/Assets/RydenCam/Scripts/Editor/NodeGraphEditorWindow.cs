@@ -97,10 +97,10 @@ namespace RydenCam.Editor
 
             GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
 
-
-            viewModel.HandleInputClicks();
+            viewModel.HandleInputClicks();//Must be called before drawing to MGUI constraints
 
             DrawNodes();
+
 
             DrawUserDragConnectionCurve();
 

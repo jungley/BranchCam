@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Node = Assets.RydenCam.Scripts.BranchCamCC.Node;
 using Assets.RydenCam.Scripts.NodeCommands;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
 
 namespace RydenCam.BranchCamEditor.Managers
 {
@@ -30,8 +31,8 @@ namespace RydenCam.BranchCamEditor.Managers
 
 
         // Add this dictionary to hold NodeCommands
-        private readonly Dictionary<Node, NodeCommand> nodeCommands = new Dictionary<Node, NodeCommand>();
-        public Dictionary<Node, NodeCommand> NodeCommands => nodeCommands;
+        private readonly TwoWayDictionary<Node, NodeCommand> nodeCommandLookup = new TwoWayDictionary<Node, NodeCommand>();
+        public TwoWayDictionary<Node, NodeCommand> NodeCommandLookup => nodeCommandLookup;
 
         private Node activeNode { get; set; }
         public Node ActiveNode
@@ -119,19 +120,20 @@ namespace RydenCam.BranchCamEditor.Managers
         public void RegisterNodeCommand(Node node, NodeCommand command)
         {
             if (node == null || command == null) return;
-            nodeCommands[node] = command;
+
+            nodeCommandLookup.UpdateByKey(node, command);
         }
 
         public void UnregisterNodeCommand(Node node)
         {
             if (node == null) return;
-            nodeCommands.Remove(node);
+            nodeCommandLookup.RemoveByKey(node);
         }
 
         public NodeCommand GetNodeCommand(Node node)
         {
             if (node == null) return null;
-            nodeCommands.TryGetValue(node, out var command);
+            nodeCommandLookup.GetByKey(node, out var command);
             return command;
         }
 

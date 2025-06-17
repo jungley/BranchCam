@@ -1,4 +1,5 @@
 ﻿
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -8,7 +9,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Extensions
 {
     public static class EditorGUILayoutExtensions
     {
-        public static string SetTextAreaExpandable(Rect nodeWindow, Dictionary<int, Rect> textAreaRect, int index, ref int buffer, string dialogueText, GUIStyle style, float areaHeight = 0, float textWidth = 0)
+        public static string SetTextAreaExpandable(Rect nodeWindow, TwoWayDictionary<int, Rect> textAreaRect, int index, ref int buffer, string dialogueText, GUIStyle style, float areaHeight = 0, float textWidth = 0)
         {
             float calculatedHeight = calculateTextAreaHeight(dialogueText, textWidth, areaHeight);
             dialogueText = drawTextArea(dialogueText, style, textWidth, calculatedHeight);
@@ -36,9 +37,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Extensions
             return EditorGUILayout.TextArea(dialogueText, style, GUILayout.Width(textWidth), GUILayout.Height(calculatedHeight));
         }
 
-        private static void updateTextAreaRect(Rect nodeWindow, Dictionary<int, Rect> textAreaRect, int index, ref int buffer, float textWidth, float calculatedHeight)
+        private static void updateTextAreaRect(Rect nodeWindow, TwoWayDictionary<int, Rect> textAreaRect, int index, ref int buffer, float textWidth, float calculatedHeight)
         {
-            textAreaRect[index] = new Rect(5 + nodeWindow.x, buffer + nodeWindow.y, textWidth, calculatedHeight);
+            textAreaRect.UpdateByKey(index, new Rect(5 + nodeWindow.x, buffer + nodeWindow.y, textWidth, calculatedHeight));
             buffer += (int)calculatedHeight + 7;
         }
     }

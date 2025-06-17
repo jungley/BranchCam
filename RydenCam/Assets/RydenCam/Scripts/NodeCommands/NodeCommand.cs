@@ -106,12 +106,12 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         }
 
 
-        public virtual ConnectionPoint SelectedEndPointFromNode(ConnectionPointType incomingType)
+        public virtual ConnectionPoint SelectedEndPointFromNode(ConnectionPointType incomingType, Vector2 mousePos)
         {
             if (incomingType == ConnectionPointType.Out)
                 return Node.PointIn;
 
-            if (incomingType == ConnectionPointType.In && Node.PointOut != null && Node.PointOut.Count == 1)
+            if (incomingType == ConnectionPointType.In)
                 return Node.PointOut[0];
 
             return null;

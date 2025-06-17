@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
 using RydenCam.BranchCamEditor.Managers;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public CustomCameraCommand CustomCameraCommand { get; set; }
 
-        public Dictionary<int, Rect> TextAreaRect { get; set; }
+        public TwoWayDictionary<int, Rect> TextAreaRectIndex { get; set; }
 
         public abstract void AddSpeakingEntry(int index);
         public abstract void RemoveSpeakingEntry(int index);
@@ -37,16 +38,10 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public void ShowAddRemoveMenu(Vector2 mousePos)
         {
             GUIUtility.keyboardControl = 0;
-            int index = -1;
-            foreach (var kvp in TextAreaRect)
-            {
-                if (kvp.Value.Contains(mousePos))
-                {
-                    index = kvp.Key;
-                    break;
-                }
-            }
-            if (index == -1) return;
+
+            Rect rect = TextAreaRectIndex.Values.Where(rect => rect.Contains(mousePos)).FirstOrDefault();
+            if(!TextAreaRectIndex.GetByValue(rect, out int index)) return;
+
             GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent("Add"), false, () =>
             {

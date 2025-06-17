@@ -184,7 +184,7 @@ public class NodeGraphViewModel
         clickStartPos = mousePos;
         isPanning = false;
 
-        var node = GetNodeUnderMouse(mousePos);
+        var node = GetNodeFromMousePosition(mousePos);
         if (node == null)
             return;
 
@@ -210,7 +210,7 @@ public class NodeGraphViewModel
             return;
         }
 
-        NodeManager.Instance.ActiveNode = GetNodeUnderMouse(mousePos);
+        NodeManager.Instance.ActiveNode = GetNodeFromMousePosition(mousePos);
 
         if (NodeManager.Instance.ActiveNode == null)
         {
@@ -230,11 +230,11 @@ public class NodeGraphViewModel
     
     private void HandleRightMouseDown(Vector2 mousePos)
     {
-        Node node = GetNodeUnderMouse(mousePos);
+        Node node = GetNodeFromMousePosition(mousePos);
 
         if (node is ITalkable talkableNode)
         {
-            NodeManager.Instance.NodeCommands.TryGetValue(node, out NodeCommand nodeCommand);
+            NodeManager.Instance.NodeCommandLookup.GetByKey(node, out NodeCommand nodeCommand);
             TalkableCommand talkableCommand = nodeCommand as TalkableCommand;
             talkableCommand.ShowAddRemoveMenu(mousePos);
         }
@@ -244,16 +244,6 @@ public class NodeGraphViewModel
         }
 
         Event.current.Use();
-    }
-
-    private Node GetNodeUnderMouse(Vector2 mousePosition)
-    {
-        // Get the node from NodeManager.Instance.NodeCommands where the mousePos is IN the WindowRect
-        Node node = NodeManager.Instance.NodeCommands
-            .Where(kv => kv.Value.WindowRect.Contains(mousePosition))
-            .Select(kv => kv.Key).FirstOrDefault();
-
-        return node;
     }
 
     private void ClearConnectionSelection()
@@ -268,11 +258,14 @@ public class NodeGraphViewModel
     /// <param name="mousePosition"></param>
     public Node GetNodeFromMousePosition(Vector2 mousePosition)
     {
-        Node node = NodeManager.Instance.NodeCommands
-            .Where(kv => kv.Value.WindowRect.Contains(mousePosition))
-            .Select(kv => kv.Key).FirstOrDefault();
 
-        return node;
+        NodeCommand command = NodeManager.Instance.NodeCommandLookup.Values.Where(x => x.WindowRect.Contains(mousePosition)).FirstOrDefault();
+        if (command != null)
+        {
+            NodeManager.Instance.NodeCommandLookup.GetByValue(command, out Node node);
+            return node;
+        }
+        return null;
     }
 
     
@@ -303,7 +296,7 @@ public class NodeGraphViewModel
         {
             if (SelectedConnectionPoint == null) return;
 
-            ConnectionPoint fromPoint = nodeCommand.SelectedEndPointFromNode(SelectedConnectionPoint.Type);
+            ConnectionPoint fromPoint = nodeCommand.SelectedEndPointFromNode(SelectedConnectionPoint.Type, mousePosition);
 
             if (fromPoint == null) return;
 

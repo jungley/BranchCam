@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using RydenCam.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
@@ -42,7 +43,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             dialogueCommand.WindowRect = new Rect(dialogueNode.EditorPosition.x, dialogueNode.EditorPosition.y, dialogueNode.NodeWidth, dialogueNode.NodeHeight);
 
-            dialogueCommand.TextAreaRect = new Dictionary<int, Rect>();
+            dialogueCommand.TextAreaRectIndex = new TwoWayDictionary<int, Rect>();
 
             ColorUtility.TryParseHtmlString("#1700FF", out Color colorref);
             Command.NodeColor = colorref;
@@ -68,10 +69,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                         : dialogueNode.NodeConvodata.Actor.ActorName,
                         labelStyleHead_Node);
 
-                    dialogueCommand.TextAreaRect.Clear();
+                    dialogueCommand.TextAreaRectIndex.Clear();
                     for (int i = 0; i < dialogueNode.NodeConvodata.DialogTextList.Count; i++)
                     {
-                        dialogueNode.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(dialogueCommand.WindowRect, dialogueCommand.TextAreaRect, i, ref buffer, dialogueNode.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: dialogueNode.NodeWidth - 10);
+                        dialogueNode.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(dialogueCommand.WindowRect, dialogueCommand.TextAreaRectIndex, i, ref buffer, dialogueNode.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: dialogueNode.NodeWidth - 10);
                         GUILayout.Space(5);
                     }
 

@@ -31,19 +31,21 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             node.PointOut.RemoveAt(index);
         }
 
-        /*
-        public void HighlightSpeakingEntry(Vector2 mousePos, Dictionary<int, Rect> TextAreaRect)
+        public override ConnectionPoint SelectedEndPointFromNode(ConnectionPointType incomingType, Vector2 mousePos)
         {
-            foreach (var entry in TextAreaRect)
+         
+            if (incomingType == ConnectionPointType.Out)
+                return Node.PointIn;
+
+            if (incomingType == ConnectionPointType.In)
             {
-                if (entry.Value.Contains(mousePos))
-                {
-                    // Highlight the text area
-                    GUI.DrawTextureWithTexCoords(entry.Value, HighlightTex, new Rect(0, 0, 1, 1.0f));
-                    break;
-                }
+                Rect rect = TextAreaRectIndex.Values.Where(rect => rect.Contains(mousePos)).FirstOrDefault();
+                if(!TextAreaRectIndex.GetByValue(rect, out int index)) return null;
+
+                return Node.PointOut[index];
             }
+
+            return null;
         }
-        */
     }
 }
