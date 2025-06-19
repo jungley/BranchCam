@@ -168,8 +168,13 @@ namespace RydenCam.Editor
         public static void OpenWindow()
         {
             NodeGraphEditorWindow window = GetWindow<NodeGraphEditorWindow>();
-            window.titleContent = new GUIContent("Window/Node Graph Editor-(BranchCamCC)");
+            window.titleContent = new GUIContent("BranchCam");
             window.minSize = new Vector2(400f, 400f);
+
+            // Set initial position and size
+            Rect newPos = new Rect(100, 100, 1500, 800);
+            window.position = newPos;
+
             window.autoRepaintOnSceneChange = true;
 
 

@@ -110,6 +110,12 @@ public class NodeGraphViewModel
         return null;
     }
 
+    public void OpenCameraShotEditor()
+    {
+        CameraShotEditor window = EditorWindow.GetWindow<CameraShotEditor>();
+        window.titleContent = new GUIContent("Camera Shot Editor View");
+    }
+
     public void LocateGlobalSettings()
     {
 

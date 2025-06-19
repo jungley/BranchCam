@@ -64,10 +64,14 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
                     EditorGUI.LabelField(new Rect(4, 4, dialogueNode.NodeWidth, dialogueNode.NodeHeight), "Dialogue", labelStyleHead_Node);
 
-                    EditorGUILayout.LabelField(dialogueNode.NodeConvodata.Actor == null
-                        ? BranchConstants.UnAssignedActor
-                        : dialogueNode.NodeConvodata.Actor.ActorName,
-                        labelStyleHead_Node);
+
+                    int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+                    if (indexx != ActorEditorDropdownIndex)
+                    {
+                        dialogueCommand.AssignNewActor(indexx);
+                        preview.UpdateShotRender();
+                        ActorEditorDropdownIndex = indexx;
+                    }
 
                     dialogueCommand.TextAreaRectIndex.Clear();
                     for (int i = 0; i < dialogueNode.NodeConvodata.DialogTextList.Count; i++)

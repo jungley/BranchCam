@@ -27,8 +27,13 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public override void RemoveSpeakingEntry(int index)
         {
+            //Remove Connection
+            ConnectionManager.Instance.Remove(node.PointOut[index]);
+
+            //Remove Point
             node.DecisionOptions.RemoveAt(index);
             node.PointOut.RemoveAt(index);
+
         }
 
         public override ConnectionPoint SelectedEndPointFromNode(ConnectionPointType incomingType, Vector2 mousePos)

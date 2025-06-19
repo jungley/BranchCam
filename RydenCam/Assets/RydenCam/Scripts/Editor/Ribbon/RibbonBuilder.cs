@@ -41,6 +41,8 @@ public class RibbonBuilder
             DrawButton(name: RibbonButtonNames.GlobalSettings, buttonWidth: 100, standardButtonHeight, action: viewModel.LocateGlobalSettings);
 
             DrawButton(name: RibbonButtonNames.InkleScriptView, buttonWidth: 120, standardButtonHeight, action: null); /* future TODO action */
+
+            DrawButton(name: RibbonButtonNames.Shot_Configuration, buttonWidth: 120, standardButtonHeight, action: viewModel.OpenCameraShotEditor); 
         }
     }
 
@@ -146,5 +148,7 @@ public class RibbonBuilder
         public static string Save => "Save";
         public static string Open => "Open";
         public static string New => "New";
+
+        public static string Shot_Configuration => "Shot Configuration";
     }
 }

@@ -1,9 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEditor.PackageManager.UI;
-
-
+/*
 public class CustomEditorWindowLauncher : EditorWindow
 {
     public ScriptViewEditor window1;
@@ -47,7 +45,7 @@ public class ScriptViewEditor : EditorWindow
         scriptContent = EditorGUILayout.TextArea(scriptContent, GUILayout.Height(position.height - 50));
     }
 }
-
+*/
 
 public class CameraShotEditor : EditorWindow
 {
@@ -61,6 +59,11 @@ public class CameraShotEditor : EditorWindow
     private float distanceValue = 1f;
 
     private Vector2 scrollPos;
+
+
+    public NodeGraphViewModel ViewModel { get; set; }
+
+   
 
     private void OnGUI()
     {
