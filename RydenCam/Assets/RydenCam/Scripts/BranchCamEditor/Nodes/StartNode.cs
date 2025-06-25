@@ -32,7 +32,6 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
             ActorsInScene = new List<ActorInfo>();
             PointIn = null;
             PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };
-            
         }
     }
 }

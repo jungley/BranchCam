@@ -143,8 +143,6 @@ namespace RydenCam.Editor
             } 
         }
 
-
-
         private void OnInspectorUpdate()
         {
             //If window was resized or moved
@@ -160,7 +158,7 @@ namespace RydenCam.Editor
         {
             if (e.PropertyName == nameof(NodeManager.Instance.ActiveNode))
             {
-                ActiveNodeDrawView = NodeDrawers.FirstOrDefault(x => x.Node == NodeManager.Instance.ActiveNode);
+                ActiveNodeDrawView = NodeDrawers.FirstOrDefault(x => x.Node.NodeId == NodeManager.Instance.ActiveNode?.NodeId);
             }
         }
 
@@ -177,11 +175,7 @@ namespace RydenCam.Editor
 
             window.autoRepaintOnSceneChange = true;
 
-
-            if(!string.IsNullOrEmpty(BranchCamEditorPreferences.GetLastFilePath()))
-            {
-                LoadFile.LoadSaveables();
-            }
+            LoadFile.LoadSaveables(BranchCamEditorPreferences.LastUsedJsonPath);
 
             InitializeStaticResources();
 

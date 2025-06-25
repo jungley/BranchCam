@@ -42,7 +42,7 @@ namespace RydenCam.DialogueGameUI
 
 
         [HideInInspector]
-        public string DialogueFolder;
+        public string DialogueFilePath;
         public NodeStateController SatePlayer;
         public bool IsDialogueRunning => SatePlayer.IsDialogueRunning;
 
@@ -81,23 +81,16 @@ namespace RydenCam.DialogueGameUI
 
         public void LoadConversation()
         {
-            if (LoadFile.IsValidDialogueTriggerPath(DialogueFolder))
-            {
-                LoadFile.LoadSaveables();
-            }
-            else
-            {
-                BranchLog.Error("This is not a valid JSON Folder");
-            }
+            LoadFile.LoadSaveables(DialogueFilePath);
         }
 
 #if UNITY_EDITOR
         public void ChooseFolder()
         {
-            DialogueFolder = EditorUtility
-                .OpenFolderPanel("Choose a folder containing Dialogue JSON files only",
+            DialogueFilePath = EditorUtility
+                .OpenFilePanel("Choose the conversation file",
                  BranchConstants.DefaultDialogueFolder,
-                 "Choose a folder containing Dialogue JSON files only");
+                 "json");
         }
 #endif
     }

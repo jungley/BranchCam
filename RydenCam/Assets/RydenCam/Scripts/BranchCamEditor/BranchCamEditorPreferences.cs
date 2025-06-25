@@ -1,4 +1,8 @@
-﻿using System.IO;
+﻿using Ink.Parsed;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.Common;
+using System.IO;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor
@@ -8,22 +12,28 @@ namespace RydenCam.BranchCamEditor
     /// <summary>
     public static class BranchCamEditorPreferences
     {
-        private const string LastFilePathKey = "Last File Path Key";
+        private const string LastOpenedFilePathKey = "Last File Path Key";
 
-        public static string GetLastFilePath()
+
+        public static string LastUsedJsonPath
         {
-            return PlayerPrefs.GetString(LastFilePathKey, string.Empty);
+            get
+            {
+                string filepath = PlayerPrefs.GetString(LastOpenedFilePathKey, string.Empty);
+
+                return File.Exists(filepath) ? filepath : string.Empty;
+            }
         }
 
         public static void SetLastFilePath(string filePath)
         {
-            PlayerPrefs.SetString(LastFilePathKey, filePath);
+            PlayerPrefs.SetString(LastOpenedFilePathKey, filePath);
             PlayerPrefs.Save();
         }
 
-        public static string GetLastFileFolderPath()
+        public static string GetLastFileFolderPath(string filePath = "")
         {
-            return string.IsNullOrEmpty(GetLastFilePath()) ? string.Empty : Path.GetDirectoryName(GetLastFilePath());
+            return string.IsNullOrEmpty(LastUsedJsonPath) ? string.Empty : System.IO.Path.GetDirectoryName(LastUsedJsonPath);
         }
     }
 }

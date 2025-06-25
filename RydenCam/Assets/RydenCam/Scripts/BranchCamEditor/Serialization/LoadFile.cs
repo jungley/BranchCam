@@ -13,30 +13,12 @@ namespace RydenCam.BranchCamEditor.Serialization
     [ExecuteAlways]
     public static class LoadFile
     {
-        private static string path;
-
-        private static string FindPath(string folderTitle, string defaultName)
+        private static string SelectJSONFile()
         {
-            string lastFileFolderPath = BranchCamEditorPreferences.GetLastFilePath();
-
-
-            if(string.IsNullOrEmpty(lastFileFolderPath) || !Directory.Exists(lastFileFolderPath))
-            {
-                string relativePath = BranchConstants.DefaultDialogueFolder;
-                //string relativePath = $"RydenCam/DialogueFiles/";
-                lastFileFolderPath = Path.Combine(Application.dataPath, relativePath);
-                if(!Directory.Exists(lastFileFolderPath))
-                {
-                    Directory.CreateDirectory(lastFileFolderPath);
-                }
-            }
-
             string fullPath;
             try
             {
-                fullPath = EditorUtility.OpenFolderPanel(folderTitle, lastFileFolderPath, defaultName);
-                //Cancel Button Pressed
-                if (string.IsNullOrEmpty(fullPath)) return string.Empty;
+                fullPath = EditorUtility.OpenFilePanel("Select JSON File", BranchConstants.DefaultDialogueFolder, "json");
             }
             catch(Exception)
             {
@@ -46,75 +28,83 @@ namespace RydenCam.BranchCamEditor.Serialization
             return fullPath;
         }
 
-        public static bool IsSavePathValid(string folderTitle, string defaultName)
+        public static string OpenFileExplorer()
         {
-            var directoryPath = FindPath(folderTitle, defaultName);
+            var fullpath = SelectJSONFile();
 
-            if (string.IsNullOrEmpty(directoryPath)) return false;
+            string assetFilePath = fullpath?.Replace("\\", "/");
 
-            string pathWithNodeName = $"{directoryPath}/{NodeManager.Instance.GetSequenceName()}";
-
-            BranchCamEditorPreferences.SetLastFilePath(pathWithNodeName);
-
-            return true;
+            return assetFilePath;
         }
 
-        public static bool HasDialogueFile(string folderTitle, string defaultName)
+        public static void LoadSaveables(string filePath)
         {
-            var directoryPath = FindPath(folderTitle, defaultName);
-
-            if(string.IsNullOrEmpty(directoryPath)) return false;
-
-            string assetFileName = Directory.GetFiles(directoryPath, "*.json").FirstOrDefault();
-            string assetFilePath = assetFileName?.Replace("\\", "/");
-
-            if (!string.IsNullOrEmpty(assetFilePath))
+            if (string.IsNullOrEmpty(filePath))
             {
-                BranchCamEditorPreferences.SetLastFilePath(directoryPath);
-                return true;
-            }
-            else
-            {
-                BranchLog.Log("No Dialogue File found. Select a folder containing a dialogue file.");
-                return false;
-            }
-        }
+                Debug.Log("No file path provided. Please select a file.");
+                return;
+            }    
 
-        public static bool IsValidDialogueTriggerPath(string path)
-        {
-            return !string.IsNullOrEmpty(path);
-        }
-
-        public static void LoadSaveables()
-        {
             NodeManager.Instance.Clear();
             ConnectionManager.Instance.Clear();
 
-            path = BranchCamEditorPreferences.GetLastFilePath();
-
-            List<Node> deserializedNodes = NodeSerializer.DeserializeNodes(path);
+            List<Node> deserializedNodes = DeserializeNodes(filePath);
 
             NodeManager.Instance.LoadNodes(deserializedNodes);
             ConnectionManager.Instance.CreateConnections(deserializedNodes);
         }
 
-        public static void SetLastFilePath()
+        private static List<Node> DeserializeNodes(string filePath)
         {
-            string fullPath = EditorUtility.OpenFolderPanel("Choose a folder containing Dialogue files only", BranchConstants.DefaultDialogueFolder, "Choose a folder containing Dialogue files only");
-            string projectPath = Application.dataPath;
-
-            try
+            List<Node> deserializedNodes = new List<Node>();
+            if (File.Exists(filePath))
             {
-                // Calculate the relative path
-                string relativePath = "Assets" + fullPath.Substring(projectPath.Length);
+                try
+                {
+                    string jsonContent = File.ReadAllText(filePath);
+                    SaveDataContainer dataContainer = JsonUtility.FromJson<SaveDataContainer>(jsonContent);
 
-                BranchCamEditorPreferences.SetLastFilePath(relativePath);
+                    foreach (var nodeJsonContent in dataContainer.JsonList)
+                    {
+                        switch (nodeJsonContent.NodeType)
+                        {
+                            case NodeType.StartNode:
+                                StartNode startnode = JsonUtility.FromJson<StartNode>(nodeJsonContent.JsonString);
+                                startnode.PointIn = null; //Limitation with serialization, JsonUtility cannot save null
+                                deserializedNodes.Add(startnode);
+                                NodeManager.StartNodeAdded = true;
+                                break;
+
+                            case NodeType.DialogueNode:
+                                DialogueNode dianode = JsonUtility.FromJson<DialogueNode>(nodeJsonContent.JsonString);
+                                deserializedNodes.Add(dianode);
+                                break;
+
+                            case NodeType.DecisionNode:
+                                DecisionNode decnode = JsonUtility.FromJson<DecisionNode>(nodeJsonContent.JsonString);
+                                deserializedNodes.Add(decnode);
+                                break;
+
+                            case NodeType.ActionNode:
+                                ActionNode actionNode = JsonUtility.FromJson<ActionNode>(nodeJsonContent.JsonString);
+                                actionNode.GameActionDatas.ForEach(data => data.AssignLoadedValues());
+                                deserializedNodes.Add(actionNode);
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+
+                catch (Exception e)
+                {
+                    BranchLog.Error("Error occurred in reading conversation data for \n" + filePath + "\n" + e.Message);
+                }
+                
             }
-            catch (Exception)
-            {
-                BranchLog.Log("Cannot open file or no file chosen.");
-            }
+            return deserializedNodes;
         }
-
     }
 }

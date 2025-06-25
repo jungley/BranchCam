@@ -18,9 +18,9 @@ namespace RydenCam.DialogueGameUI
 
             DialoguePlayer dialoguePlayer = (DialoguePlayer)target;
 
-            GUILayout.Label(dialoguePlayer.DialogueFolder != null 
-                || dialoguePlayer.DialogueFolder == "" 
-                ? "Dialogue: " + dialoguePlayer.DialogueFolder.Split('/').Last() 
+            GUILayout.Label(dialoguePlayer.DialogueFilePath != null 
+                || dialoguePlayer.DialogueFilePath == "" 
+                ? "Dialogue: " + dialoguePlayer.DialogueFilePath.Split('/').Last().Replace(".json", "") 
                 : "None Chosen");
 
             if (GUILayout.Button("Choose Dialogue Folder"))

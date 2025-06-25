@@ -50,38 +50,26 @@ public class NodeGraphViewModel
 
     public void Save()
     {
-        if (string.IsNullOrEmpty(BranchCamEditorPreferences.GetLastFilePath()))
-        {
-            if (!NodeManager.Instance.IsValidSequence()) return;
-
-            if (LoadFile.IsSavePathValid(BranchConstants.SaveAsTitle, NodeManager.Instance.GetSequenceName()))
-            {
-                SaveFile.SaveConversation();
-            }
-        }
-        else
-        {
-            SaveFile.SaveConversation();
-        }
+        SaveFile.SaveConversation();
     }
 
     public void SaveAs()
     {
-        if (!NodeManager.Instance.IsValidSequence()) return;
-
-        if (LoadFile.IsSavePathValid(BranchConstants.SaveAsTitle, NodeManager.Instance.GetSequenceName()))
-        {
-            SaveFile.SaveConversation();
-        }
+        string filePath = SaveFile.SaveAsFileExplorer();
+        SaveFile.SaveConversation(filePath);
     }
 
     public void Open()
     {
-        if (LoadFile.HasDialogueFile(BranchConstants.LoadFolderPanelTitle, BranchConstants.LoadFolderPanelTitle))
+        string filePath = LoadFile.OpenFileExplorer();
+        if (string.IsNullOrEmpty(filePath))
         {
-            ResetEverything();
-            LoadFile.LoadSaveables();
+            Debug.Log("No file path provided. Please select a file.");
+            return;
         }
+        BranchCamEditorPreferences.SetLastFilePath(filePath);
+        ResetEverything();
+        LoadFile.LoadSaveables(filePath);
     }
 
     public void ResetEverything()

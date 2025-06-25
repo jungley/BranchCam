@@ -14,36 +14,50 @@ namespace RydenCam.BranchCamEditor.Serialization
     public static class SaveFile
     {
 
-        public static void SaveConversation()
+        public static string SaveAsFileExplorer()
         {
+            var fullPath = GetSaveAsFilePath();
+
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                Debug.Log("No file was chosen");
+            }
+
+            return fullPath;
+        }
+
+        private static string GetSaveAsFilePath()
+        {
+            string fullPath;
             try
             {
-                if (!NodeManager.Instance.IsValidSequence()) return;
+                // Open a "Save As" dialog where the user can choose the file name and location
+                fullPath = EditorUtility.SaveFilePanel("Save JSON File As", BranchConstants.DefaultDialogueFolder, "NewDialogue", "json");
+            }
+            catch (Exception)
+            {
+                BranchLog.Log("Could not open Save File dialog.");
+                return string.Empty;
+            }
 
-                string name = NodeManager.Instance.GetSequenceName();
-                string defaultPath = $"Assets/RydenCam/DialogueFiles";
+            return fullPath;
+        }
 
-                string directoryPath = Directory.Exists(BranchCamEditorPreferences.GetLastFileFolderPath())
-                    ? BranchCamEditorPreferences.GetLastFileFolderPath()
-                    : defaultPath;
-                //Name is stripped and readded to ensure the file and the folder have the same name. 
-                string directoryPathWithName = $"{directoryPath}/{name}";
+        public static void SaveConversation(string filePath = "")
+        {
+            if (!NodeManager.Instance.IsValidSequence()) return;
 
-                if (Directory.Exists(directoryPathWithName))
-                {
-                    Directory.Delete(directoryPathWithName, true);
-                }
+            try
+            {
+                if(string.IsNullOrEmpty(filePath)) filePath = BranchCamEditorPreferences.LastUsedJsonPath;
 
-                Directory.CreateDirectory(directoryPathWithName);
-
-                BranchCamEditorPreferences.SetLastFilePath(directoryPathWithName);
-
-                List<Node> nodeList = NodeManager.Instance.Nodes.ToList();
+                BranchCamEditorPreferences.SetLastFilePath(filePath);
 
                 List<NodeData> nodeDatas = new List<NodeData>();
-                foreach (Node save in nodeList)
+                foreach (Node save in NodeManager.Instance.Nodes)
                 {
                     string jsonNode = JsonUtility.ToJson(save);
+                    
                     NodeType type = save.TypeOfNode;
 
                     nodeDatas.Add(new NodeData(type, jsonNode));
@@ -52,20 +66,18 @@ namespace RydenCam.BranchCamEditor.Serialization
                 SaveDataContainer saveDataContainer = new SaveDataContainer(nodeDatas);
                 string combinedJson = JsonUtility.ToJson(saveDataContainer);
 
-                var finalPath = $"{directoryPathWithName}/{name}.json";
-
-                File.WriteAllText(finalPath, combinedJson);
+                File.WriteAllText(filePath, combinedJson);
 
                 AssetDatabase.Refresh();
 
-                PingObject(finalPath);
+                PingObject(filePath);
 
                 BranchLog.Log("Saved File");
             }
+
             catch (Exception)
             {
                 BranchLog.Error("An error with Saving occured");
-
             }
 
             void PingObject(string path)
