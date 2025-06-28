@@ -6,6 +6,7 @@ using RydenCam.BranchCamEditor.BranchCam;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using RydenCam.Editor;
 using RydenCam.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
@@ -46,7 +47,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawPreviewWindow()
         {
-            if (PreviewRenderer.EnableNodeSidePreview)
+            if (EditorSettingsManager.Instance.SettingsData.IsNodePreviewEnabled)
             {
 
                 var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
@@ -64,7 +65,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 ComposePreviewImage(windowRect);
             }
 
-            if (PreviewRenderer.EnableCornerPreview)
+            if (EditorSettingsManager.Instance.SettingsData.IsCornerPreviewEnabled)
             {
                 float panX = NodeGraphEditorWindow.panX;
                 float panY = NodeGraphEditorWindow.panY;    

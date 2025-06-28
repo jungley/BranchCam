@@ -51,7 +51,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
                     if(talkable.NodeConvodata.Actor?.ActorID == actor.ActorID)
                     {
                         talkable.NodeConvodata.Actor = null;
-                        talkable.NodeConvodata.ShotConfig = new CamShotConfig();
+                         talkable.NodeConvodata.ShotConfig = null;
                     }
                 }
             }

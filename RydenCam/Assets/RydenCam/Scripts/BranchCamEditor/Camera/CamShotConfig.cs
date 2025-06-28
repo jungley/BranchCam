@@ -9,6 +9,10 @@ namespace RydenCam.BranchCamEditor.BranchCam
     [System.Serializable]
     public class CamShotConfig
     {
+        public string ShotName;
+        public string ShotId;
+
+
         public CameraGoal GoalType;
         public CameraDistance GoalDistance;
         public CameraAngle GoalAngle;
@@ -26,8 +30,11 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
 
         //Default Constructor
-        public CamShotConfig(string targetGameObjectName = "")
+        public CamShotConfig(string shotName = "", string targetGameObjectName = "")
         {
+            ShotName = shotName;
+            ShotId = Guid.NewGuid().ToString(); 
+
             Actor = targetGameObjectName;
             GoalType = CameraGoal.Portrait;
             GoalDistance = CameraDistance.Mid;

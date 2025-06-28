@@ -15,6 +15,7 @@ using Assets.RydenCam.Scripts.BranchCamCC;
 using System;
 using System.Net;
 using Assets.RydenCam.Scripts.NodeCommands;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -175,7 +176,9 @@ namespace RydenCam.Editor
 
             window.autoRepaintOnSceneChange = true;
 
-            LoadFile.LoadSaveables(BranchCamEditorPreferences.LastUsedJsonPath);
+            LoadFile.LoadSaveables(EditorSettingsManager.Instance.LastUsedJsonPath);
+
+            LoadFile.LoadEditorSettings();
 
             InitializeStaticResources();
 
@@ -242,6 +245,9 @@ namespace RydenCam.Editor
             NodeManager.Instance.Nodes.CollectionChanged -= OnNodesChanged;
             NodeManager.Instance.PropertyChanged -= OnActiveNodeUpdated;
             ConnectionManager.Instance.Connections.CollectionChanged -= OnConnectionsChanged;
+
+            //Save Editor Settings
+            SaveFile.SaveEditorSettings();
         }
 
         private void OnConnectionsChanged(object sender, NotifyCollectionChangedEventArgs e)

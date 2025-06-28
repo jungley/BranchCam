@@ -87,14 +87,6 @@ namespace RydenCam.BranchCamEditor.Managers
             StartNodeAdded = false;
         }
 
-        /*
-        public string GetSequenceName()
-        {
-            StartNode startNodeRef = Nodes.OfType<StartNode>().FirstOrDefault();
-            return string.IsNullOrWhiteSpace(startNodeRef.SequenceName) ? "NewDialogueFile" : startNodeRef.SequenceName;
-        }
-        */
-
         public bool IsValidSequence()
         {
             if (Length == 0)

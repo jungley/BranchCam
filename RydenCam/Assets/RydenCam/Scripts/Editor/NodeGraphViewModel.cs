@@ -13,6 +13,8 @@ using RydenCam.Editor;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using System;
 using Assets.RydenCam.Scripts.NodeCommands;
+using RydenCam.Editor.CamersaShotEditor;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 public class NodeGraphViewModel
 {
@@ -43,20 +45,21 @@ public class NodeGraphViewModel
         if (shouldReset)
         {
             ResetEverything();
-            BranchCamEditorPreferences.SetLastFilePath(string.Empty);
+            EditorSettingsManager.Instance.SetLastFilePath(string.Empty);
         }
     }
-
 
     public void Save()
     {
         SaveFile.SaveConversation();
+        SaveFile.SaveEditorSettings();
     }
 
     public void SaveAs()
     {
         string filePath = SaveFile.SaveAsFileExplorer();
         SaveFile.SaveConversation(filePath);
+        SaveFile.SaveEditorSettings();
     }
 
     public void Open()
@@ -67,7 +70,7 @@ public class NodeGraphViewModel
             Debug.Log("No file path provided. Please select a file.");
             return;
         }
-        BranchCamEditorPreferences.SetLastFilePath(filePath);
+        EditorSettingsManager.Instance.SetLastFilePath(filePath);
         ResetEverything();
         LoadFile.LoadSaveables(filePath);
     }
@@ -106,7 +109,6 @@ public class NodeGraphViewModel
 
     public void LocateGlobalSettings()
     {
-
         GlobalSettingsData globalSetting = FindGlobalSetting();
 
         //Focus on the Project Tab
@@ -132,15 +134,13 @@ public class NodeGraphViewModel
 
     public void ToggleNodePreviewRender()
     {
-        PreviewRenderer.EnableNodeSidePreview = !PreviewRenderer.EnableNodeSidePreview;
+        EditorSettingsManager.Instance.FlipIsNodePreview();
     }
 
     public void ToggleCornerPreviewRender()
     {
-        PreviewRenderer.EnableCornerPreview = !PreviewRenderer.EnableCornerPreview;
+        EditorSettingsManager.Instance.FlipIsCornerPreview();
     }
-
-
 
     public void HandleInputClicks()
     {

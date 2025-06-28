@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using UnityEditor;
 using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -43,27 +44,43 @@ namespace RydenCam.BranchCamEditor.Serialization
             return fullPath;
         }
 
+        public static void SaveEditorSettings()
+        {
+            try
+            {
+                string jsonSettings = JsonUtility.ToJson(EditorSettingsManager.Instance.SettingsData);
+                File.WriteAllText(BranchConstants.EditorSettingsPath, jsonSettings);
+
+                AssetDatabase.Refresh();
+            }
+            catch(Exception)
+            {
+                BranchLog.Error("An error with Saving Settings occured");
+            }
+        }
+
+
         public static void SaveConversation(string filePath = "")
         {
             if (!NodeManager.Instance.IsValidSequence()) return;
 
             try
             {
-                if(string.IsNullOrEmpty(filePath)) filePath = BranchCamEditorPreferences.LastUsedJsonPath;
+                if(string.IsNullOrEmpty(filePath)) filePath = EditorSettingsManager.Instance.LastUsedJsonPath;
 
-                BranchCamEditorPreferences.SetLastFilePath(filePath);
+                EditorSettingsManager.Instance.SetLastFilePath(filePath);
 
-                List<NodeData> nodeDatas = new List<NodeData>();
+                List<SerializedNode> nodeDatas = new List<SerializedNode>();
                 foreach (Node save in NodeManager.Instance.Nodes)
                 {
                     string jsonNode = JsonUtility.ToJson(save);
                     
                     NodeType type = save.TypeOfNode;
 
-                    nodeDatas.Add(new NodeData(type, jsonNode));
+                    nodeDatas.Add(new SerializedNode(type, jsonNode));
                 }
 
-                SaveDataContainer saveDataContainer = new SaveDataContainer(nodeDatas);
+                SerializedNodeList saveDataContainer = new SerializedNodeList(nodeDatas);
                 string combinedJson = JsonUtility.ToJson(saveDataContainer);
 
                 File.WriteAllText(filePath, combinedJson);

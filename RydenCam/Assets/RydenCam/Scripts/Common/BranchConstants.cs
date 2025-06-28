@@ -17,6 +17,8 @@ namespace RydenCam.Common
         public static string CamPrefabPath = "Assets/RydenCam/Prefabs/CustomRydenCam.prefab";
         //Dialog Files Path
         public static string DefaultDialogueFolder = "Assets/RydenCam/DialogueFiles/";
+        //Editor Settings
+        public static string EditorSettingsPath = "Assets/RydenCam/EditorSettings/BranchCamEditorSettings.json";
 
         //Tags
         public static string Tag_RydenConvo = "RydenConvo";

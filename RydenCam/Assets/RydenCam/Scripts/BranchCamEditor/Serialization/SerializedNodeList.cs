@@ -6,12 +6,12 @@ namespace RydenCam.BranchCamEditor.Serialization
 {
 
     [System.Serializable]
-    public class NodeData
+    public class SerializedNode
     {
         public NodeType NodeType;
         public string JsonString;
 
-        public NodeData(NodeType nodeType, string jsonString)
+        public SerializedNode(NodeType nodeType, string jsonString)
         {
             NodeType = nodeType;
             JsonString = jsonString;
@@ -19,12 +19,12 @@ namespace RydenCam.BranchCamEditor.Serialization
     }
 
     [System.Serializable]
-    public class SaveDataContainer
+    public class SerializedNodeList
     {
         [SerializeField]
-        public List<NodeData> JsonList = new List<NodeData>();
+        public List<SerializedNode> JsonList = new List<SerializedNode>();
 
-        public SaveDataContainer(List<NodeData> jsonList)
+        public SerializedNodeList(List<SerializedNode> jsonList)
         {
             JsonList = jsonList;
         }

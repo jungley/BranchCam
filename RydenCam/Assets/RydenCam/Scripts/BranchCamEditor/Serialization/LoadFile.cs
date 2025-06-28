@@ -7,6 +7,8 @@ using RydenCam.BranchCamEditor.Managers;
 using System;
 using System.Linq;
 using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
@@ -54,6 +56,23 @@ namespace RydenCam.BranchCamEditor.Serialization
             ConnectionManager.Instance.CreateConnections(deserializedNodes);
         }
 
+
+        public static void LoadEditorSettings()
+        {
+            if (File.Exists(BranchConstants.EditorSettingsPath))
+            {
+                try
+                {
+                    string jsonContent = File.ReadAllText(BranchConstants.EditorSettingsPath);
+                    EditorSettingsManager.Instance.SettingsData = JsonUtility.FromJson<SaveEditorSettingsData>(jsonContent);
+                }
+                catch (Exception e)
+                {
+                    BranchLog.Error("Error occurred in reading editor settings data for \n" + BranchConstants.EditorSettingsPath + "\n" + e.Message);
+                }
+            }
+        }
+
         private static List<Node> DeserializeNodes(string filePath)
         {
             List<Node> deserializedNodes = new List<Node>();
@@ -62,7 +81,7 @@ namespace RydenCam.BranchCamEditor.Serialization
                 try
                 {
                     string jsonContent = File.ReadAllText(filePath);
-                    SaveDataContainer dataContainer = JsonUtility.FromJson<SaveDataContainer>(jsonContent);
+                    SerializedNodeList dataContainer = JsonUtility.FromJson<SerializedNodeList>(jsonContent);
 
                     foreach (var nodeJsonContent in dataContainer.JsonList)
                     {
