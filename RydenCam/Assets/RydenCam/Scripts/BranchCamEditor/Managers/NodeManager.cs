@@ -73,6 +73,8 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public void RemoveNode(Node node)
         {
+            UnregisterNodeCommand(node);
+
             if (node.TypeOfNode == NodeType.StartNode)
             {
                 StartNodeAdded = false;
@@ -83,6 +85,7 @@ namespace RydenCam.BranchCamEditor.Managers
         public void Clear()
         {
             Nodes.Clear();
+            NodeCommandLookup.Clear();
             ActiveNode = null;
             StartNodeAdded = false;
         }

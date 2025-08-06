@@ -40,7 +40,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public void RemoveNode()
         {
             NodeManager.Instance.ActiveNode = null;
-            NodeManager.Instance.UnregisterNodeCommand(Node);
             NodeManager.Instance.RemoveNode(Node);
             ConnectionManager.Instance.RemoveAssociatedConnections(Node);
         }
