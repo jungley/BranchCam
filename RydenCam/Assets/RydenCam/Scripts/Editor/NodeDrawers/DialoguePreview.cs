@@ -1,12 +1,13 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
-using UnityEngine;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
-using System.Collections.Generic;
-using RydenCam.BranchCamEditor.BranchCam;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
-using RydenCam.Editor;
-using RydenCam.BranchCamEditor.Managers;
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
+using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.Editor;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
 {
@@ -68,10 +69,14 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             if (EditorSettingsManager.Instance.SettingsData.IsCornerPreviewEnabled)
             {
                 float panX = NodeGraphEditorWindow.panX;
-                float panY = NodeGraphEditorWindow.panY;    
+                float panY = NodeGraphEditorWindow.panY;
 
-                var cornerRect = new Rect((Screen.width - (panX + 450)) - 30, 80 - panY, 450, 300);
+                var window = EditorWindow.GetWindow<NodeGraphEditorWindow>();
+                float windowWidth = window.position.width;
+                float windowHeight = window.position.height;
 
+                var cornerRect = new Rect(windowWidth - (panX + 450) - 30, 80 - panY, 450, 300);
+                
                 if (node == NodeManager.Instance.ActiveNode)
                 {
                     ComposePreviewImage(cornerRect);
@@ -79,7 +84,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 else if(NodeManager.Instance.ActiveNode == null || !(NodeManager.Instance.ActiveNode is ITalkable))
                 {
                     GUI.Box(cornerRect, "Select a node with a Shot Composition");
-                }
+                }        
             }
         }
 
