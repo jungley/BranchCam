@@ -46,21 +46,14 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
         public override bool Equals(object obj)
         {
-            if (!(obj is CamShotConfig))
-                return false;
-
-            CamShotConfig other = (CamShotConfig)obj;
-
-            return GoalType == other.GoalType &&
-                   GoalDistance == other.GoalDistance &&
-                   GoalAngle == other.GoalAngle &&
-                   OppositeActor == other.OppositeActor &&
-                   Actor == other.Actor &&
-                   GlobalCustomCamPos.IsEqual(other.GlobalCustomCamPos);
+            if (obj is CamShotConfig other)
+                return ShotId == other.ShotId;
+            return false;
         }
+
         public override int GetHashCode()
         {
-            return HashCode.Combine(GoalType, GoalDistance, GoalAngle, OppositeActor, Actor, GlobalCustomCamPos);
+            return ShotId != null ? ShotId.GetHashCode() : 0;
         }
     }
 }

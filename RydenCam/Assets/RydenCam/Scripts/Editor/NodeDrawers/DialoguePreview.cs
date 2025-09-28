@@ -71,9 +71,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 float panX = NodeGraphEditorWindow.panX;
                 float panY = NodeGraphEditorWindow.panY;
 
-                var window = EditorWindow.GetWindow<NodeGraphEditorWindow>();
-                float windowWidth = window.position.width;
-                float windowHeight = window.position.height;
+                float windowWidth = NodeGraphEditorWindow.Instance.position.width;
+                float windowHeight = NodeGraphEditorWindow.Instance.position.height;
 
                 var cornerRect = new Rect(windowWidth - (panX + 450) - 30, 80 - panY, 450, 300);
                 
@@ -84,7 +83,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 else if(NodeManager.Instance.ActiveNode == null || !(NodeManager.Instance.ActiveNode is ITalkable))
                 {
                     GUI.Box(cornerRect, "Select a node with a Shot Composition");
-                }        
+                }
             }
         }
 

@@ -10,7 +10,6 @@ using System.Linq;
 using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using RydenCam.BranchCamEditor.Nodes.Connections;
 using Assets.RydenCam.Scripts.BranchCamCC;
 using System;
 using System.Net;
@@ -25,6 +24,8 @@ namespace RydenCam.Editor
 {
     public class NodeGraphEditorWindow : EditorWindow
     {
+        public static NodeGraphEditorWindow Instance { get; private set; }
+
         private NodeGraphViewModel viewModel;
 
         private NodeDrawer activeNodeDrawView { get; set; }
@@ -93,8 +94,6 @@ namespace RydenCam.Editor
             {
                 InitializeStaticResources();
             }
-
-
 
             GUI.BeginGroup(new Rect(panX, panY, 100000, 100000));
 
@@ -189,6 +188,8 @@ namespace RydenCam.Editor
 
         private static void InitializeStaticResources()
         {
+            Instance = EditorWindow.GetWindow<NodeGraphEditorWindow>();
+
             //Background for Inspector
             panelstyle_inspector = new GUIStyle();
             panelstyle_inspector.normal.background = TargetTextureInspector;
