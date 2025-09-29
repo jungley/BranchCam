@@ -8,5 +8,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
     {
         public List<(Mesh Mesh, Material Mat, Vector3 Scale)> MeshMatScale { get; set; }
         public ActorPositionWrapper ActorPositionData { get; set; }
+
+        public string ActorID { get; set; }
     }
 }

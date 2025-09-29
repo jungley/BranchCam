@@ -20,8 +20,8 @@ namespace RydenCam.Editor.CamersaShotEditor
 
         public CameraShotViewModel ViewModel { get; set; }
 
-
-
+        private CustomCameraCommand currentCommand { get; set; }
+        public event Action UpdateShotRender;
 
         private void OnEnable()
         {
@@ -93,7 +93,28 @@ namespace RydenCam.Editor.CamersaShotEditor
                 return;
 
             EditorGUILayout.LabelField("Shot Name");
+
+            // Assign a unique control name to the text field
+            GUI.SetNextControlName("ShotNameField");
             shot.ShotName = EditorGUILayout.TextField(shot.ShotName, GUILayout.Width(250));
+
+            // Handle focus loss on Enter or mouse click outside
+            Event e = Event.current;
+            if (GUI.GetNameOfFocusedControl() == "ShotNameField")
+            {
+                // Press Enter
+                if (e.type == EventType.KeyDown && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter))
+                {
+                    GUI.FocusControl(null);
+                    e.Use();
+                }
+                // Click outside
+                else if (e.type == EventType.MouseDown && e.button == 0)
+                {
+                    // Only unfocus if the click is outside the text field rect
+                    GUI.FocusControl(null);
+                }
+            }
 
             EditorGUILayout.LabelField("Type");
             bool filteredEnabled = NodeManager.Instance.ActorsInScene.Count == 1;
@@ -120,6 +141,7 @@ namespace RydenCam.Editor.CamersaShotEditor
                 }
             }
 
+            //Not Custom
             if (selected_goal != CameraGoal.Custom)
             {
                 EditorGUILayout.LabelField("Distance");
@@ -139,6 +161,71 @@ namespace RydenCam.Editor.CamersaShotEditor
                 var newAngle = (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle);
                 if (shot.GoalAngle != newAngle)
                     shot.GoalAngle = newAngle;
+            }
+            //It is In Custom 
+            else
+            {
+                GUILayout.BeginHorizontal("box");
+
+                GUILayout.EndHorizontal();
+
+                EditorGUILayout.Space();
+
+                //If the camera is not set but position has been set, place it
+                if (CustomCameraCommand.CustomCameraObject == null &&  ViewModel.CurrentShot.IsCustomSet)
+                {
+                    //currentCommand.PlaceCustomCam(conversationData);
+                }
+
+                if (!CustomCameraCommand.IsCustomCameraActive)
+                {
+                    if (GUILayout.Button("Create Custom Camera", GUILayout.Width(170), GUILayout.Height(30)))
+                    {
+                        //currentCommand.PlaceCustomCam(conversationData);
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("Clear Camera", GUILayout.Width(170), GUILayout.Height(30)))
+                    {
+                        //currentCommand.ClearCamera();
+                    }
+                }
+
+                //Update Camera Position
+                using (var customCameraScope = new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("Drag to set Cam:", GUILayout.Width(60));
+
+                    CustomCameraCommand.CustomCameraObject = (GameObject)EditorGUILayout.ObjectField(CustomCameraCommand.CustomCameraObject, typeof(GameObject), true);
+                    //currentCommand.AssignCustomCameraPosition();
+                }
+
+                //If Set Display the coordinates
+                if (ViewModel.CurrentShot.IsCustomSet)
+                {
+
+                    var positionData = ViewModel.CurrentShot?.GlobalCustomCamPos ?? Vector3.zero;
+                    var rotationData = ViewModel.CurrentShot?.GlobalCustomCamRot ?? Quaternion.identity;
+
+                    // Format the position components to two decimal places
+                    float posX = Mathf.Round(positionData.x * 100) / 100;
+                    float posY = Mathf.Round(positionData.y * 100) / 100;
+                    float posZ = Mathf.Round(positionData.z * 100) / 100;
+
+                    float rotX = Mathf.Round(rotationData.x * 100) / 100;
+                    float rotY = Mathf.Round(rotationData.y * 100) / 100;
+                    float rotZ = Mathf.Round(rotationData.z * 100) / 100;
+
+                    // Create a formatted string with the position data
+                    GUILayout.Space(10);
+                    GUILayout.Label($"Position Set ✓ X:{posX:0.00} Y:{posY:0.00} Z:{posZ:0.00}");
+                    GUILayout.Label($"Rotation Set ✓ X:{rotX:0.00} Y:{rotY:0.00} Z:{rotZ:0.00}");
+                    GUILayout.Space(5);
+
+                    ViewModel.CurrentShot.TogglePreviewRenderSceneView = GUILayout.Toggle(ViewModel.CurrentShot.TogglePreviewRenderSceneView, "Toggle Custom Scene View");
+                    
+                }
             }
         }
 
@@ -192,8 +279,6 @@ namespace RydenCam.Editor.CamersaShotEditor
             foreach (var shot in shotsToRemove)
             {
                 ViewModel.RemoveShot(shot);
-                if (ViewModel.CurrentShot == shot)
-                    ViewModel.CurrentShot = null;
             }
         }
     }

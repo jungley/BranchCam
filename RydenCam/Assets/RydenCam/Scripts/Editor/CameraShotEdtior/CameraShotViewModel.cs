@@ -16,6 +16,8 @@ public class CameraShotViewModel
             return;
         }
 
+        int index = CameraShotsManager.Instance.CameraShots.FindIndex(s => s.ShotId == shot.ShotId);
+        CurrentShot = CameraShotsManager.Instance.CameraShots[index - 1];
         CameraShotsManager.Instance.CameraShots.Remove(shot);
     }
 
@@ -38,7 +40,7 @@ public class CameraShotViewModel
             CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
         }
 
-            CurrentShot = CameraShotsManager.Instance.CameraShots
+        CurrentShot = CameraShotsManager.Instance.CameraShots
             .Where(x => x.ShotId == defaultShotId)
             .FirstOrDefault();
 

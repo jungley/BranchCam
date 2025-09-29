@@ -6,7 +6,7 @@ using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Editor;
 using System.Collections.Generic;
-using UnityEditor;
+using System.Linq;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.PreviewRender
@@ -14,8 +14,9 @@ namespace RydenCam.BranchCamEditor.PreviewRender
     public class DialoguePreview<N> where N : Node, ITalkable
     {
 
-        private PreviewCameraWrapper cameraWrapper;
         private PreviewRenderer previewRenderer;
+
+        private CameraCalculator cameraCalculator;
 
         private N node;
 
@@ -32,9 +33,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             previewRenderer = new PreviewRenderer();
 
-            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
-
-            cameraWrapper = new PreviewCameraWrapper(ActorDatas);
+            cameraCalculator = new CameraCalculator();
 
             previewRenderer.CachedRenderTexture = null;
         }
@@ -91,9 +90,20 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             CamShotConfig shot = node.NodeConvodata.ShotConfig;
 
-            Pose camPose = cameraWrapper.CalculateCameraShot(shot);
+            Pose camPose = CalculateCameraShotLocally(shot);
 
-            previewRenderer.RenderPreview(windowRect, camPose, ActorDatas, shot);
+            previewRenderer.RenderPreview(windowRect, camPose, shot);
+        }
+
+        public Pose CalculateCameraShotLocally(CamShotConfig shotConfig)
+        {
+            PreviewActorData actorData = ActorDatas
+                .Where(actorData => shotConfig.Actor == actorData.ActorPositionData.ActorName)
+                .FirstOrDefault();
+
+            if (actorData == null) return new Pose();
+
+            return cameraCalculator.CalculatePlacement(shotConfig, actorData.ActorPositionData);
 
         }
     }

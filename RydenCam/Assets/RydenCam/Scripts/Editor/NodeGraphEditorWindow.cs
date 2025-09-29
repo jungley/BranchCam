@@ -1,20 +1,20 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using Assets.RydenCam.Scripts.Editor;
 using Assets.RydenCam.Scripts.Editor.NodeDrawers;
-using RydenCam.Common;
+using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor;
-using RydenCam.BranchCamEditor.Serialization;
-using System.Linq;
 using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.Serialization;
+using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Assets.RydenCam.Scripts.BranchCamCC;
-using System;
+using System.Linq;
 using System.Net;
-using Assets.RydenCam.Scripts.NodeCommands;
-using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using UnityEditor;
+using UnityEngine;
 
 //NodeGraphEditorWindow is the View in MVVM
 //NodeGraphViewModel is the View Model
@@ -207,6 +207,7 @@ namespace RydenCam.Editor
             panelstyle_button = new GUIStyle();
             panelstyle_button.normal.background = targetTextureButtonHeader;
 
+            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 
             resourcesInitalized = true;
         }

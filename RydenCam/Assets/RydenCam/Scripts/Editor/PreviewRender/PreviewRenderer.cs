@@ -1,4 +1,5 @@
-﻿using RydenCam.BranchCamEditor.BranchCam;
+﻿using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
+using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.Common;
 using System.Collections.Generic;
 using UnityEditor;
@@ -9,6 +10,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
     public class PreviewRenderer
     {
         public Texture CachedRenderTexture { get; set; }
+
+        private List<PreviewActorData> actors => SetupPreviewSceneData.PreviewActorDatas;
 
         private PreviewRenderUtility _prevRenderUtility { get; set; }
         private PreviewRenderUtility previewRenderUtility
@@ -61,20 +64,20 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return tex;
         }
 
-        public void RenderPreview(Rect windowRect, Pose camPose, List<PreviewActorData> actorsToRender, CamShotConfig shot)
+        public void RenderPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
         {
             if (shot.GoalType == CameraGoal.Custom)
             {
-                RenderCustomPreview(windowRect, camPose, actorsToRender, shot);
+                RenderCustomPreview(windowRect, camPose, shot);
             }
             else
             {
-                RenderStandardPreview(windowRect, camPose.position, camPose.rotation, actorsToRender);
+                RenderStandardPreview(windowRect, camPose.position, camPose.rotation);
             }
         }
 
         // Handles rendering for custom camera shots
-        private void RenderCustomPreview(Rect windowRect, Pose camPose, List<PreviewActorData> actors, CamShotConfig shot)
+        private void RenderCustomPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
         {
             // Skip if custom camera config isn't set
             if (!shot.IsCustomSet)
@@ -94,18 +97,18 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             else
             {
                 // Use manually set custom camera position/rotation
-                RenderWithPreviewUtility(windowRect, shot.GlobalCustomCamPos, shot.GlobalCustomCamRot, actors);
+                RenderWithPreviewUtility(windowRect, shot.GlobalCustomCamPos, shot.GlobalCustomCamRot);
             }
         }
 
         // Handles rendering for non-custom (standard) camera shots
-        private void RenderStandardPreview(Rect windowRect, Vector3 camPos, Quaternion camRot, List<PreviewActorData> actors)
+        private void RenderStandardPreview(Rect windowRect, Vector3 camPos, Quaternion camRot)
         {
-            RenderWithPreviewUtility(windowRect, camPos, camRot, actors);
+            RenderWithPreviewUtility(windowRect, camPos, camRot);
         }
 
         // Shared render logic
-        private void RenderWithPreviewUtility(Rect windowRect, Vector3 cameraPosition, Quaternion cameraRotation, List<PreviewActorData> actors)
+        private void RenderWithPreviewUtility(Rect windowRect, Vector3 cameraPosition, Quaternion cameraRotation)
         {
             previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
             previewRenderUtility.camera.transform.SetPositionAndRotation(cameraPosition, cameraRotation);
