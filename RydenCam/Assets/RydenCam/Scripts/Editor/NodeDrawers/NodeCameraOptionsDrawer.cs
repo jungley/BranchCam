@@ -63,18 +63,17 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
             {
-                var actors = NodeManager.Instance.ActorsInScene
-                    .Where(x => x.ActorName != conversationData.Actor.ActorName)
-                    .Select(x => x.ActorName)
+                var actorsExceptSel = NodeManager.Instance.ActorsInScene
+                    .Where(x => x.ActorID != conversationData.Actor.ActorID)
                     .ToList();
 
-                int OppActorIndex = actors.IndexOf(conversationData.ShotConfig.OppositeActor);
+                int OppActorIndex = actorsExceptSel.IndexOf(conversationData.OppositeActor);
                 if (OppActorIndex == -1) OppActorIndex = 0;
 
-                if (actors.Count > 0)
+                if (actorsExceptSel.Count > 0)
                 {
-                    OppActorIndex = EditorGUILayout.Popup(OppActorIndex, actors.ToArray(), GUILayout.Width(70));
-                    conversationData.ShotConfig.OppositeActor = actors[OppActorIndex];
+                    OppActorIndex = EditorGUILayout.Popup(OppActorIndex, actorsExceptSel.Select(x => x.ActorName).ToArray(), GUILayout.Width(70));
+                    conversationData.OppositeActor = actorsExceptSel[OppActorIndex];
                 }
             }
             GUILayout.EndHorizontal();

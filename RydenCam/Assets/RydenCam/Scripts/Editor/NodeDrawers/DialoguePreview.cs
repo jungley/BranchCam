@@ -1,10 +1,12 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Editor;
+using RydenCam.SequenceData;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,7 +22,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         private N node;
 
-        public List<PreviewActorData> ActorDatas => SetupPreviewSceneData.PreviewActorDatas;
+        public List<PreviewActorData> ActorDatas => NodeManager.Instance.ActorsInScene.Select(x => x.PreviewData).ToList();
 
         public DialoguePreview(N node)
         {
@@ -90,20 +92,19 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             CamShotConfig shot = node.NodeConvodata.ShotConfig;
 
-            Pose camPose = CalculateCameraShotLocally(shot);
+            ActorPositionData actorPosData = node.NodeConvodata.Actor.PreviewData.ActorPositionData;
+
+            ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
+
+            Pose camPose = CalculateCameraShotPreview(shot, actorPosData, oppActorPosData);
 
             previewRenderer.RenderPreview(windowRect, camPose, shot);
         }
 
-        public Pose CalculateCameraShotLocally(CamShotConfig shotConfig)
+        public Pose CalculateCameraShotPreview(CamShotConfig shotConfig, ActorPositionData actorPreviewPosData, ActorPositionData oppActorPreviewPosData)
         {
-            PreviewActorData actorData = ActorDatas
-                .Where(actorData => shotConfig.Actor == actorData.ActorPositionData.ActorName)
-                .FirstOrDefault();
 
-            if (actorData == null) return new Pose();
-
-            return cameraCalculator.CalculatePlacement(shotConfig, actorData.ActorPositionData);
+            return cameraCalculator.CalculatePlacement(shotConfig, actorPreviewPosData, oppActorPreviewPosData);
 
         }
     }

@@ -110,6 +110,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 {
                     GUILayout.Label("Focus Target", inspectorText, GUILayout.Width(80));
                     startNode.ActorsInScene[actorIndex].ActorGO = (GameObject)EditorGUILayout.ObjectField(startNode.ActorsInScene[actorIndex].ActorGO, typeof(GameObject), true);
+
                 }
             }
 

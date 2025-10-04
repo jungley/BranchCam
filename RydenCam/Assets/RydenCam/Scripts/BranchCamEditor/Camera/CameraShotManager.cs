@@ -28,11 +28,5 @@ namespace Assets.RydenCam.Scripts.Editor.CameraShotEdtior
                 return instance;
             }
         }
-
-        public void Initialize()
-        {
-
-
-        }
     }
 }

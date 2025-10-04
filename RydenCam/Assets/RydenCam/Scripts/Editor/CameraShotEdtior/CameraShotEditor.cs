@@ -126,12 +126,17 @@ namespace RydenCam.Editor.CamersaShotEditor
             if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
             {
                 EditorGUILayout.LabelField("Opp Actor");
+                /*
                 var actors = NodeManager.Instance.ActorsInScene
-                    .Where(x => x.ActorName != shot.Actor)
+                    .Where(x => x.ActorID != shot.Actor)
                     .Select(x => x.ActorName)
                     .ToList();
+                */
+                /*
+                var actors = NodeManager.Instance.ActorsInScene;
 
                 int OppActorIndex = actors.IndexOf(shot.OppositeActor);
+
                 if (OppActorIndex == -1) OppActorIndex = 0;
 
                 if (actors.Count > 0)
@@ -139,6 +144,7 @@ namespace RydenCam.Editor.CamersaShotEditor
                     OppActorIndex = EditorGUILayout.Popup(OppActorIndex, actors.ToArray(), GUILayout.Width(140));
                     shot.OppositeActor = actors[OppActorIndex];
                 }
+                */
             }
 
             //Not Custom

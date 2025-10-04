@@ -9,6 +9,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
 {
     public interface IActorPlacementStrategy
     {
-        List<PreviewActorData> GeneratePreviewData(List<ActorInfo> actors, float distanceBetween = 2.0f);
+        void GeneratePreviewData(float distanceBetween = 2.0f);
     }
 }

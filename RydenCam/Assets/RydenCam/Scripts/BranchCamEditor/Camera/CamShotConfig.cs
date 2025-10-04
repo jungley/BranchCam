@@ -2,6 +2,7 @@
 using RydenCam.Common;
 using RydenCam.BranchCamEditor.Extensions;
 using System;
+using RydenCam.SequenceData;
 
 namespace RydenCam.BranchCamEditor.BranchCam
 {
@@ -12,13 +13,11 @@ namespace RydenCam.BranchCamEditor.BranchCam
         public string ShotName;
         public string ShotId;
 
+        public bool IsDefault;
 
         public CameraGoal GoalType;
         public CameraDistance GoalDistance;
         public CameraAngle GoalAngle;
-
-        public string OppositeActor;
-        public string Actor;
 
         /// <summary>
         /// True if the custom camera position and rotation are set.
@@ -30,12 +29,13 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
 
         //Default Constructor
-        public CamShotConfig(string shotName = "", string targetGameObjectName = "")
+        public CamShotConfig(string shotName)
         {
             ShotName = shotName;
-            ShotId = Guid.NewGuid().ToString(); 
+            ShotId = Guid.NewGuid().ToString();
 
-            Actor = targetGameObjectName;
+            IsDefault = false;
+
             GoalType = CameraGoal.Portrait;
             GoalDistance = CameraDistance.Mid;
             GoalAngle = CameraAngle.EyeLevel;
