@@ -1,4 +1,5 @@
-﻿using RydenCam.SequenceData;
+﻿using RydenCam.BranchCamEditor.Managers;
+using RydenCam.SequenceData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +11,18 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
     //Strategy - use predefined start positions
     public class PredefinedPositionStrategy : IActorPlacementStrategy
     {
-        public List<PreviewActorData> GeneratePreviewData(List<ActorInfo> actors, float d)
+        public void GeneratePreviewData(float d)
         {
-            return actors.Select(actor =>
-                PreviewPlacementMeshGenerator.Create(
+
+            foreach(var actor in NodeManager.Instance.ActorsInScene)
+            {
+                actor.PreviewData = PreviewPlacementMeshGenerator.Create(
                     actor,
                     actor.PreDefinedStartPosition.position,
                     actor.PreDefinedStartPosition.rotation,
                     actor.PreDefinedStartPosition.forward
-                )).ToList();
+                );
+            }
         }
     }
 }

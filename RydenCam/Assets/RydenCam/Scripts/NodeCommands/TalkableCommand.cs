@@ -30,9 +30,16 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public void AssignNewActor(int actorIndex)
         {
-            var actor = NodeManager.Instance.ActorsInScene[actorIndex].ActorID;
-            talkableNode.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene.Where(x => x.ActorID == actor).FirstOrDefault();
-            talkableNode.NodeConvodata.ShotConfig.Actor = talkableNode.NodeConvodata.Actor.ActorName;
+            try
+            {
+                var actorID = NodeManager.Instance.ActorsInScene[actorIndex].ActorID;
+                talkableNode.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene.Where(x => x.ActorID == actorID).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error assigning new actor: {ex.Message}");
+            }
+
         }
 
         public void ShowAddRemoveMenu(Vector2 mousePos)

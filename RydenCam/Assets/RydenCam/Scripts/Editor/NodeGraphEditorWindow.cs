@@ -2,9 +2,11 @@ using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using Assets.RydenCam.Scripts.Editor;
+using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 using Assets.RydenCam.Scripts.Editor.NodeDrawers;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor;
+using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Serialization;
 using System;
@@ -206,6 +208,20 @@ namespace RydenCam.Editor
 
             panelstyle_button = new GUIStyle();
             panelstyle_button.normal.background = targetTextureButtonHeader;
+
+            //------------------------ RS TODO
+            //If Settings has any saved shots, load them
+            //Else
+            CameraShotsManager.Instance.CameraShots = new List<CamShotConfig>();
+            if (CameraShotsManager.Instance.CameraShots.Count == 0)
+            {
+                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Default") { IsDefault = true });
+                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 1"));
+                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 2"));
+                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
+            }
+            //------------------------
+
 
             SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 

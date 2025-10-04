@@ -1,6 +1,5 @@
 using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using RydenCam.SequenceData;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,18 +9,35 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
     {
         public static PreviewActorData Create(ActorInfo actor, Vector3 meshOrigin, Quaternion rotation, Vector3 forward)
         {
+            PreviewActorData data = new PreviewActorData();
+            data.MeshOriginPoint = meshOrigin;
+            data.MeshMatScale = CacheActorMeshes(actor.ActorGO);
+            data.ActorID = actor.ActorID;
+
+            ActorPositionData actorPositionData = new ActorPositionData();
+            actorPositionData.ActorPosition = actor.ActorGO.transform.localPosition + meshOrigin;
+            actorPositionData.ActorRotation = rotation;
+            actorPositionData.ForwardN = forward;
+
+            data.ActorPositionData = actorPositionData;
+
+            return data;
+
+            /*
             return new PreviewActorData
             {
-                ActorPositionData = new ActorPositionWrapper
+                MeshOriginPoint = meshOrigin,
+
+                ActorPositionData = new ActorPositionData
                 {
-                    MeshOriginPoint = meshOrigin,
                     ActorPosition = actor.ActorGO.transform.localPosition + meshOrigin,
                     ActorRotation = rotation,
                     ForwardN = forward,
-                    ActorName = actor.ActorName
                 },
-                MeshMatScale = CacheActorMeshes(actor.ActorGO)
+                MeshMatScale = CacheActorMeshes(actor.ActorGO),
+                ActorID = actor.ActorID
             };
+            */
         }
 
         private static List<(Mesh Mesh, Material Mat, Vector3 Scale)> CacheActorMeshes(GameObject focusTarget)

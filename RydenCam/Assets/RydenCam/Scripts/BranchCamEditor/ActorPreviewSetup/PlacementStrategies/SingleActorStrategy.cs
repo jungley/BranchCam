@@ -1,4 +1,5 @@
-﻿using RydenCam.SequenceData;
+﻿using RydenCam.BranchCamEditor.Managers;
+using RydenCam.SequenceData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,11 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
     //Strategy - one actor centered 
     public class SingleActorStrategy : IActorPlacementStrategy
     {
-        public List<PreviewActorData> GeneratePreviewData(List<ActorInfo> actors, float distanceBetween)
+        public void GeneratePreviewData(float distanceBetween)
         {
-            var actor = actors[0];
-            return new List<PreviewActorData>
-        {
-            PreviewPlacementMeshGenerator.Create(actor, Vector3.zero, Quaternion.identity, Vector3.forward)
-        };
+            var actor = NodeManager.Instance.ActorsInScene[0];
+            
+            actor.PreviewData = PreviewPlacementMeshGenerator.Create(actor, Vector3.zero, Quaternion.identity, Vector3.forward);
         }
     }
 }

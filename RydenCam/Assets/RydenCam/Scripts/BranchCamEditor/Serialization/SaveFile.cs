@@ -92,9 +92,9 @@ namespace RydenCam.BranchCamEditor.Serialization
                 BranchLog.Log("Saved File");
             }
 
-            catch (Exception)
+            catch (Exception e)
             {
-                BranchLog.Error("An error with Saving occured");
+                BranchLog.Error("An error with Saving occured " + e.Message);
             }
 
             void PingObject(string path)

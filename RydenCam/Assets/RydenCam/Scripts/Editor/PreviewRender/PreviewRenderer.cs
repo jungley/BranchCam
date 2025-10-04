@@ -1,5 +1,6 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using System.Collections.Generic;
 using UnityEditor;
@@ -10,8 +11,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
     public class PreviewRenderer
     {
         public Texture CachedRenderTexture { get; set; }
-
-        private List<PreviewActorData> actors => SetupPreviewSceneData.PreviewActorDatas;
 
         private PreviewRenderUtility _prevRenderUtility { get; set; }
         private PreviewRenderUtility previewRenderUtility
@@ -113,16 +112,16 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
             previewRenderUtility.camera.transform.SetPositionAndRotation(cameraPosition, cameraRotation);
 
-            foreach (var actor in actors)
+            foreach (var actor in NodeManager.Instance.ActorsInScene)
             {
-                foreach (var meshMatScale in actor.MeshMatScale)
+                foreach (var meshMatScale in actor.PreviewData.MeshMatScale)
                 {
                     if (meshMatScale.Mesh == null)
                         continue;
 
                     var matrix = Matrix4x4.TRS(
-                        actor.ActorPositionData.MeshOriginPoint,
-                        actor.ActorPositionData.ActorRotation,
+                        actor.PreviewData.MeshOriginPoint,
+                        actor.PreviewData.ActorPositionData.ActorRotation,
                         Vector3.one // Replace with meshMatScale.Scale if needed
                     );
 

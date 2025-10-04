@@ -6,9 +6,7 @@ using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using RydenCam.Common;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
 {
@@ -52,7 +50,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         private void SetCamera(Node CurrentNode, CinemachineVirtualCamera dialogueCamera)
         {
             ITalkable posNode = CurrentNode as ITalkable;
-            Pose placement = CameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig, new ActorPositionWrapper(posNode), calculateInGame: true);
+            Pose placement = CameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig, posNode.NodeConvodata.Actor.PosData);
             dialogueCamera.transform.SetPositionAndRotation(placement.position, placement.rotation);
         }
 
@@ -127,9 +125,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         {
             if (NodeManager.Instance.StartNode == null || !NodeManager.Instance.StartNode.ReturnToOriginalPositions) return;
 
-            foreach (ActorInfo actorInfo in NodeManager.Instance.StartNode.ActorsInScene)
+            foreach (ActorInfo actor in NodeManager.Instance.StartNode.ActorsInScene)
             {
-                actorInfo.ActorGO.transform.root.position = actorInfo.OriginalPositionAtStartOfDialogue.position;
+                actor.ActorGO.transform.root.position = actor.OriginalPositionAtStartOfDialogue.position;
             }
 
             //ActorsLookAtMidPoint();

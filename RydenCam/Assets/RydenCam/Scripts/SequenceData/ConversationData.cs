@@ -1,4 +1,5 @@
-﻿using RydenCam.BranchCamEditor.BranchCam;
+﻿using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using System.Collections.Generic;
@@ -19,8 +20,11 @@ namespace RydenCam.SequenceData
     [ExecuteAlways]
     public class ConversationData
     {
-        public List<string> DialogTextList;
         public ActorInfo Actor;
+        public ActorInfo OppositeActor;
+
+        public List<string> DialogTextList;
+
         public CamShotConfig ShotConfig;
         public ConversationData(ActorInfo actor, List<string> dialog = null)
         {
@@ -31,7 +35,7 @@ namespace RydenCam.SequenceData
         public ConversationData()
         {
             Actor = NodeManager.Instance.ActorsInScene.FirstOrDefault();
-            ShotConfig  = new CamShotConfig(Actor != null ? Actor.ActorName : string.Empty);
+            ShotConfig = CameraShotsManager.Instance.CameraShots.Where(shot => shot.IsDefault).FirstOrDefault();
             DialogTextList = new List<string> { string.Empty };
         }
     }
