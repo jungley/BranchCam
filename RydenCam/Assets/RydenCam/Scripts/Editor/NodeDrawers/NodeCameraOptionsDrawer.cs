@@ -20,13 +20,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         private GUIStyle inspectorText { get; set; }
         private GUIStyle labelStyleHead_Panel { get; set; }
         private ITalkable currentNode { get; set; } 
-        private CustomCameraCommand currentCommand { get; set; }
+        //private CustomCameraCommand currentCommand { get; set; }
         public event Action UpdateShotRender;
 
         public NodeCameraOptionsDrawer(ITalkable node, GUIStyle _inspectorText, GUIStyle _labelStyleHead_Panel)
         {
             currentNode = node;
-            currentCommand = new CustomCameraCommand(node);
+            //currentCommand = new CustomCameraCommand(node);
 
             inspectorText = _inspectorText;
             labelStyleHead_Panel = _labelStyleHead_Panel;
@@ -112,6 +112,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
                 EditorGUILayout.Space();
 
+                /*
                 //If the camera is not set but position has been set, place it
                 if (CustomCameraCommand.CustomCameraObject == null && currentCommand.IsCustomSet)
                 {
@@ -166,6 +167,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
                     currentNode.NodeConvodata.ShotConfig.TogglePreviewRenderSceneView = GUILayout.Toggle(currentNode.NodeConvodata.ShotConfig.TogglePreviewRenderSceneView, "Toggle Custom Scene View");
                 }
+            }
+                
+                */
             }
         }
 

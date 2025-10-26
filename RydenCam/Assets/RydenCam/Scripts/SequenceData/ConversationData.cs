@@ -35,7 +35,7 @@ namespace RydenCam.SequenceData
         public ConversationData()
         {
             Actor = NodeManager.Instance.ActorsInScene.FirstOrDefault();
-            ShotConfig = CameraShotsManager.Instance.CameraShots.Where(shot => shot.IsDefault).FirstOrDefault();
+            ShotConfig = CameraShotsManager.Instance.DefaultShot;
             DialogTextList = new List<string> { string.Empty };
         }
     }

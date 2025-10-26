@@ -165,7 +165,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         }
         public void Clear()
         {
-            decisionCommand.CustomCameraCommand.ClearCameraSceneObject();
+            //decisionCommand.CustomCameraCommand.ClearCameraSceneObject();
         }
     }
 }

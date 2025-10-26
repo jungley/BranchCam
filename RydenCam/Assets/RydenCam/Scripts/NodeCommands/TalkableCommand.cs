@@ -15,7 +15,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
     {
         private ITalkable talkableNode { get; set; }
 
-        public CustomCameraCommand CustomCameraCommand { get; set; }
+        //public CustomCameraCommand CustomCameraCommand { get; set; }
 
         public TwoWayDictionary<int, Rect> TextAreaRectIndex { get; set; }
 

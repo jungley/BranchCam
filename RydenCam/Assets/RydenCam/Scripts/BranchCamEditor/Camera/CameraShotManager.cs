@@ -14,7 +14,9 @@ namespace Assets.RydenCam.Scripts.Editor.CameraShotEdtior
 
     public class CameraShotsManager
     {
-        public List<CamShotConfig> CameraShots { get; set; }
+        public List<CamShotConfig> CameraShots { get; set; } = new List<CamShotConfig>();
+
+        public CamShotConfig DefaultShot => CameraShots.Where(shot => shot.IsDefault).FirstOrDefault();
 
         private static CameraShotsManager instance;
         public static CameraShotsManager Instance

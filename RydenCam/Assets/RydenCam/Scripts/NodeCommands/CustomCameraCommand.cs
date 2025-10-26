@@ -10,13 +10,13 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
+    /*
     //Responsible for assigning the custom camera and 
     //setting the node camera information in the Graph editor
     public class CustomCameraCommand
     {
-        public ITalkable Node { get; }
 
-        private ConversationData convoData { get; set; }
+        //private ConversationData convoData { get; set; }
 
         private static GameObject _customCameraObject;
         public static event Action<GameObject> OnCustomCameraChanged;
@@ -116,4 +116,5 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             }
         }
     }
+    */
 }

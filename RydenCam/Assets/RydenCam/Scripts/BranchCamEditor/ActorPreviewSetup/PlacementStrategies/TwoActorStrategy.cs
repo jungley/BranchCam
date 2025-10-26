@@ -18,6 +18,9 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
             var actors = NodeManager.Instance.ActorsInScene;
             actors[0].PreviewData = PreviewPlacementMeshGenerator.Create(actors[0], Vector3.zero, Quaternion.identity, Vector3.forward);
             actors[1].PreviewData = PreviewPlacementMeshGenerator.Create(actors[1], offset, Quaternion.Euler(0, 180, 0), Vector3.back);
+
+            actors[0].PreviewData.IsSet = true;
+            actors[1].PreviewData.IsSet = true;
         }
     }
 }

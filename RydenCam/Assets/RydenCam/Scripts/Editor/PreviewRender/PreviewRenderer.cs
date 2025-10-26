@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
+﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -27,6 +27,13 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
                 return _prevRenderUtility;
             }
+        }
+
+        private CameraCalculator cameraCalculator { get; }
+
+        public PreviewRenderer()
+        {
+            cameraCalculator = new CameraCalculator();
         }
 
         public static Texture2D RenderGlobalSceneFromPosition(Vector3 camPosition, Quaternion camRotation, int width, int height)
@@ -63,7 +70,14 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return tex;
         }
 
-        public void RenderPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
+        public void ComposePreviewImage(Rect windowRect, CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
+        {
+            Pose camPose = cameraCalculator.CalculatePlacement(shot, actorPosData, oppActorPosData);
+            RenderPreview(windowRect, camPose, shot);
+        }
+
+
+        private void RenderPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
         {
             if (shot.GoalType == CameraGoal.Custom)
             {

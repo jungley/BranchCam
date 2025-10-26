@@ -3,15 +3,16 @@ using System.Collections;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Camera
-{  
+{
     /// <summary>
     /// Used in Preview Window AND In Game
     /// </summary>
+    [System.Serializable]
     public class ActorPositionData
     {
-        public Vector3 ActorPosition { get; set; }
-        public Quaternion ActorRotation { get; set; }
-        public Vector3 ForwardN { get; set; }
+        public Vector3 ActorPosition;
+        public Quaternion ActorRotation;
+        public Vector3 ForwardN;
 
 
         public ActorPositionData(ITalkable node)

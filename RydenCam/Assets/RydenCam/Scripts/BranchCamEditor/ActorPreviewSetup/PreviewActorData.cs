@@ -4,14 +4,17 @@ using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 {
+    [System.Serializable]
     public class PreviewActorData
     {
         public List<(Mesh Mesh, Material Mat, Vector3 Scale)> MeshMatScale { get; set; }
-        public ActorPositionData ActorPositionData { get; set; }
+        public ActorPositionData ActorPositionData;
 
-        public string ActorID { get; set; }
+        public string ActorID;
 
-        public Vector3 MeshOriginPoint { get; set; }
+        public Vector3 MeshOriginPoint;
+
+        public bool IsSet = false;
 
         public PreviewActorData()
         {

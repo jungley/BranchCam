@@ -20,7 +20,8 @@ namespace RydenCam.SequenceData
 
         public ActorPositionData PosData { get; set; }
 
-        public PreviewActorData PreviewData { get; set; }
+
+        public PreviewActorData PreviewData;
 
 
 

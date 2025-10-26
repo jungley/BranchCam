@@ -1,4 +1,5 @@
-﻿using RydenCam.BranchCamEditor.Nodes.Connections;
+﻿using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System.Collections.Generic;

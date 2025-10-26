@@ -74,10 +74,8 @@ namespace RydenCam.BranchCamEditor.Serialization
                 foreach (Node save in NodeManager.Instance.Nodes)
                 {
                     string jsonNode = JsonUtility.ToJson(save);
-                    
-                    NodeType type = save.TypeOfNode;
 
-                    nodeDatas.Add(new SerializedNode(type, jsonNode));
+                    nodeDatas.Add(new SerializedNode(save.TypeOfNode, jsonNode));
                 }
 
                 SerializedNodeList saveDataContainer = new SerializedNodeList(nodeDatas);
