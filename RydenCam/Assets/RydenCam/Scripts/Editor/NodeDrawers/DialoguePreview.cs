@@ -35,8 +35,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
         {
             previewRenderer = new PreviewRenderer();
 
-            cameraCalculator = new CameraCalculator();
-
             previewRenderer.CachedRenderTexture = null;
         }
 
@@ -64,7 +62,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                 */
 
-                ComposePreviewImage(windowRect);
+                CamShotConfig shot = node.NodeConvodata.ShotConfig;
+                ActorPositionData actorPosData = node.NodeConvodata.Actor.PreviewData.ActorPositionData;
+                ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
+
+                previewRenderer.ComposePreviewImage(windowRect, shot, actorPosData, oppActorPosData);
             }
 
             if (EditorSettingsManager.Instance.SettingsData.IsCornerPreviewEnabled)
@@ -79,7 +81,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 
                 if (node == NodeManager.Instance.ActiveNode)
                 {
-                    ComposePreviewImage(cornerRect);
+                    CamShotConfig shot = node.NodeConvodata.ShotConfig;
+                    ActorPositionData actorPosData = node.NodeConvodata.Actor.PreviewData.ActorPositionData;
+                    ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
+
+                    previewRenderer.ComposePreviewImage(cornerRect, shot, actorPosData, oppActorPosData);
                 }
                 else if(NodeManager.Instance.ActiveNode == null || !(NodeManager.Instance.ActiveNode is ITalkable))
                 {
@@ -88,24 +94,5 @@ namespace RydenCam.BranchCamEditor.PreviewRender
             }
         }
 
-        public void ComposePreviewImage(Rect windowRect)
-        {
-            CamShotConfig shot = node.NodeConvodata.ShotConfig;
-
-            ActorPositionData actorPosData = node.NodeConvodata.Actor.PreviewData.ActorPositionData;
-
-            ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
-
-            Pose camPose = CalculateCameraShotPreview(shot, actorPosData, oppActorPosData);
-
-            previewRenderer.RenderPreview(windowRect, camPose, shot);
-        }
-
-        public Pose CalculateCameraShotPreview(CamShotConfig shotConfig, ActorPositionData actorPreviewPosData, ActorPositionData oppActorPreviewPosData)
-        {
-
-            return cameraCalculator.CalculatePlacement(shotConfig, actorPreviewPosData, oppActorPreviewPosData);
-
-        }
     }
 }

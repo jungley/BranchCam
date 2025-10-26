@@ -17,7 +17,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public DecisionNodeCommand(Node _node) : base(_node)
         {
             node = _node as DecisionNode;
-            CustomCameraCommand = new CustomCameraCommand(node);
+            //CustomCameraCommand = new CustomCameraCommand(node);
         }
         public override void AddSpeakingEntry(int index)
         {

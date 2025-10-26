@@ -138,7 +138,7 @@ public class RibbonBuilder
     {
         public static string File => "File";
         public static string Utility => "Utility";
-        public static string GlobalSettings => "Global Settings";
+        public static string GlobalSettings => "Play Mode Settings";
         public static string PreviewRender => "Preview Render";
         public static string PreviewRender_CornerPreview => "Corner Preview";
         public static string PreviewRender_NodePreview => "Node Preview";

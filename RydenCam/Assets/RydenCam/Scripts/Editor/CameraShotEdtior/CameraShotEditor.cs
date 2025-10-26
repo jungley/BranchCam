@@ -1,4 +1,6 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
+﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.BranchCam;
@@ -20,7 +22,7 @@ namespace RydenCam.Editor.CamersaShotEditor
 
         public CameraShotViewModel ViewModel { get; set; }
 
-        private CustomCameraCommand currentCommand { get; set; }
+        //private CustomCameraCommand currentCommand { get; set; }
         public event Action UpdateShotRender;
 
         private void OnEnable()
@@ -68,13 +70,41 @@ namespace RydenCam.Editor.CamersaShotEditor
                 alignment = TextAnchor.MiddleCenter
             };
 
-            GUILayout.Label("Image Preview", largeBoldLabel);
-
+            float margin = 10f;
+            float boxWidth = 300f; // Fixed width on the left
             float boxHeight = Mathf.Max(200, position.height * 0.5f);
-            GUILayout.Box(GUIContent.none, GUILayout.ExpandWidth(true), GUILayout.Height(boxHeight));
 
-            distanceValue = EditorGUILayout.Slider("Scale", distanceValue, 1f, 20f);
-            GUILayout.Label($"Distance value: {distanceValue}");
+            // Define the preview box rect on the left side of the window
+            Rect boxRect = new Rect(margin, margin + 20f, boxWidth, boxHeight);
+
+            // Optional: draw a background to visualize the box
+            EditorGUI.DrawRect(boxRect, new Color(0.2f, 0.2f, 0.2f, 1f));
+
+            // Get position data
+            var posData = NodeManager.Instance.ActorsInScene[0].PreviewData.ActorPositionData;
+            var oppPosData = NodeManager.Instance.ActorsInScene[1].PreviewData.ActorPositionData;
+
+            // Render the preview
+            ActorPositionData dataCopy = new ActorPositionData
+            {
+                ActorPosition = posData.ActorPosition,
+                ActorRotation = posData.ActorRotation,
+                ForwardN = posData.ForwardN
+            };
+
+            
+
+
+            ViewModel.PreviewRenderer.ComposePreviewImage(boxRect, ViewModel.CurrentShot, dataCopy, oppPosData);
+            GUILayout.Space(300); // Adjust the value to move down more or less
+            // Additional UI elements
+            if (ViewModel.CurrentShot.GoalType == CameraGoal.OverShoulder 
+                || ViewModel.CurrentShot.GoalType == CameraGoal.FrameShare)
+            {
+                distanceValue = EditorGUILayout.Slider("Distance", distanceValue, 1f, 20f);
+                GUILayout.Label($"Distance value: {distanceValue}");
+            }
+
         }
 
         private void DrawShotConfigurationSection()
@@ -177,6 +207,7 @@ namespace RydenCam.Editor.CamersaShotEditor
 
                 EditorGUILayout.Space();
 
+                /*
                 //If the camera is not set but position has been set, place it
                 if (CustomCameraCommand.CustomCameraObject == null &&  ViewModel.CurrentShot.IsCustomSet)
                 {
@@ -197,13 +228,13 @@ namespace RydenCam.Editor.CamersaShotEditor
                         //currentCommand.ClearCamera();
                     }
                 }
-
+                */
                 //Update Camera Position
                 using (var customCameraScope = new GUILayout.HorizontalScope())
                 {
                     GUILayout.Label("Drag to set Cam:", GUILayout.Width(60));
 
-                    CustomCameraCommand.CustomCameraObject = (GameObject)EditorGUILayout.ObjectField(CustomCameraCommand.CustomCameraObject, typeof(GameObject), true);
+                    //CustomCameraCommand.CustomCameraObject = (GameObject)EditorGUILayout.ObjectField(CustomCameraCommand.CustomCameraObject, typeof(GameObject), true);
                     //currentCommand.AssignCustomCameraPosition();
                 }
 

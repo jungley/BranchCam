@@ -98,7 +98,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return new Pose(chosenPos, camRot);
         } 
 
-        private Pose CalculateOverShoulder(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData, bool calculateInGame = false)
+        private Pose CalculateOverShoulder(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData)
         {
             if (oppActorPosData == null) return new Pose();
 
@@ -123,7 +123,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return new Pose(chosenPos, rotation);
         }
 
-        private Pose CalculateFrameShare(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData, bool calculateInGame = false)
+        private Pose CalculateFrameShare(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData)
         {
             if (oppActorPosData == null) return new Pose();
 

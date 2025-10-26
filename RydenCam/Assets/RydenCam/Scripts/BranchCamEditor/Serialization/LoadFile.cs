@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
+using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.Common;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using RydenCam.Common;
-using RydenCam.BranchCamEditor.Managers;
-using System;
-using System.Linq;
-using Assets.RydenCam.Scripts.BranchCamCC;
-using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
-using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 
 namespace RydenCam.BranchCamEditor.Serialization
 {

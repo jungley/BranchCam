@@ -212,7 +212,6 @@ namespace RydenCam.Editor
             //------------------------ RS TODO
             //If Settings has any saved shots, load them
             //Else
-            CameraShotsManager.Instance.CameraShots = new List<CamShotConfig>();
             if (CameraShotsManager.Instance.CameraShots.Count == 0)
             {
                 CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Default") { IsDefault = true });
@@ -221,9 +220,6 @@ namespace RydenCam.Editor
                 CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
             }
             //------------------------
-
-
-            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 
             resourcesInitalized = true;
         }
