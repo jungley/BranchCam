@@ -24,7 +24,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         }
 
         private DialoguePreview<DecisionNode> preview { get; set; }
-        private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
+        private NodeCamShotSelector camShotSelector { get; set; }
+
         private int ActorEditorDropdownIndex { get; set; }
         private Vector2 scrollPosInspector { get; set; }
         private GUIStyle decisionOptionNumber { get; set; }
@@ -37,8 +38,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             preview = new DialoguePreview<DecisionNode>(decisionNode);
 
-            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(decisionNode, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.UpdateShotRender += () => preview.UpdateShotRender();
+            camShotSelector = new NodeCamShotSelector(decisionNode, inspectorText, labelStyleHead_Panel);
+            camShotSelector.UpdateShotRender += () => preview.UpdateShotRender();
+
 
             decisionCommand.WindowRect = new Rect(decisionNode.EditorPosition.x, decisionNode.EditorPosition.y, decisionNode.NodeWidth, decisionNode.NodeHeight);
 
@@ -134,8 +136,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             EditorGUILayout.Space();
 
-
-            nodeCameraOptionsDrawer.DrawUICamCompOptions();        
+            camShotSelector.DrawUICamCompOptions();
+            //nodeCameraOptionsDrawer.DrawUICamCompOptions();
         }
 
         //Draws and recalculates the spacing of the decision out points based on

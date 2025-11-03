@@ -1,21 +1,26 @@
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Generic;
 using System.Linq;
 
 public class CameraShotViewModel
-{
-    private string defaultShotId => CameraShotsManager.Instance.DefaultShot.ShotId;
-
-    public CamShotConfig CurrentShot { get; set; }
+{    
+    private CamShotConfig currentShot;
+    public CamShotConfig CurrentShot
+    {
+        get => currentShot ??= CameraShotsManager.Instance.DefaultShot;
+        set => currentShot = value;
+    }
+    
 
     public PreviewRenderer PreviewRenderer { get; set; }
     public float DistancePreviewSlider { get; set; } = 1f;
 
     public void RemoveShot(CamShotConfig shot)
     {
-        if(shot.ShotId == defaultShotId)
+        if(shot.IsDefault)
         {
             return;
         }
