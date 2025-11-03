@@ -25,7 +25,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
 
         private DialoguePreview<DialogueNode> preview { get; set; }
-        private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
+        private NodeCamShotSelector nodeCamShotSelector { get; set; }
 
         private Vector2 scrollPosInspector { get; set; }
         private int ActorEditorDropdownIndex { get; set; }
@@ -38,8 +38,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             dialogueCommand = new DialogueNodeCommand(dialogueNode);
             preview = new DialoguePreview<DialogueNode>(dialogueNode);
 
-            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(dialogueNode, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.UpdateShotRender += () => preview.UpdateShotRender();
+            nodeCamShotSelector = new NodeCamShotSelector(dialogueNode, inspectorText, labelStyleHead_Panel);
+            nodeCamShotSelector.UpdateShotRender += () => preview.UpdateShotRender();
+
 
             dialogueCommand.WindowRect = new Rect(dialogueNode.EditorPosition.x, dialogueNode.EditorPosition.y, dialogueNode.NodeWidth, dialogueNode.NodeHeight);
 
@@ -118,7 +119,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 ActorEditorDropdownIndex = indexx;
             }
 
-            nodeCameraOptionsDrawer.DrawUICamCompOptions();
+            nodeCamShotSelector?.DrawUICamCompOptions();
+            //nodeCameraOptionsDrawer.DrawUICamCompOptions();
 
         }
 

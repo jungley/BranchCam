@@ -103,8 +103,14 @@ public class NodeGraphViewModel
 
     public void OpenCameraShotEditor()
     {
-        CameraShotEditor window = EditorWindow.GetWindow<CameraShotEditor>();
-        window.titleContent = new GUIContent("Camera Shot Editor View");
+        if (EditorWindow.HasOpenInstances<CameraShotEditor>()) return;
+
+        CameraShotEditor camShotEditor = EditorWindow.GetWindow<CameraShotEditor>();
+        camShotEditor.titleContent = new GUIContent("Camera Shot Editor View");
+
+        var nodeGraphWindow = EditorWindow.GetWindow<NodeGraphEditorWindow>();
+
+        Docker.Dock(nodeGraphWindow, camShotEditor, Docker.DockPosition.Bottom);
     }
 
     public void LocateGlobalSettings()

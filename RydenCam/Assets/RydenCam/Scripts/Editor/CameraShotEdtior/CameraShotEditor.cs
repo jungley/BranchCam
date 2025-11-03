@@ -42,15 +42,17 @@ namespace RydenCam.Editor.CamersaShotEditor
 
         private void OnGUI()
         {
+            GUILayout.BeginVertical();
+
             GUILayout.BeginHorizontal();
 
             // Preview Section with fixed width
-            GUILayout.BeginVertical(GUILayout.Width(400));
+            GUILayout.BeginVertical(GUILayout.Width(320));
                 DrawShotPreviewSection();
             GUILayout.EndVertical();
 
             // Configuration Section with fixed width
-            GUILayout.BeginVertical(GUILayout.Width(250));
+            GUILayout.BeginVertical(GUILayout.Width(200));
                 DrawShotConfigurationSection();
             GUILayout.EndVertical();
 
@@ -60,6 +62,17 @@ namespace RydenCam.Editor.CamersaShotEditor
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
+
+            //Bottom distance visualzation control
+            EditorGUILayout.Space(30f);
+
+            if (ViewModel.CurrentShot.GoalType == CameraGoal.OverShoulder
+                || ViewModel.CurrentShot.GoalType == CameraGoal.FrameShare)
+            {
+                distanceValue = EditorGUILayout.Slider("Distance", distanceValue, 1f, 20f, GUILayout.Width(500));
+            }
+
+            GUILayout.EndVertical();
         }   
 
         private void DrawShotPreviewSection()
@@ -69,6 +82,8 @@ namespace RydenCam.Editor.CamersaShotEditor
                 fontSize = 20,
                 alignment = TextAnchor.MiddleCenter
             };
+
+            GUILayout.Label("Shot Configuration", largeBoldLabel);
 
             float margin = 10f;
             float boxWidth = 300f; // Fixed width on the left
@@ -90,33 +105,16 @@ namespace RydenCam.Editor.CamersaShotEditor
                 ActorPosition = posData.ActorPosition,
                 ActorRotation = posData.ActorRotation,
                 ForwardN = posData.ForwardN
-            };
-
-            
-
+            };           
 
             ViewModel.PreviewRenderer.ComposePreviewImage(boxRect, ViewModel.CurrentShot, dataCopy, oppPosData);
-            GUILayout.Space(300); // Adjust the value to move down more or less
-            // Additional UI elements
-            if (ViewModel.CurrentShot.GoalType == CameraGoal.OverShoulder 
-                || ViewModel.CurrentShot.GoalType == CameraGoal.FrameShare)
-            {
-                distanceValue = EditorGUILayout.Slider("Distance", distanceValue, 1f, 20f);
-                GUILayout.Label($"Distance value: {distanceValue}");
-            }
+            //GUILayout.Space(300); // Adjust the value to move down more or less
 
         }
 
         private void DrawShotConfigurationSection()
         {
-            GUIStyle largeBoldLabel = new GUIStyle(EditorStyles.boldLabel)
-            {
-                fontSize = 20,
-                alignment = TextAnchor.MiddleCenter
-            };
-
-            GUILayout.Label("Shot Composition", largeBoldLabel);
-            EditorGUILayout.Space();
+            EditorGUILayout.Space(20f);
 
             var shot = ViewModel?.CurrentShot;
             if (shot == null)
@@ -126,7 +124,7 @@ namespace RydenCam.Editor.CamersaShotEditor
 
             // Assign a unique control name to the text field
             GUI.SetNextControlName("ShotNameField");
-            shot.ShotName = EditorGUILayout.TextField(shot.ShotName, GUILayout.Width(250));
+            shot.ShotName = EditorGUILayout.TextField(shot.ShotName, GUILayout.Width(150));
 
             // Handle focus loss on Enter or mouse click outside
             Event e = Event.current;
@@ -149,7 +147,7 @@ namespace RydenCam.Editor.CamersaShotEditor
             EditorGUILayout.LabelField("Type");
             bool filteredEnabled = NodeManager.Instance.ActorsInScene.Count == 1;
             CameraGoal[] allowedGoals = new CameraGoal[] { CameraGoal.Portrait, CameraGoal.Custom };
-            CameraGoal selected_goal = EnumPopupExtensions.EnumPopup(shot.GoalType, filteredEnabled, width: 140, allowedGoals);
+            CameraGoal selected_goal = EnumPopupExtensions.EnumPopup(shot.GoalType, filteredEnabled, width: 150, allowedGoals);
             if (shot.GoalType != selected_goal)
                 shot.GoalType = selected_goal;
 
@@ -183,7 +181,7 @@ namespace RydenCam.Editor.CamersaShotEditor
                 EditorGUILayout.LabelField("Distance");
                 var options_Distance = Enum.GetNames(typeof(CameraDistance)).ToList();
                 int index_dist = Array.IndexOf(Enum.GetValues(typeof(CameraDistance)), shot.GoalDistance);
-                index_dist = EditorGUILayout.Popup(index_dist, options_Distance.ToArray(), GUILayout.Width(140));
+                index_dist = EditorGUILayout.Popup(index_dist, options_Distance.ToArray(), GUILayout.Width(150));
                 if (index_dist == -1) index_dist = 0;
                 var newDist = (CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist);
                 if (shot.GoalDistance != newDist)
@@ -192,11 +190,12 @@ namespace RydenCam.Editor.CamersaShotEditor
                 EditorGUILayout.LabelField("Height");
                 var options_Angle = Enum.GetNames(typeof(CameraAngle)).ToList();
                 int index_angle = Array.IndexOf(Enum.GetValues(typeof(CameraAngle)), shot.GoalAngle);
-                index_angle = EditorGUILayout.Popup(index_angle, options_Angle.ToArray(), GUILayout.Width(140));
+                index_angle = EditorGUILayout.Popup(index_angle, options_Angle.ToArray(), GUILayout.Width(150));
                 if (index_angle == -1) index_angle = 0;
                 var newAngle = (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle);
                 if (shot.GoalAngle != newAngle)
                     shot.GoalAngle = newAngle;
+
             }
             //It is In Custom 
             else
@@ -273,12 +272,21 @@ namespace RydenCam.Editor.CamersaShotEditor
                 fontSize = 20,
                 alignment = TextAnchor.MiddleCenter
             };
-
-            GUILayout.Label("Shot List", largeBoldLabel);
+            EditorGUILayout.Space(20f);
             GUILayout.Label("Camera Shots", EditorStyles.boldLabel);
 
-            float scrollViewHeight = 200f;
-            scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(scrollViewHeight));
+            float scrollViewHeight = 120f;
+
+            // 🔹 Vertical-only scroll view (horizontal scrolling disabled)
+            scrollPos = GUILayout.BeginScrollView(
+                scrollPos,
+                alwaysShowHorizontal: false,
+                alwaysShowVertical: true,
+                GUILayout.Height(scrollViewHeight)
+            );
+
+            // 🔹 Force horizontal scroll position to 0
+            scrollPos.x = 0;
 
             var shots = CameraShotsManager.Instance.CameraShots;
             List<CamShotConfig> shotsToRemove = new List<CamShotConfig>();
@@ -288,12 +296,14 @@ namespace RydenCam.Editor.CamersaShotEditor
                 foreach (var shot in shots.ToList())
                 {
                     GUILayout.BeginHorizontal();
-                    if (GUILayout.Button(shot.ShotName, GUILayout.Width(150)))
+
+                    // Slightly reduced width to avoid layout overflow (prevents unwanted horizontal bar)
+                    if (GUILayout.Button(shot.ShotName, GUILayout.Width(145)))
                     {
                         ViewModel.CurrentShot = shot;
                     }
 
-                    if (GUILayout.Button("X", GUILayout.Width(25)))
+                    if (GUILayout.Button("X", GUILayout.Width(20)))
                     {
                         shotsToRemove.Add(shot);
                     }
@@ -304,7 +314,8 @@ namespace RydenCam.Editor.CamersaShotEditor
 
             GUILayout.EndScrollView();
 
-            if (GUILayout.Button("Add New Shot", GUILayout.Width(180)))
+            // Add button
+            if (GUILayout.Button("Add New Shot", GUILayout.Width(175)))
             {
                 string newShotName = $"New Shot {shots.Count + 1}";
                 var newShot = new CamShotConfig(shotName: newShotName);
@@ -312,11 +323,12 @@ namespace RydenCam.Editor.CamersaShotEditor
                 ViewModel.CurrentShot = newShot;
             }
 
-            // Remove after the loop to avoid modifying the collection during iteration
+            // Remove after loop to avoid modifying collection during iteration
             foreach (var shot in shotsToRemove)
             {
                 ViewModel.RemoveShot(shot);
             }
         }
+
     }
 }

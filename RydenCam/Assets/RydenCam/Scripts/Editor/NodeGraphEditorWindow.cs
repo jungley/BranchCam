@@ -9,6 +9,7 @@ using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.Editor.CamersaShotEditor;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -186,6 +187,11 @@ namespace RydenCam.Editor
             window.CreateInitialNodeDrawers();
 
             window.ShowUtility();
+
+            //Dock Window
+            CameraShotEditor editorWindow = EditorWindow.GetWindow<CameraShotEditor>();
+            window.titleContent = new GUIContent("Camera Shot Editor View");
+            Docker.Dock(window, editorWindow, Docker.DockPosition.Bottom);
         }
 
         private static void InitializeStaticResources()
@@ -212,13 +218,12 @@ namespace RydenCam.Editor
             //------------------------ RS TODO
             //If Settings has any saved shots, load them
             //Else
-            if (CameraShotsManager.Instance.CameraShots.Count == 0)
-            {
-                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Default") { IsDefault = true });
-                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 1"));
-                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 2"));
-                CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
-            }
+            CameraShotsManager.Instance.CameraShots.Clear();
+            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Default") { IsDefault = true });
+            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 1"));
+            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 2"));
+            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
+
             //------------------------
 
             resourcesInitalized = true;
