@@ -49,12 +49,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Managers
             return string.IsNullOrEmpty(LastUsedJsonPath) ? string.Empty : System.IO.Path.GetDirectoryName(LastUsedJsonPath);
         }
 
-
-        public void FlipIsCornerPreview()
-        {
-            SettingsData.IsCornerPreviewEnabled = !SettingsData.IsCornerPreviewEnabled;
-        }
-
         public void FlipIsNodePreview()
         {
             SettingsData.IsNodePreviewEnabled = !SettingsData.IsNodePreviewEnabled;

@@ -14,7 +14,6 @@ namespace Assets.RydenCam.Scripts.Editor.CameraShotEdtior
     public class SaveEditorSettingsData
     {
         //Serializable Settings
-        public bool IsCornerPreviewEnabled;
         public bool IsNodePreviewEnabled;
 
         public List<CamShotConfig> SavedUserConfig;

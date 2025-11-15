@@ -30,6 +30,25 @@ public class CameraShotViewModel
         CameraShotsManager.Instance.CameraShots.Remove(shot);
     }
 
+    public void NewFile()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Save()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void SaveAs()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Open()
+    {
+        throw new System.NotImplementedException();
+    }
 
     public CameraShotViewModel()
     {

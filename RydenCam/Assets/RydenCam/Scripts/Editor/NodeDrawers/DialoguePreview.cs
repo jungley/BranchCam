@@ -68,30 +68,6 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                 previewRenderer.ComposePreviewImage(windowRect, shot, actorPosData, oppActorPosData);
             }
-
-            if (EditorSettingsManager.Instance.SettingsData.IsCornerPreviewEnabled)
-            {
-                float panX = NodeGraphEditorWindow.panX;
-                float panY = NodeGraphEditorWindow.panY;
-
-                float windowWidth = NodeGraphEditorWindow.Instance.position.width;
-                float windowHeight = NodeGraphEditorWindow.Instance.position.height;
-
-                var cornerRect = new Rect(windowWidth - (panX + 450) - 30, 80 - panY, 450, 300);
-                
-                if (node == NodeManager.Instance.ActiveNode)
-                {
-                    CamShotConfig shot = node.NodeConvodata.ShotConfig;
-                    ActorPositionData actorPosData = node.NodeConvodata.Actor.PreviewData.ActorPositionData;
-                    ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
-
-                    previewRenderer.ComposePreviewImage(cornerRect, shot, actorPosData, oppActorPosData);
-                }
-                else if(NodeManager.Instance.ActiveNode == null || !(NodeManager.Instance.ActiveNode is ITalkable))
-                {
-                    GUI.Box(cornerRect, "Select a node with a Shot Composition");
-                }
-            }
         }
 
     }

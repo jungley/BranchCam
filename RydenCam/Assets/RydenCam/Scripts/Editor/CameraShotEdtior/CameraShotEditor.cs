@@ -6,6 +6,7 @@ using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
+using RydenCam.Editor.Ribbon;
 using RydenCam.SequenceData;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,11 @@ namespace RydenCam.Editor.CamersaShotEditor
         private float distanceValue = 1f;
         private Vector2 scrollPos;
 
+        public NodeGraphViewModel NodeGraphViewModel { get; set; }
+
         public CameraShotViewModel ViewModel { get; set; }
+
+        private RibbonRenderer ribbonRenderer;
 
         //private CustomCameraCommand currentCommand { get; set; }
         public event Action UpdateShotRender;
@@ -32,7 +37,21 @@ namespace RydenCam.Editor.CamersaShotEditor
 
             ViewModel = new CameraShotViewModel();
 
+            var ribbonDefinition = new RibbonDefinitionBuilder()
+                .AddDropdown("File")
+                    .AddDropdownOption("File", "New", ViewModel.NewFile)
+                    .AddDropdownOption("File", "Open", ViewModel.Open)
+                    .AddDropdownOption("File", "Save", ViewModel.Save)
+                    .AddDropdownOption("File", "Save As", ViewModel.SaveAs)
+                .AddButton("Open", ViewModel.Open)
+                .AddButton("Save", ViewModel.Save)
+                
+                .Build();
+
+            ribbonRenderer = new RibbonRenderer(ribbonDefinition);
         }
+
+
 
         private void OnDisable()
         {
@@ -42,6 +61,11 @@ namespace RydenCam.Editor.CamersaShotEditor
 
         private void OnGUI()
         {
+            //Draw the ribbon
+            ribbonRenderer.Draw();
+
+            if (CameraShotsManager.Instance.CameraShots.Count == 0) return;
+
             GUILayout.BeginVertical();
 
             GUILayout.BeginHorizontal();
@@ -90,10 +114,12 @@ namespace RydenCam.Editor.CamersaShotEditor
             float boxHeight = Mathf.Max(200, position.height * 0.5f);
 
             // Define the preview box rect on the left side of the window
-            Rect boxRect = new Rect(margin, margin + 20f, boxWidth, boxHeight);
+            Rect boxRect = new Rect(margin, margin + 50f, boxWidth, boxHeight);
 
             // Optional: draw a background to visualize the box
             EditorGUI.DrawRect(boxRect, new Color(0.2f, 0.2f, 0.2f, 1f));
+
+            if (!NodeManager.Instance.ActorsInScene.Any()) return;
 
             // Get position data
             var posData = NodeManager.Instance.ActorsInScene[0].PreviewData.ActorPositionData;
@@ -108,7 +134,6 @@ namespace RydenCam.Editor.CamersaShotEditor
             };           
 
             ViewModel.PreviewRenderer.ComposePreviewImage(boxRect, ViewModel.CurrentShot, dataCopy, oppPosData);
-            //GUILayout.Space(300); // Adjust the value to move down more or less
 
         }
 
@@ -322,6 +347,7 @@ namespace RydenCam.Editor.CamersaShotEditor
                 shots.Add(newShot);
                 ViewModel.CurrentShot = newShot;
             }
+
 
             // Remove after loop to avoid modifying collection during iteration
             foreach (var shot in shotsToRemove)

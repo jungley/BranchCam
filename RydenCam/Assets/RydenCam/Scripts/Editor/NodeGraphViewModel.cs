@@ -143,11 +143,6 @@ public class NodeGraphViewModel
         EditorSettingsManager.Instance.FlipIsNodePreview();
     }
 
-    public void ToggleCornerPreviewRender()
-    {
-        EditorSettingsManager.Instance.FlipIsCornerPreview();
-    }
-
     public void HandleInputClicks()
     {
         Event e = Event.current;
