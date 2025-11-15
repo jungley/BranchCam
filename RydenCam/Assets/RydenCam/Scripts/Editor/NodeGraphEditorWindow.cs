@@ -5,11 +5,11 @@ using Assets.RydenCam.Scripts.Editor;
 using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 using Assets.RydenCam.Scripts.Editor.NodeDrawers;
 using Assets.RydenCam.Scripts.NodeCommands;
-using RydenCam.BranchCamEditor;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Editor.CamersaShotEditor;
+using RydenCam.Editor.Ribbon;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -30,6 +30,8 @@ namespace RydenCam.Editor
         public static NodeGraphEditorWindow Instance { get; private set; }
 
         private NodeGraphViewModel viewModel;
+
+        private RibbonRenderer ribbonRenderer;
 
         private NodeDrawer activeNodeDrawView { get; set; }
         private NodeDrawer ActiveNodeDrawView
@@ -68,8 +70,7 @@ namespace RydenCam.Editor
             }
         }
 
-        private RibbonBuilder ribbonBuilder { get; set; }
-
+      
         private List<NodeDrawer> NodeDrawers { get; set; } = new List<NodeDrawer>();
         private List<ConnectionDrawer> ConnectionDrawers { get; set; }
 
@@ -104,7 +105,6 @@ namespace RydenCam.Editor
 
             DrawNodes();
 
-
             DrawUserDragConnectionCurve();
 
             DrawConnections();
@@ -113,7 +113,7 @@ namespace RydenCam.Editor
 
             GUI.EndGroup();
 
-            ribbonBuilder.DrawRibbon();
+            ribbonRenderer.Draw();
 
             DrawInspector();
         }
@@ -190,7 +190,8 @@ namespace RydenCam.Editor
 
             //Dock Window
             CameraShotEditor editorWindow = EditorWindow.GetWindow<CameraShotEditor>();
-            window.titleContent = new GUIContent("Camera Shot Editor View");
+            editorWindow.titleContent = new GUIContent("Camera Shot Editor View");
+            editorWindow.NodeGraphViewModel = window.viewModel;
             Docker.Dock(window, editorWindow, Docker.DockPosition.Bottom);
         }
 
@@ -216,7 +217,8 @@ namespace RydenCam.Editor
             panelstyle_button.normal.background = targetTextureButtonHeader;
 
             //------------------------ RS TODO
-            //If Settings has any saved shots, load them
+            // If Settings has any saved shots, load them
+
             //Else
             CameraShotsManager.Instance.CameraShots.Clear();
             CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Default") { IsDefault = true });
@@ -247,7 +249,18 @@ namespace RydenCam.Editor
             //Handles events in the NodeGraphWindow
             viewModel = new NodeGraphViewModel();
 
-            ribbonBuilder = new RibbonBuilder(viewModel);
+            var ribbonDefinition = new RibbonDefinitionBuilder()
+            .AddDropdown("File")
+                .AddDropdownOption("File", "New", viewModel.NewFile)
+                .AddDropdownOption("File", "Open", viewModel.Open)
+                .AddDropdownOption("File", "Save", viewModel.Save)
+                .AddDropdownOption("File", "Save As", viewModel.SaveAs)
+             .AddButton("Save", viewModel.Save)
+             .AddButton("Toggle Preview", () => viewModel.ToggleNodePreviewRender(), width: 120)
+             .AddButton("Shot Configuration", () => viewModel.OpenCameraShotEditor(), width:140)
+            .Build();
+
+            ribbonRenderer = new RibbonRenderer(ribbonDefinition);
 
             NodeManager.Instance.Nodes.CollectionChanged += OnNodesChanged;
             NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
