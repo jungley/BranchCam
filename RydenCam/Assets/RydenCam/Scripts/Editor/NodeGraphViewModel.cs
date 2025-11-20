@@ -18,7 +18,6 @@ using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 public class NodeGraphViewModel
 {
-
     private Vector2 clickStartPos { get; set; }
     private bool isPanning { get; set; }
     private const float dragThreshold = 0.001f;
@@ -45,34 +44,25 @@ public class NodeGraphViewModel
         if (shouldReset)
         {
             ResetEverything();
-            EditorSettingsManager.Instance.SetLastFilePath(string.Empty);
+            FilePathSaveManager.Instance.ClearLastFilePath(FilePathSaveManager.LastOpened_NodeGraphKey);
         }
     }
 
     public void Save()
     {
-        SaveFile.SaveConversation();
-        SaveFile.SaveEditorSettings();
+        var fileresult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_NodeGraphKey);
+
+        NodeGraphSettingsManager.Save(fileresult);
     }
 
     public void SaveAs()
     {
-        string filePath = SaveFile.SaveAsFileExplorer();
-        SaveFile.SaveConversation(filePath);
-        SaveFile.SaveEditorSettings();
+        NodeGraphSettingsManager.SaveAs();
     }
 
     public void Open()
     {
-        string filePath = LoadFile.OpenFileExplorer();
-        if (string.IsNullOrEmpty(filePath))
-        {
-            Debug.Log("No file path provided. Please select a file.");
-            return;
-        }
-        EditorSettingsManager.Instance.SetLastFilePath(filePath);
-        ResetEverything();
-        LoadFile.LoadSaveables(filePath);
+        NodeGraphSettingsManager.OpenAndLoad();
     }
 
     public void ResetEverything()
@@ -80,7 +70,6 @@ public class NodeGraphViewModel
         NodeManager.Instance.ClearActorsInScene();
         NodeManager.Instance.Clear();
         ConnectionManager.Instance.Clear();
-        NodeManager.StartNodeAdded = false;
         NodeManager.Instance.ActiveNode = null;
     }
 
@@ -140,7 +129,6 @@ public class NodeGraphViewModel
 
     public void ToggleNodePreviewRender()
     {
-        EditorSettingsManager.Instance.FlipIsNodePreview();
     }
 
     public void HandleInputClicks()
@@ -311,7 +299,7 @@ public class NodeGraphViewModel
     {
         GenericMenu menu = new GenericMenu();
 
-        if (!NodeManager.StartNodeAdded)
+        if (!NodeManager.Instance.StartNodeAdded)
         {
             menu.AddItem(new GUIContent("Add Start Node"), false, () =>
             {
@@ -352,7 +340,6 @@ public class NodeGraphViewModel
         {
             case NodeType.StartNode:
                 newNode = new StartNode(position);
-                NodeManager.StartNodeAdded = true;
                 break;
             case NodeType.DialogueNode:
                 newNode = new DialogueNode(position);

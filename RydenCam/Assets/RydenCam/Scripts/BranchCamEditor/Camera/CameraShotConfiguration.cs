@@ -8,7 +8,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
 {
     [ExecuteAlways]
     [System.Serializable]
-    public class CamShotConfig
+    public class CameraShotConfiguration
     {
         public string ShotName;
         public string ShotId;
@@ -29,7 +29,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
 
         //Default Constructor
-        public CamShotConfig(string shotName)
+        public CameraShotConfiguration(string shotName)
         {
             ShotName = shotName;
             ShotId = Guid.NewGuid().ToString();
@@ -46,7 +46,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
         public override bool Equals(object obj)
         {
-            if (obj is CamShotConfig other)
+            if (obj is CameraShotConfiguration other)
                 return ShotId == other.ShotId;
             return false;
         }

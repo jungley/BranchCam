@@ -2,7 +2,9 @@
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using RydenCam.SequenceData;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamCC
@@ -13,7 +15,9 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         /// <summary>
         /// Actors in Scene, Start Position Data set in <see cref="ActorInfo"/>
         /// </summary>
-        public List<ActorInfo> ActorsInScene;
+        public ObservableList<ActorInfo> ActorsInScene;
+
+        public Action ActorsChanged;
 
         //start Position variables
         public bool StartPositionsEnabled;
@@ -30,7 +34,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public StartNode(Vector2 position) : base(position)
         {
             TypeOfNode = NodeType.StartNode;
-            ActorsInScene = new List<ActorInfo>();
+            ActorsInScene = new ObservableList<ActorInfo>();
             PointIn = null;
             PointOut = new List<ConnectionPoint>() { new ConnectionPoint(this, ConnectionPointType.Out) };
         }

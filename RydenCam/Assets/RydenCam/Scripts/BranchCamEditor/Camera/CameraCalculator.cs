@@ -1,9 +1,7 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using RydenCam.SequenceData;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -33,7 +31,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
         }
 
 
-        public Pose CalculatePlacement(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
+        public Pose CalculatePlacement(CameraShotConfiguration shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
         {
             switch (shot.GoalType)
             {
@@ -54,13 +52,13 @@ namespace RydenCam.BranchCamEditor.BranchCam
              }
         }
 
-        private Pose CalculateCustom(CamShotConfig shot)
+        private Pose CalculateCustom(CameraShotConfiguration shot)
         {
             if (!shot.IsCustomSet) return new Pose();
 
             return new Pose(shot.GlobalCustomCamPos, shot.GlobalCustomCamRot);
         }
-        private Pose CalculatePortrait(CamShotConfig shot, ActorPositionData actorPosData)
+        private Pose CalculatePortrait(CameraShotConfiguration shot, ActorPositionData actorPosData)
         {
             Vector3 targetPos = actorPosData.ActorPosition;
             Vector3 forward = actorPosData.ForwardN;
@@ -98,7 +96,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return new Pose(chosenPos, camRot);
         } 
 
-        private Pose CalculateOverShoulder(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData)
+        private Pose CalculateOverShoulder(CameraShotConfiguration shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData)
         {
             if (oppActorPosData == null) return new Pose();
 
@@ -123,7 +121,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             return new Pose(chosenPos, rotation);
         }
 
-        private Pose CalculateFrameShare(CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData)
+        private Pose CalculateFrameShare(CameraShotConfiguration shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData)
         {
             if (oppActorPosData == null) return new Pose();
 

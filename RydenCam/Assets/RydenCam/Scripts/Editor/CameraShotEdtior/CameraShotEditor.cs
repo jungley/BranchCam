@@ -45,7 +45,7 @@ namespace RydenCam.Editor.CamersaShotEditor
                     .AddDropdownOption("File", "Save As", ViewModel.SaveAs)
                 .AddButton("Open", ViewModel.Open)
                 .AddButton("Save", ViewModel.Save)
-                
+                    
                 .Build();
 
             ribbonRenderer = new RibbonRenderer(ribbonDefinition);
@@ -107,7 +107,7 @@ namespace RydenCam.Editor.CamersaShotEditor
                 alignment = TextAnchor.MiddleCenter
             };
 
-            GUILayout.Label("Shot Configuration", largeBoldLabel);
+            GUILayout.Label("Shot Configuration Manager", largeBoldLabel);
 
             float margin = 10f;
             float boxWidth = 300f; // Fixed width on the left
@@ -314,7 +314,7 @@ namespace RydenCam.Editor.CamersaShotEditor
             scrollPos.x = 0;
 
             var shots = CameraShotsManager.Instance.CameraShots;
-            List<CamShotConfig> shotsToRemove = new List<CamShotConfig>();
+            List<CameraShotConfiguration> shotsToRemove = new List<CameraShotConfiguration>();
 
             if (shots != null)
             {
@@ -343,7 +343,7 @@ namespace RydenCam.Editor.CamersaShotEditor
             if (GUILayout.Button("Add New Shot", GUILayout.Width(175)))
             {
                 string newShotName = $"New Shot {shots.Count + 1}";
-                var newShot = new CamShotConfig(shotName: newShotName);
+                var newShot = new CameraShotConfiguration(shotName: newShotName);
                 shots.Add(newShot);
                 ViewModel.CurrentShot = newShot;
             }

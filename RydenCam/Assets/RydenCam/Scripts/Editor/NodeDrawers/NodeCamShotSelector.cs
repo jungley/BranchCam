@@ -8,7 +8,6 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using static Codice.Client.BaseCommands.Import.Commit;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
@@ -46,8 +45,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             int newIndex = EditorGUILayout.Popup(selectedIndex, names, popupStyle, GUILayout.Width(250));
 
+
             // Return the selected object
-            currentNode.NodeConvodata.ShotConfig = CameraShotsManager.Instance.CameraShots[newIndex];
+            //currentNode.NodeConvodata.ShotConfig = CameraShotsManager.Instance.CameraShots.TryGet<CameraShotConfiguration>[0];
         }
     }
 }

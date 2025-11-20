@@ -124,6 +124,15 @@ namespace Assets.RydenCam.Scripts.Editor
             return totalHeight;
         }
 
+        protected int GetActorIndex(string name)
+        {
+            var list = NodeManager.Instance.ActorsInScene;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].ActorName == name)
+                    return i;
+            return -1;
+        }
+
         protected void DrawConnectionPoints()
         {
             //Draw In Point

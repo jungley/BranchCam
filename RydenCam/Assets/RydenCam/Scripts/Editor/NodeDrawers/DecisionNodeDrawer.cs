@@ -53,9 +53,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             decisionOptionNumber.fontSize = 13;
             decisionOptionNumber.normal.textColor = Color.black;
 
-            ActorEditorDropdownIndex = decisionNode?.NodeConvodata?.Actor?.ActorName is string actorName
-                ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
-                : -1;
+            ActorEditorDropdownIndex =
+                decisionNode?.NodeConvodata?.Actor?.ActorName is string actorName
+                    ? GetActorIndex(actorName)
+                    : -1;
         }
 
         public override void DrawNode(int index)
@@ -70,7 +71,16 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                      GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
                      EditorGUI.LabelField(new Rect(4, 4, decisionNode.NodeWidth, decisionNode.NodeHeight), "Decision", labelStyleHead_Node);
 
-                     int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.StartNode.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+                     var actorNames = (NodeManager.Instance.StartNode?.ActorsInScene)?
+                                         .Select(x => x.ActorName)
+                                         .ToArray()
+                                      ?? new string[0];
+
+                     int indexx = EditorGUILayout.Popup(
+                         ActorEditorDropdownIndex,
+                         actorNames,
+                         GUILayout.Width(200)
+                     );
 
                      if (indexx != ActorEditorDropdownIndex)
                      {
@@ -119,9 +129,18 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             EditorGUILayout.Space();
             GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 
-            int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex,  NodeManager.Instance.StartNode.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+            var actorNames = (NodeManager.Instance.StartNode?.ActorsInScene)?
+                                .Select(x => x.ActorName)
+                                .ToArray()
+                             ?? new string[0];
 
-            if(indexx != ActorEditorDropdownIndex)
+            int indexx = EditorGUILayout.Popup(
+                ActorEditorDropdownIndex,
+                actorNames,
+                GUILayout.Width(200)
+            );
+
+            if (indexx != ActorEditorDropdownIndex)
             {
                 decisionCommand.AssignNewActor(indexx);
                 preview.UpdateShotRender();

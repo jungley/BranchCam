@@ -178,9 +178,8 @@ namespace RydenCam.Editor
 
             window.autoRepaintOnSceneChange = true;
 
-            LoadFile.LoadSaveables(EditorSettingsManager.Instance.LastUsedJsonPath);
-
-            LoadFile.LoadEditorSettings();
+            var fileResult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_NodeGraphKey);
+            NodeGraphSettingsManager.Load(fileResult);
 
             InitializeStaticResources();
 
@@ -220,11 +219,13 @@ namespace RydenCam.Editor
             // If Settings has any saved shots, load them
 
             //Else
+            /*
             CameraShotsManager.Instance.CameraShots.Clear();
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Default") { IsDefault = true });
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 1"));
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 2"));
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
+            CameraShotsManager.Instance.CameraShots.Add(new CameraShotConfiguration(shotName: "Default") { IsDefault = true });
+            CameraShotsManager.Instance.CameraShots.Add(new CameraShotConfiguration(shotName: "Shot 1"));
+            CameraShotsManager.Instance.CameraShots.Add(new CameraShotConfiguration(shotName: "Shot 2"));
+            CameraShotsManager.Instance.CameraShots.Add(new CameraShotConfiguration(shotName: "Shot 3"));
+            */
 
             //------------------------
 
@@ -255,9 +256,11 @@ namespace RydenCam.Editor
                 .AddDropdownOption("File", "Open", viewModel.Open)
                 .AddDropdownOption("File", "Save", viewModel.Save)
                 .AddDropdownOption("File", "Save As", viewModel.SaveAs)
+             .AddButton("Open", viewModel.Open)
              .AddButton("Save", viewModel.Save)
              .AddButton("Toggle Preview", () => viewModel.ToggleNodePreviewRender(), width: 120)
              .AddButton("Shot Configuration", () => viewModel.OpenCameraShotEditor(), width:140)
+             .AddButton("PlayMode Settings", () => viewModel.LocateGlobalSettings(), width: 140)
             .Build();
 
             ribbonRenderer = new RibbonRenderer(ribbonDefinition);
@@ -279,7 +282,7 @@ namespace RydenCam.Editor
             ConnectionManager.Instance.Connections.CollectionChanged -= OnConnectionsChanged;
 
             //Save Editor Settings
-            SaveFile.SaveEditorSettings();
+            //SaveFile.SaveEditorSettings();
         }
 
         private void OnConnectionsChanged(object sender, NotifyCollectionChangedEventArgs e)

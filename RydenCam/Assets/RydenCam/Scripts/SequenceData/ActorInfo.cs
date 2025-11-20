@@ -20,10 +20,7 @@ namespace RydenCam.SequenceData
 
         public ActorPositionData PosData { get; set; }
 
-
         public PreviewActorData PreviewData;
-
-
 
         private GameObject _actorGO { get; set; }
         public GameObject ActorGO

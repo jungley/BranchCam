@@ -47,7 +47,11 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
         public void DrawPreviewWindow()
         {
-            if (EditorSettingsManager.Instance.SettingsData.IsNodePreviewEnabled)
+
+
+
+
+            if (FilePathSaveManager.Instance.SettingsData.IsNodePreviewEnabled)
             {
 
                 var windowRect = new Rect(node.EditorPosition.x + node.NodeWidth, node.EditorPosition.y, node.NodeWidth, 120);
@@ -62,8 +66,8 @@ namespace RydenCam.BranchCamEditor.PreviewRender
 
                 */
 
-                CamShotConfig shot = node.NodeConvodata.ShotConfig;
-                ActorPositionData actorPosData = node.NodeConvodata.Actor.PreviewData.ActorPositionData;
+                CameraShotConfiguration shot = node.NodeConvodata.ShotConfig;
+                ActorPositionData actorPosData = node.NodeConvodata.Actor?.PreviewData?.ActorPositionData;
                 ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
 
                 previewRenderer.ComposePreviewImage(windowRect, shot, actorPosData, oppActorPosData);

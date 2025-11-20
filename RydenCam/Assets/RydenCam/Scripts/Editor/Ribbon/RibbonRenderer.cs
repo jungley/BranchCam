@@ -48,7 +48,7 @@ namespace RydenCam.Editor.Ribbon
                 {
                     GUILayout.BeginVertical();
 
-                        bool visible = dropdownState.ContainsKey(dropdown.Label) && dropdownState[dropdown.Label];
+                    bool visible = dropdownState.ContainsKey(dropdown.Label) && dropdownState[dropdown.Label];
                     if (GUILayout.Button(dropdown.Label,
                         GUILayout.Width(dropdown.Width),
                         GUILayout.Height(dropdown.Height)))
@@ -65,7 +65,8 @@ namespace RydenCam.Editor.Ribbon
                                     GUILayout.Height(opt.Height)))
                                     {
                                         opt.Action?.Invoke();
-                                    }
+                                        dropdownState[dropdown.Label] = false;
+                            }
                             }
                         }
 
