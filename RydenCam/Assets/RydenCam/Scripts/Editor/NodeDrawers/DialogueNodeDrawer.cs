@@ -49,8 +49,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             ColorUtility.TryParseHtmlString("#1700FF", out Color colorref);
             Command.NodeColor = colorref;
 
-            ActorEditorDropdownIndex = dialogueNode?.NodeConvodata?.Actor?.ActorName is string actorName
-                ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
+            ActorEditorDropdownIndex =
+                dialogueNode?.NodeConvodata?.Actor?.ActorName is string actorName
+                ? GetActorIndex(actorName)
                 : -1;
 
         }

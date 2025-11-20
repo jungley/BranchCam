@@ -25,7 +25,7 @@ namespace RydenCam.SequenceData
 
         public List<string> DialogTextList;
 
-        public CamShotConfig ShotConfig;
+        public CameraShotConfiguration ShotConfig;
         public ConversationData(ActorInfo actor, List<string> dialog = null)
         {
             DialogTextList = dialog == null ? new List<string>() { string.Empty } : dialog;

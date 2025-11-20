@@ -67,12 +67,12 @@ namespace RydenCam.BranchCamEditor.BranchCam
             AngleHigh = 3.0f;
         }
 
-        public float GetDistance(CamShotConfig shot)
+        public float GetDistance(CameraShotConfiguration shot)
         {
             return DistanceSettings[shot.GoalType][shot.GoalDistance];
         }
 
-        public float GetAngle(CamShotConfig shot)
+        public float GetAngle(CameraShotConfiguration shot)
         {
             return AngleSettings[shot.GoalAngle];
         }

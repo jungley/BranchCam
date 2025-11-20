@@ -1,24 +1,24 @@
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
 using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
-using System.Collections.Generic;
+using RydenCam.BranchCamEditor.Serialization;
 using System.Linq;
 
 public class CameraShotViewModel
 {    
-    private CamShotConfig currentShot;
-    public CamShotConfig CurrentShot
+    private CameraShotConfiguration currentShot;
+    public CameraShotConfiguration CurrentShot
     {
         get => currentShot ??= CameraShotsManager.Instance.DefaultShot;
         set => currentShot = value;
     }
     
-
     public PreviewRenderer PreviewRenderer { get; set; }
     public float DistancePreviewSlider { get; set; } = 1f;
 
-    public void RemoveShot(CamShotConfig shot)
+    public void RemoveShot(CameraShotConfiguration shot)
     {
         if(shot.IsDefault)
         {
@@ -32,26 +32,32 @@ public class CameraShotViewModel
 
     public void NewFile()
     {
-        throw new System.NotImplementedException();
     }
 
     public void Save()
     {
-        throw new System.NotImplementedException();
     }
 
     public void SaveAs()
     {
-        throw new System.NotImplementedException();
     }
 
     public void Open()
     {
-        throw new System.NotImplementedException();
     }
 
     public CameraShotViewModel()
     {
+        //Get Last Saved
+        string lastOpenedFile = FilePathSaveManager.Instance
+            .GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+
+        CameraShotConfigurationWrapper shotswrapper = SettingsService.Load<CameraShotConfigurationWrapper>(lastOpenedFile);
+        if(shotswrapper != null && shotswrapper.Shots != null && shotswrapper.Shots.Any())
+        {
+            CameraShotsManager.Instance.CameraShots = shotswrapper.Shots;
+        }
+
         CurrentShot = CameraShotsManager.Instance.DefaultShot;
         PreviewRenderer = new PreviewRenderer();
     }

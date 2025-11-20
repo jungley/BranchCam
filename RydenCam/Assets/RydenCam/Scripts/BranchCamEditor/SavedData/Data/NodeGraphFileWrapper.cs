@@ -1,4 +1,6 @@
-﻿using RydenCam.Common;
+﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.Common;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,14 +21,21 @@ namespace RydenCam.BranchCamEditor.Serialization
     }
 
     [System.Serializable]
-    public class SerializedNodeList
+    public class NodeGraphFileWrapper
     {
+        [SerializeField]
+        public string CameraShotJsonPath;
+
         [SerializeField]
         public List<SerializedNode> JsonList = new List<SerializedNode>();
 
-        public SerializedNodeList(List<SerializedNode> jsonList)
+        public NodeGraphFileWrapper()
         {
-            JsonList = jsonList;
+            foreach (Node save in NodeManager.Instance.Nodes)
+            {
+                string jsonNode = JsonUtility.ToJson(save);
+                JsonList.Add(new SerializedNode(save.TypeOfNode, jsonNode));
+            }
         }
     }
 }

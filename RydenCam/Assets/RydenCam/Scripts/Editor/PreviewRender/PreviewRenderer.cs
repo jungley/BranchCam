@@ -2,7 +2,8 @@
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using System.Collections.Generic;
+using RydenCam.SequenceData;
+using System.Collections.ObjectModel;
 using UnityEditor;
 using UnityEngine;
 
@@ -70,14 +71,17 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return tex;
         }
 
-        public void ComposePreviewImage(Rect windowRect, CamShotConfig shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
+        public void ComposePreviewImage(Rect windowRect, CameraShotConfiguration shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
         {
+            if(actorPosData == null)
+                return;
+
             Pose camPose = cameraCalculator.CalculatePlacement(shot, actorPosData, oppActorPosData);
             RenderPreview(windowRect, camPose, shot);
         }
 
 
-        private void RenderPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
+        private void RenderPreview(Rect windowRect, Pose camPose, CameraShotConfiguration shot)
         {
             if (shot.GoalType == CameraGoal.Custom)
             {
@@ -90,7 +94,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
         }
 
         // Handles rendering for custom camera shots
-        private void RenderCustomPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
+        private void RenderCustomPreview(Rect windowRect, Pose camPose, CameraShotConfiguration shot)
         {
             // Skip if custom camera config isn't set
             if (!shot.IsCustomSet)

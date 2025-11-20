@@ -81,7 +81,7 @@ namespace RydenCam.DialogueGameUI
 
         public void LoadConversation()
         {
-            LoadFile.LoadSaveables(DialogueFilePath);
+            NodeGraphSettingsManager.Load(DialogueFilePath);
         }
 
 #if UNITY_EDITOR
