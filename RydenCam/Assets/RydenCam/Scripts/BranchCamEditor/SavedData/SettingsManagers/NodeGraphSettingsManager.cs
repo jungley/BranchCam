@@ -34,6 +34,10 @@ namespace RydenCam.BranchCamEditor.Serialization
 
             NodeGraphFileWrapper saveDataContainer = new NodeGraphFileWrapper();
 
+            //Set the file path to load camera shots
+            FilePathSaveManager.Instance.SetLastFilePath(saveDataContainer.CameraShotJsonFilePath, FilePathSaveManager.LastOpened_CameraShotsKey);
+            
+            
             bool ok = SettingsService.Save(saveDataContainer, filePath, FilePathSaveManager.LastOpened_NodeGraphKey);
             if (ok) BranchLog.Log($"Saved node graph to {filePath}");
             else BranchLog.Error("Failed saving node graph.");
@@ -108,6 +112,10 @@ namespace RydenCam.BranchCamEditor.Serialization
             ConnectionManager.Instance.Clear();
             NodeManager.Instance.LoadNodes(deserializedNodes);
             ConnectionManager.Instance.CreateConnections(deserializedNodes);
+
+            //Set Camera
+            FilePathSaveManager.Instance.SetLastFilePath(container.CameraShotJsonFilePath, FilePathSaveManager.LastOpened_CameraShotsKey);
+
         }
 
         public static void New()
@@ -117,6 +125,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             ConnectionManager.Instance.Clear();
             NodeManager.Instance.ActiveNode = null;
             FilePathSaveManager.Instance.SetLastFilePath(string.Empty, FilePathSaveManager.LastOpened_NodeGraphKey);
+            FilePathSaveManager.Instance.SetLastFilePath(string.Empty, FilePathSaveManager.LastOpened_CameraShotsKey);
             BranchLog.Log("New node graph (cleared).");
         }
     }
