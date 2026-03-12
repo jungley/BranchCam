@@ -121,7 +121,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             }
 
             nodeCamShotSelector?.DrawUICamCompOptions();
-            //nodeCameraOptionsDrawer.DrawUICamCompOptions();
 
         }
 

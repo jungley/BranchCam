@@ -19,6 +19,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         private ITalkable currentNode { get; set; }
 
         public event Action UpdateShotRender;
+
+        public int selectedShotIndex { get; set; } = 0;
+
         public NodeCamShotSelector(ITalkable node, GUIStyle _inspectorText, GUIStyle _labelStyleHead_Panel)
         {
             currentNode = node;
@@ -39,11 +42,17 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             popupStyle.fixedHeight = 24; // increase control height if needed
             popupStyle.alignment = TextAnchor.MiddleLeft;
 
-            string[] names = CameraShotsManager.Instance.CameraShots.Select(x => x.ShotName).ToArray();  
+            string[] names = CameraShotsManager.Instance.CameraShots.Select(x => x.ShotName).ToArray();
 
-            int selectedIndex = Mathf.Max(0, CameraShotsManager.Instance.CameraShots.IndexOf(currentNode.NodeConvodata.ShotConfig));
 
-            int newIndex = EditorGUILayout.Popup(selectedIndex, names, popupStyle, GUILayout.Width(250));
+            int index = EditorGUILayout.Popup(selectedShotIndex, names, popupStyle, GUILayout.Width(250));
+            if(index != selectedShotIndex)
+            {
+                selectedShotIndex = index;
+                currentNode.NodeConvodata.ShotConfig = CameraShotsManager.Instance.CameraShots[selectedShotIndex];
+                UpdateShotRender?.Invoke();
+            }
+
 
 
             // Return the selected object

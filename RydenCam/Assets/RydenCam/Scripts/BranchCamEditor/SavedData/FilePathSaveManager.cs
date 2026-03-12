@@ -1,17 +1,12 @@
 ﻿using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Managers
 {
     public class FilePathSaveManager
     {
-        /// putting this here temporarily until a better place is found
+        /// putting SettingsData here temporarily until a better place is found
         public SaveEditorSettingsData SettingsData { get; set; }
 
 
@@ -43,7 +38,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Managers
         public string GetLastFolderPathSaved(string key)
         {
             string filepath = GetLastFilePathSaved(key);
-
             return string.IsNullOrEmpty(filepath) ? string.Empty : System.IO.Path.GetDirectoryName(filepath);
         }
 

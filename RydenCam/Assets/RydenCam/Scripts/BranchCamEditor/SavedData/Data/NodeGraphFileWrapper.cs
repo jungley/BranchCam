@@ -1,4 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using System.Collections.Generic;
@@ -24,13 +25,19 @@ namespace RydenCam.BranchCamEditor.Serialization
     public class NodeGraphFileWrapper
     {
         [SerializeField]
-        public string CameraShotJsonPath;
+        public string CameraShotJsonFilePath;
 
         [SerializeField]
         public List<SerializedNode> JsonList = new List<SerializedNode>();
 
         public NodeGraphFileWrapper()
         {
+
+            //Get last fileoath OPENED
+            string cameraShotPath = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+
+            CameraShotJsonFilePath = cameraShotPath;
+
             foreach (Node save in NodeManager.Instance.Nodes)
             {
                 string jsonNode = JsonUtility.ToJson(save);

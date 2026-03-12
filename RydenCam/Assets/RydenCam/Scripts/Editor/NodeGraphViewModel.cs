@@ -1,20 +1,16 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
-using Assets.RydenCam.Scripts.Editor.NodeDrawers;
-using Assets.RydenCam.Scripts.Editor;
-using RydenCam.BranchCamEditor;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Common;
+using RydenCam.Editor;
+using RydenCam.Editor.CamersaShotEditor;
+using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
-using RydenCam.Editor;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
-using System;
-using Assets.RydenCam.Scripts.NodeCommands;
-using RydenCam.Editor.CamersaShotEditor;
-using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 public class NodeGraphViewModel
 {
@@ -129,6 +125,8 @@ public class NodeGraphViewModel
 
     public void ToggleNodePreviewRender()
     {
+        FilePathSaveManager.Instance.SettingsData.IsNodePreviewEnabled 
+            = !FilePathSaveManager.Instance.SettingsData.IsNodePreviewEnabled;
     }
 
     public void HandleInputClicks()

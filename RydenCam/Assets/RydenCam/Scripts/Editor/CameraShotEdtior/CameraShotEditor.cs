@@ -38,14 +38,10 @@ namespace RydenCam.Editor.CamersaShotEditor
             ViewModel = new CameraShotViewModel();
 
             var ribbonDefinition = new RibbonDefinitionBuilder()
-                .AddDropdown("File")
-                    .AddDropdownOption("File", "New", ViewModel.NewFile)
-                    .AddDropdownOption("File", "Open", ViewModel.Open)
-                    .AddDropdownOption("File", "Save", ViewModel.Save)
-                    .AddDropdownOption("File", "Save As", ViewModel.SaveAs)
+                .AddButton("New", ViewModel.NewFile)
                 .AddButton("Open", ViewModel.Open)
-                .AddButton("Save", ViewModel.Save)
-                    
+                //.AddButton("Save", ViewModel.Save)
+                .AddButton("Save As", ViewModel.SaveAs)
                 .Build();
 
             ribbonRenderer = new RibbonRenderer(ribbonDefinition);

@@ -11,20 +11,15 @@ namespace RydenCam.BranchCamEditor.Serialization
     [ExecuteAlways]
     public static class CameraShotSettingsManager
     {
-        public static bool Save(string filePath)
+        public static bool Save(string filePath = "")
         {
             if (CameraShotsManager.Instance.CameraShots == null) return false;
 
             if (string.IsNullOrEmpty(filePath))
             {
-                Debug.Log("No file path provided. Aborting save");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(filePath))
-            {
-                filePath = SettingsService.ShowSaveAsDialog("Save Camera Shots As", BranchConstants.DefaultDialogueFolder, "CameraShots", "json");
-                if (string.IsNullOrEmpty(filePath)) return false;
+                string path = SettingsService.ShowSaveAsDialog("Save Camera Shots As", BranchConstants.DefaultDialogueFolder, "CameraShots", "json");
+                if (string.IsNullOrEmpty(path)) return false;
+                return Save(path);
             }
 
             CameraShotConfigurationWrapper container = new CameraShotConfigurationWrapper();
@@ -33,7 +28,11 @@ namespace RydenCam.BranchCamEditor.Serialization
             string cameraShotsJson = JsonUtility.ToJson(container);
 
             bool ok = SettingsService.Save(container, filePath, FilePathSaveManager.LastOpened_CameraShotsKey);
-            if (ok) BranchLog.Log($"Saved camera shots to {filePath}");
+            if (ok)
+            {
+                BranchLog.Log($"Saved camera shots to {filePath}");
+                FilePathSaveManager.Instance.SetLastFilePath(filePath, FilePathSaveManager.LastOpened_CameraShotsKey);
+            }
             
             return ok;
         }
@@ -48,6 +47,7 @@ namespace RydenCam.BranchCamEditor.Serialization
         public static void OpenAndLoad()
         {
             string path = SettingsService.ShowOpenFileDialog("Select Camera Shots JSON", BranchConstants.DefaultDialogueFolder, "json");
+            
             if (string.IsNullOrEmpty(path)) return;
 
             Load(path);
@@ -65,12 +65,12 @@ namespace RydenCam.BranchCamEditor.Serialization
             }
 
             CameraShotsManager.Instance.CameraShots = container.Shots;
+            FilePathSaveManager.Instance.SetLastFilePath(filePath, FilePathSaveManager.LastOpened_CameraShotsKey);
         }
 
         public static void New()
         {
             CameraShotsManager.Instance.CameraShots.Clear();
-            BranchLog.Log("New camera shots cleared.");
         }
     }
 }
