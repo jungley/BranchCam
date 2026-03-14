@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -40,10 +40,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
         public override void DrawNode(int index)
         {
+            Color previousBackgroundColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.gray;
 
+            var roundedRect = new Rect(SnapToPixel(Command.WindowRect.x), SnapToPixel(Command.WindowRect.y), Command.WindowRect.width, Command.WindowRect.height);
             Command.WindowRect =
-                GUI.Window(index, Command.WindowRect,
+                GUI.Window(index, roundedRect,
                     (windowId) =>
                     {
 
@@ -66,115 +68,123 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                     }, "");
 
             Command.HighlightIfActive();
-
-            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
+            Node.EditorPosition = SnapToPixel(new Vector2(Command.WindowRect.x, Command.WindowRect.y));
+            GUI.backgroundColor = previousBackgroundColor;
         }
 
 
 
         public override void DrawNodeInspector()
         {
-            EditorGUIUtility.labelWidth = 75;
-            EditorGUILayout.LabelField("Scene Info", labelStyleHead_Panel);
-            EditorGUILayout.Space();
-
-            //Scene Name
-            EditorGUILayout.LabelField("Sequence Name", inspectorText);
-            startNode.SequenceName = EditorGUILayout.TextField(startNode.SequenceName);
-            EditorGUILayout.LabelField("Camera Side", inspectorText);
-            startNode.CameraSide = (Side)EditorGUILayout.EnumPopup(startNode.CameraSide);
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Actors in Scene", labelStyleHead_Panel);
-            EditorGUILayout.Space();
-
-            if (GUILayout.Button("Add Actor", GUILayout.Width(80), GUILayout.Height(25)))
+            float previousLabelWidth = EditorGUIUtility.labelWidth;
+            try
             {
-                startCommand.AddActor();
-            }
+                EditorGUIUtility.labelWidth = 75;
+                EditorGUILayout.LabelField("Scene Info", labelStyleHead_Panel);
+                EditorGUILayout.Space();
 
-            for (int actorIndex = 0; actorIndex < startNode.ActorsInScene.Count; actorIndex++)
-            {
-                using (var actorListingsScope = new GUILayout.HorizontalScope())
+                //Scene Name
+                EditorGUILayout.LabelField("Sequence Name", inspectorText);
+                startNode.SequenceName = EditorGUILayout.TextField(startNode.SequenceName);
+                EditorGUILayout.LabelField("Camera Side", inspectorText);
+                startNode.CameraSide = (Side)EditorGUILayout.EnumPopup(startNode.CameraSide);
+
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Actors in Scene", labelStyleHead_Panel);
+                EditorGUILayout.Space();
+
+                if (GUILayout.Button("Add Actor", GUILayout.Width(80), GUILayout.Height(25)))
                 {
-                    EditorGUILayout.LabelField("Actor " + (actorIndex + 1), labelStyleHead_Node);
-
-                    if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(20)))
-                    {
-                        startCommand.RemoveActor(actorIndex);
-                        break;
-                    }
+                    startCommand.AddActor();
                 }
 
-                using (var focusTargetsScope = new GUILayout.HorizontalScope())
+                for (int actorIndex = 0; actorIndex < startNode.ActorsInScene.Count; actorIndex++)
                 {
-                    GUILayout.Label("Focus Target", inspectorText, GUILayout.Width(80));
-                    startNode.ActorsInScene[actorIndex].ActorGO = (GameObject)EditorGUILayout.ObjectField(startNode.ActorsInScene[actorIndex].ActorGO, typeof(GameObject), true);
-
-                }
-            }
-
-            using (var startPositionSettingsScope = new GUILayout.VerticalScope())
-            {
-                EditorGUIUtility.labelWidth = 50;
-                EditorGUILayout.Space(15f);
-                GUIContent predefinedPositionsLabel = new GUIContent("Use Predefined Start Positions", "Enable this option to use predefined positions for characters in the dialogue.You can set current character positions as the start points for the conversation. If enabled, characters will return to their original positions after the dialogue ends.");
-
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(predefinedPositionsLabel, labelStyleHead_Node, GUILayout.Width(250));
-                EditorGUILayout.Space(50);
-                startNode.StartPositionsEnabled = EditorGUILayout.Toggle(startNode.StartPositionsEnabled, GUILayout.Width(20f), GUILayout.Height(20f));
-                EditorGUILayout.EndHorizontal();
-
-
-                //Predefined positions enabled
-                if (startNode.StartPositionsEnabled)
-                {
-                    string labelvalue = (string.IsNullOrEmpty(startNode.UnitySceneName)) ? "<Not Assigned>" : startNode.UnitySceneName;
-                    EditorGUILayout.LabelField("Unity Scene Name: " + labelvalue, inspectorText);
-                    EditorGUILayout.Space(5f);
-
-                    EditorGUILayout.BeginHorizontal();
-
-                    if (GUILayout.Button("Assign Actor Start Positions", GUILayout.Width(200), GUILayout.Height(25)))
+                    using (var actorListingsScope = new GUILayout.HorizontalScope())
                     {
-                        startCommand.AssignActorStartPositionData();
-                    }
+                        EditorGUILayout.LabelField("Actor " + (actorIndex + 1), labelStyleHead_Node);
 
-                    if (startNode.ActorsInScene.Where(x => x.PreDefinedStartPositionEnabled).Any())
-                    {
-                        if (GUILayout.Button("Clear", GUILayout.Width(100), GUILayout.Height(25)))
+                        if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(20)))
                         {
-                            startCommand.ClearActorsStartPositinonData();
+                            startCommand.RemoveActor(actorIndex);
+                            break;
                         }
                     }
 
+                    using (var focusTargetsScope = new GUILayout.HorizontalScope())
+                    {
+                        GUILayout.Label("Focus Target", inspectorText, GUILayout.Width(80));
+                        startNode.ActorsInScene[actorIndex].ActorGO = (GameObject)EditorGUILayout.ObjectField(startNode.ActorsInScene[actorIndex].ActorGO, typeof(GameObject), true);
+
+                    }
+                }
+
+                using (var startPositionSettingsScope = new GUILayout.VerticalScope())
+                {
+                    EditorGUIUtility.labelWidth = 50;
+                    EditorGUILayout.Space(15f);
+                    GUIContent predefinedPositionsLabel = new GUIContent("Use Predefined Start Positions", "Enable this option to use predefined positions for characters in the dialogue.You can set current character positions as the start points for the conversation. If enabled, characters will return to their original positions after the dialogue ends.");
+
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(predefinedPositionsLabel, labelStyleHead_Node, GUILayout.Width(250));
+                    EditorGUILayout.Space(50);
+                    startNode.StartPositionsEnabled = EditorGUILayout.Toggle(startNode.StartPositionsEnabled, GUILayout.Width(20f), GUILayout.Height(20f));
                     EditorGUILayout.EndHorizontal();
 
 
-                    foreach (var actorInfo in NodeManager.Instance.ActorsInScene)
+                    //Predefined positions enabled
+                    if (startNode.StartPositionsEnabled)
                     {
+                        string labelvalue = (string.IsNullOrEmpty(startNode.UnitySceneName)) ? "<Not Assigned>" : startNode.UnitySceneName;
+                        EditorGUILayout.LabelField("Unity Scene Name: " + labelvalue, inspectorText);
+                        EditorGUILayout.Space(5f);
+
                         EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.LabelField(actorInfo.ActorName, inspectorTextBold);
-                        string positionset = startCommand.GetPreDefinedStartPositionDisplayData(actorInfo);
-                        EditorGUILayout.LabelField(positionset, inspectorText);
-                        EditorGUILayout.Space();
+
+                        if (GUILayout.Button("Assign Actor Start Positions", GUILayout.Width(200), GUILayout.Height(25)))
+                        {
+                            startCommand.AssignActorStartPositionData();
+                        }
+
+                        if (startNode.ActorsInScene.Where(x => x.PreDefinedStartPositionEnabled).Any())
+                        {
+                            if (GUILayout.Button("Clear", GUILayout.Width(100), GUILayout.Height(25)))
+                            {
+                                startCommand.ClearActorsStartPositinonData();
+                            }
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+
+
+                        foreach (var actorInfo in NodeManager.Instance.ActorsInScene)
+                        {
+                            EditorGUILayout.BeginHorizontal();
+                            EditorGUILayout.LabelField(actorInfo.ActorName, inspectorTextBold);
+                            string positionset = startCommand.GetPreDefinedStartPositionDisplayData(actorInfo);
+                            EditorGUILayout.LabelField(positionset, inspectorText);
+                            EditorGUILayout.Space();
+                            EditorGUILayout.EndHorizontal();
+                        }
+
+                        EditorGUILayout.Space(10f);
+
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Look at each other (Override Rotations)", GUILayout.Height(40f));
+                        startNode.OverrideRotation = EditorGUILayout.Toggle(startNode.OverrideRotation, GUILayout.Width(40f), GUILayout.Height(40f));
+                        EditorGUILayout.EndHorizontal();
+                        EditorGUILayout.Space(5f);
+
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField("Return to original positions\nwhen conversation ends", GUILayout.Height(40f));
+                        startNode.ReturnToOriginalPositions = EditorGUILayout.Toggle(startNode.ReturnToOriginalPositions, GUILayout.Width(40f), GUILayout.Height(40f));
                         EditorGUILayout.EndHorizontal();
                     }
-
-                    EditorGUILayout.Space(10f);
-
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Look at each other (Override Rotations)", GUILayout.Height(40f));
-                    startNode.OverrideRotation = EditorGUILayout.Toggle(startNode.OverrideRotation, GUILayout.Width(40f), GUILayout.Height(40f));
-                    EditorGUILayout.EndHorizontal();
-                    EditorGUILayout.Space(5f);
-
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("Return to original positions\nwhen conversation ends", GUILayout.Height(40f));
-                    startNode.ReturnToOriginalPositions = EditorGUILayout.Toggle(startNode.ReturnToOriginalPositions, GUILayout.Width(40f), GUILayout.Height(40f));
-                    EditorGUILayout.EndHorizontal();
                 }
+            }
+            finally
+            {
+                EditorGUIUtility.labelWidth = previousLabelWidth;
             }
         }
     }

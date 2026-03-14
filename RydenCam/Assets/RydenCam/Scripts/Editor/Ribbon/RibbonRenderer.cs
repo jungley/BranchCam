@@ -2,6 +2,7 @@ using RydenCam.Editor.Ribbon.RibbonItem;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using RydenCam.Editor.Styling;
 
 namespace RydenCam.Editor.Ribbon
 {
@@ -10,26 +11,19 @@ namespace RydenCam.Editor.Ribbon
         private readonly RibbonDefinition definition;
         private readonly Dictionary<string, bool> dropdownState = new Dictionary<string, bool>();
 
-        private Texture2D targetRibbonTexture { get; set; }
+        private readonly GUIStyle toolbarPanelStyle;
+        private readonly GUIStyle toolbarButtonStyle;
 
         public RibbonRenderer(RibbonDefinition def)
         {
-            //Button Header Texture
-            targetRibbonTexture = new Texture2D(1, 1);
-            targetRibbonTexture.SetPixel(0, 0, Color.gray);
-            targetRibbonTexture.Apply();
-
             definition = def;
+            toolbarPanelStyle = BranchCamEditorTheme.CreateToolbarPanelStyle();
+            toolbarButtonStyle = BranchCamEditorTheme.CreateToolbarButtonStyle();
         }
 
-        public void Draw()
+        public void Draw(float availableWidth)
         {
-            float availableWidth = EditorGUIUtility.currentViewWidth;
-
-            var panelStyle = new GUIStyle();
-            panelStyle.normal.background = targetRibbonTexture;
-
-            GUILayout.BeginHorizontal(panelStyle, GUILayout.Width(availableWidth));
+            GUILayout.BeginHorizontal(toolbarPanelStyle, GUILayout.Width(availableWidth), GUILayout.Height(50));
             //Weird bug requires a width of 1f to push everything to the left
             GUILayout.BeginHorizontal(GUILayout.Width(1f));
 
@@ -37,9 +31,10 @@ namespace RydenCam.Editor.Ribbon
             {
                 if (item is RibbonButton btn)
                 {
-                    if (GUILayout.Button(btn.Label,
+                    float buttonHeight = Mathf.Max(btn.Height, 34f);
+                    if (GUILayout.Button(btn.Label, toolbarButtonStyle,
                         GUILayout.Width(btn.Width),
-                        GUILayout.Height(btn.Height)))
+                        GUILayout.Height(buttonHeight)))
                         {
                             btn.Action?.Invoke();
                         }
@@ -49,9 +44,10 @@ namespace RydenCam.Editor.Ribbon
                     GUILayout.BeginVertical();
 
                     bool visible = dropdownState.ContainsKey(dropdown.Label) && dropdownState[dropdown.Label];
-                    if (GUILayout.Button(dropdown.Label,
+                    float dropdownHeight = Mathf.Max(dropdown.Height, 34f);
+                    if (GUILayout.Button(dropdown.Label, toolbarButtonStyle,
                         GUILayout.Width(dropdown.Width),
-                        GUILayout.Height(dropdown.Height)))
+                        GUILayout.Height(dropdownHeight)))
                         {
                             dropdownState[dropdown.Label] = !visible;
                         }
@@ -60,9 +56,10 @@ namespace RydenCam.Editor.Ribbon
                         {
                             foreach (var opt in dropdown.Options)
                             {
-                                if (GUILayout.Button(opt.Label,
+                                float optionHeight = Mathf.Max(opt.Height, 28f);
+                                if (GUILayout.Button(opt.Label, toolbarButtonStyle,
                                     GUILayout.Width(opt.Width),
-                                    GUILayout.Height(opt.Height)))
+                                    GUILayout.Height(optionHeight)))
                                     {
                                         opt.Action?.Invoke();
                                         dropdownState[dropdown.Label] = false;
@@ -75,6 +72,11 @@ namespace RydenCam.Editor.Ribbon
             }
             GUILayout.EndHorizontal();
             GUILayout.EndHorizontal();
+        }
+
+        public void Draw()
+        {
+            Draw(EditorGUIUtility.currentViewWidth);
         }
     }
 }

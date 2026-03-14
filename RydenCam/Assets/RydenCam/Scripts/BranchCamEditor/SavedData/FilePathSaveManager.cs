@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using Assets.RydenCam.Scripts.Editor.CameraShotEditor;
 using System.IO;
 using UnityEngine;
 

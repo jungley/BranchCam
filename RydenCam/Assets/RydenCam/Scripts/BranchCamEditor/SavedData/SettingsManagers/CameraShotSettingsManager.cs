@@ -1,9 +1,9 @@
+#if UNITY_EDITOR
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
-using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using Assets.RydenCam.Scripts.Editor.CameraShotEditor;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.Serialization
@@ -24,8 +24,6 @@ namespace RydenCam.BranchCamEditor.Serialization
 
             CameraShotConfigurationWrapper container = new CameraShotConfigurationWrapper();
             container.Shots = CameraShotsManager.Instance.CameraShots;
-
-            string cameraShotsJson = JsonUtility.ToJson(container);
 
             bool ok = SettingsService.Save(container, filePath, FilePathSaveManager.LastOpened_CameraShotsKey);
             if (ok)
@@ -58,7 +56,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             if (string.IsNullOrEmpty(filePath)) return;
 
             var container = SettingsService.Load<CameraShotConfigurationWrapper>(filePath);
-            if (container == null)
+            if (container == null || container.Shots == null)
             {
                 BranchLog.Error("Failed to load camera shots.");
                 return;
@@ -71,6 +69,8 @@ namespace RydenCam.BranchCamEditor.Serialization
         public static void New()
         {
             CameraShotsManager.Instance.CameraShots.Clear();
+            var _ = CameraShotsManager.Instance.DefaultShot;
         }
     }
 }
+#endif

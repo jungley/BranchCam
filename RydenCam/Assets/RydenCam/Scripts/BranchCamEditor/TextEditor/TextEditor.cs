@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor;
 using System;
 using System.IO;
@@ -23,7 +24,6 @@ public class TextEditor : EditorWindow
         var style = EditorStyles.textArea;
         style.richText = true;
 
-        // Prevent auto-focus selecting all text by giving the field a name
         GUI.SetNextControlName("TextEditorArea");
         text = EditorGUI.TextArea(textRect, text, style);
     }
@@ -47,7 +47,7 @@ public class TextEditor : EditorWindow
     {
         text = "";
         path = "";
-        FocusTextEditor(); // Give focus to text area
+        FocusTextEditor();
     }
 
     void OpenFile()
@@ -56,7 +56,7 @@ public class TextEditor : EditorWindow
         if (!string.IsNullOrEmpty(path) && File.Exists(path))
         {
             text = File.ReadAllText(path);
-            FocusTextEditor(); // Give focus after opening
+            FocusTextEditor();
         }
     }
 
@@ -70,7 +70,7 @@ public class TextEditor : EditorWindow
         if (!string.IsNullOrEmpty(path))
         {
             File.WriteAllText(path, text);
-            GUI.FocusControl(null); // Optional: defocus to visually indicate save
+            GUI.FocusControl(null);
         }
     }
 
@@ -80,7 +80,6 @@ public class TextEditor : EditorWindow
         EditorGUIUtility.editingTextField = true;
     }
 
-    // Helper to draw buttons with clean layout
     void Button(GUIContent content, Action action, params GUILayoutOption[] options)
     {
         if (GUILayout.Button(content, EditorStyles.miniButtonLeft, options))
@@ -89,3 +88,4 @@ public class TextEditor : EditorWindow
         }
     }
 }
+#endif

@@ -1,6 +1,6 @@
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
-using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using Assets.RydenCam.Scripts.Editor.CameraShotEditor;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Serialization;

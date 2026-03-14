@@ -36,7 +36,7 @@ namespace RydenCam.DialogueGameUI
 
             if(DialoguePlayer == null)
             {
-                DialoguePlayer scriptComponent = FindObjectOfType<DialoguePlayer>();
+                DialoguePlayer = FindObjectOfType<DialoguePlayer>();
             }
 
             scrollView = DialogueUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");

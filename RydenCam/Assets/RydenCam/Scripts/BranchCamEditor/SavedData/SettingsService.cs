@@ -1,16 +1,14 @@
 using RydenCam.Common;
 using System;
-using UnityEditor;
-using UnityEngine;
 using System.IO;
+using UnityEngine;
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace RydenCam.BranchCamEditor.Serialization
 {
-    /// <summary>
-    /// Generic file+dialog persistence helpers for editor settings and data.
-    /// Provides Save/Load/SaveAs/Open dialog and project-asset pinging.
-    /// </summary>
     [ExecuteAlways]
     public static class SettingsService
     {
@@ -22,9 +20,13 @@ namespace RydenCam.BranchCamEditor.Serialization
             {
                 string json = JsonUtility.ToJson(data);
                 File.WriteAllText(path, json);
+#if UNITY_EDITOR
                 AssetDatabase.Refresh();
+#endif
                 FilePathSaveManager.Instance.SetLastFilePath(path, key);
+#if UNITY_EDITOR
                 PingAssetIfProjectPath(path);
+#endif
                 return true;
             }
             catch (Exception e)
@@ -49,6 +51,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             }
         }
 
+#if UNITY_EDITOR
         public static string ShowSaveAsDialog(string title, string defaultFolder, string defaultName, string extension = "json")
         {
             try
@@ -87,5 +90,6 @@ namespace RydenCam.BranchCamEditor.Serialization
             UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(normalized);
             if (obj != null) EditorGUIUtility.PingObject(obj);
         }
+#endif
     }
 }

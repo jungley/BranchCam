@@ -6,7 +6,6 @@ using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Common;
 using RydenCam.Editor;
-using RydenCam.Editor.CamersaShotEditor;
 using System;
 using System.Linq;
 using UnityEditor;
@@ -46,9 +45,16 @@ public class NodeGraphViewModel
 
     public void Save()
     {
-        var fileresult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_NodeGraphKey);
+        var fileResult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_NodeGraphKey);
 
-        NodeGraphSettingsManager.Save(fileresult);
+        if (string.IsNullOrEmpty(fileResult))
+        {
+            NodeGraphSettingsManager.SaveAs();
+        }
+        else
+        {
+            NodeGraphSettingsManager.Save(fileResult);
+        }
     }
 
     public void SaveAs()
@@ -129,10 +135,10 @@ public class NodeGraphViewModel
             = !FilePathSaveManager.Instance.SettingsData.IsNodePreviewEnabled;
     }
 
-    public void HandleInputClicks()
+    public void HandleInputClicks(Vector2? mousePosOverride = null)
     {
         Event e = Event.current;
-        Vector2 mousePos = e.mousePosition;
+        Vector2 mousePos = mousePosOverride ?? e.mousePosition;
 
         switch (e.type)
         {
@@ -147,7 +153,13 @@ public class NodeGraphViewModel
                 
             case EventType.MouseUp:
                 if (e.button == 0)
+                {
+                    if (IsDrawingHandle)
+                    {
+                        HandleConnectionPointSelected(mousePos);
+                    }
                     HandleLeftMouseUp(mousePos);
+                }
                 break;
         }
     }
@@ -290,6 +302,8 @@ public class NodeGraphViewModel
             ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
             IsDrawingHandle = false;
             SelectedConnectionPoint = null;
+            Event.current?.Use();
+            editorWindow?.Repaint();
         }
     }
     

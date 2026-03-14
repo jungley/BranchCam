@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.Common;
 using RydenCam.SequenceData;
@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Node = Assets.RydenCam.Scripts.BranchCamCC.Node;
 using Assets.RydenCam.Scripts.NodeCommands;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 
 namespace RydenCam.BranchCamEditor.Managers
 {

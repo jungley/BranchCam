@@ -2,7 +2,7 @@
 
 using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
-using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using Assets.RydenCam.Scripts.Editor.CameraShotEditor;
 using RydenCam.BranchCamEditor.BranchCam;
 using System;
 using System.Linq;
@@ -36,27 +36,33 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             EditorGUILayout.LabelField("Shot Composition", labelStyleHead_Panel);
             EditorGUILayout.Space();
 
-            // Create or reuse a larger font style
-            GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
-            popupStyle.fontSize = 14; // increase font size
-            popupStyle.fixedHeight = 24; // increase control height if needed
-            popupStyle.alignment = TextAnchor.MiddleLeft;
-
-            string[] names = CameraShotsManager.Instance.CameraShots.Select(x => x.ShotName).ToArray();
-
-
-            int index = EditorGUILayout.Popup(selectedShotIndex, names, popupStyle, GUILayout.Width(250));
-            if(index != selectedShotIndex)
+            var shots = CameraShotsManager.Instance.CameraShots;
+            if (shots == null || shots.Count == 0)
             {
-                selectedShotIndex = index;
-                currentNode.NodeConvodata.ShotConfig = CameraShotsManager.Instance.CameraShots[selectedShotIndex];
-                UpdateShotRender?.Invoke();
+                EditorGUILayout.LabelField("No camera shots available.");
+                return;
             }
 
+            GUIStyle popupStyle = new GUIStyle(EditorStyles.popup);
+            popupStyle.fontSize = 14;
+            popupStyle.fixedHeight = 24;
+            popupStyle.alignment = TextAnchor.MiddleLeft;
 
+            string[] names = shots.Select(x => x.ShotName).ToArray();
 
-            // Return the selected object
-            //currentNode.NodeConvodata.ShotConfig = CameraShotsManager.Instance.CameraShots.TryGet<CameraShotConfiguration>[0];
+            if (selectedShotIndex < 0 || selectedShotIndex >= names.Length)
+                selectedShotIndex = 0;
+
+            int index = EditorGUILayout.Popup(selectedShotIndex, names, popupStyle, GUILayout.Width(250));
+
+            if (index < 0 || index >= shots.Count) index = 0;
+
+            if (index != selectedShotIndex)
+            {
+                selectedShotIndex = index;
+                currentNode.NodeConvodata.ShotConfig = shots[selectedShotIndex];
+                UpdateShotRender?.Invoke();
+            }
         }
     }
 }

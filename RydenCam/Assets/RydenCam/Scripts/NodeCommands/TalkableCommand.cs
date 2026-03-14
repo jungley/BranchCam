@@ -1,21 +1,18 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 using RydenCam.BranchCamEditor.Managers;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Assets.RydenCam.Scripts.NodeCommands
 {
     public abstract class TalkableCommand: NodeCommand
     {
         private ITalkable talkableNode { get; set; }
-
-        //public CustomCameraCommand CustomCameraCommand { get; set; }
 
         public TwoWayDictionary<int, Rect> TextAreaRectIndex { get; set; }
 
@@ -30,23 +27,25 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public void AssignNewActor(int actorIndex)
         {
-            try
+            var actors = NodeManager.Instance.ActorsInScene;
+            if (actors == null || actorIndex < 0 || actorIndex >= actors.Count)
             {
-                var actorID = NodeManager.Instance.ActorsInScene[actorIndex].ActorID;
-                talkableNode.NodeConvodata.Actor = NodeManager.Instance.ActorsInScene.Where(x => x.ActorID == actorID).FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Error assigning new actor: {ex.Message}");
+                Debug.LogWarning("[RydenCam] Invalid actor index for assignment.");
+                return;
             }
 
+            var actorID = actors[actorIndex].ActorID;
+            talkableNode.NodeConvodata.Actor = actors.FirstOrDefault(x => x.ActorID == actorID);
         }
 
+#if UNITY_EDITOR
         public void ShowAddRemoveMenu(Vector2 mousePos)
         {
             GUIUtility.keyboardControl = 0;
 
-            Rect rect = TextAreaRectIndex.Values.Where(rect => rect.Contains(mousePos)).FirstOrDefault();
+            if (TextAreaRectIndex == null) return;
+
+            Rect rect = TextAreaRectIndex.Values.Where(r => r.Contains(mousePos)).FirstOrDefault();
             if(!TextAreaRectIndex.GetByValue(rect, out int index)) return;
 
             GenericMenu menu = new GenericMenu();
@@ -63,6 +62,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             }
             menu.ShowAsContext();
         }
+#endif
 
     }
 

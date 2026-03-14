@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -132,9 +132,11 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
             foreach (var actor in NodeManager.Instance.ActorsInScene)
             {
+                if (actor?.PreviewData?.MeshMatScale == null) continue;
+
                 foreach (var meshMatScale in actor.PreviewData.MeshMatScale)
                 {
-                    if (meshMatScale.Mesh == null)
+                    if (meshMatScale.Mesh == null || meshMatScale.Mat == null)
                         continue;
 
                     var matrix = Matrix4x4.TRS(

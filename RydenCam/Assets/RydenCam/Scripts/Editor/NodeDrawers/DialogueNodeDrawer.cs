@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using RydenCam.BranchCamEditor.PreviewRender;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
@@ -58,8 +58,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
         public override void DrawNode(int index)
         {
+            Color previousBackgroundColor = GUI.backgroundColor;
             int buffer = 42;
-            Command.WindowRect = GUI.Window(index, new Rect(dialogueNode.EditorPosition.x, dialogueNode.EditorPosition.y, dialogueNode.NodeWidth, dialogueNode.NodeHeight),
+            Command.WindowRect = GUI.Window(index, new Rect(SnapToPixel(dialogueNode.EditorPosition.x), SnapToPixel(dialogueNode.EditorPosition.y), dialogueNode.NodeWidth, dialogueNode.NodeHeight),
                 (windowId) =>
                 {
 
@@ -99,9 +100,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             preview.DrawPreviewWindow();
 
             Command.HighlightIfActive();
-
-            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
-
+            Node.EditorPosition = SnapToPixel(new Vector2(Command.WindowRect.x, Command.WindowRect.y));
+            GUI.backgroundColor = previousBackgroundColor;
         }
 
         public override void DrawNodeInspector()

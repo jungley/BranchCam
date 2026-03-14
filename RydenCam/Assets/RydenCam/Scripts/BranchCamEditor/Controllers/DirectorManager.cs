@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Cinemachine;
 using RydenCam.BranchCamEditor.BranchCam;
@@ -50,6 +50,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         private void SetCamera(Node CurrentNode, CinemachineVirtualCamera dialogueCamera)
         {
             ITalkable posNode = CurrentNode as ITalkable;
+            if (posNode?.NodeConvodata?.Actor?.PosData == null || posNode.NodeConvodata.ShotConfig == null) return;
+
             Pose placement = CameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig, posNode.NodeConvodata.Actor.PosData);
             dialogueCamera.transform.SetPositionAndRotation(placement.position, placement.rotation);
         }
@@ -59,6 +61,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         /// </summary>
         private void ActorsLookAtEachOther(ITalkable node)
         {
+            if (node?.NodeConvodata?.Actor?.ActorGO == null) return;
+
             int actorCount = NodeManager.Instance.ActorsInScene.Count;
             if (actorCount <= 1) return;
 
@@ -93,7 +97,14 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
 
         private Vector3 GetMidPoint(List<Vector3> focusTargets = null)
         {
-            focusTargets = NodeManager.Instance.ActorsInScene.Select(x => x.ActorGO.transform.root.position).ToList();
+            var actors = NodeManager.Instance.ActorsInScene;
+            if (actors == null || actors.Count == 0) return Vector3.zero;
+
+            focusTargets = actors
+                .Where(x => x?.ActorGO != null)
+                .Select(x => x.ActorGO.transform.root.position)
+                .ToList();
+            if (focusTargets.Count == 0) return Vector3.zero;
 
             Vector3 midPoint = CameraCalculator.CalculateMidPoint(focusTargets);
 
@@ -127,6 +138,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
 
             foreach (ActorInfo actor in NodeManager.Instance.StartNode.ActorsInScene)
             {
+                if (actor?.ActorGO == null) continue;
                 actor.ActorGO.transform.root.position = actor.OriginalPositionAtStartOfDialogue.position;
             }
 

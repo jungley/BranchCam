@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
@@ -44,13 +44,55 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
             if (incomingType == ConnectionPointType.In)
             {
-                Rect rect = TextAreaRectIndex.Values.Where(rect => rect.Contains(mousePos)).FirstOrDefault();
-                if(!TextAreaRectIndex.GetByValue(rect, out int index)) return null;
-
-                return Node.PointOut[index];
+                if (TryGetHoveredDecisionIndex(mousePos, out int index) &&
+                    index >= 0 &&
+                    index < Node.PointOut.Count)
+                {
+                    return Node.PointOut[index];
+                }
             }
 
             return null;
+        }
+
+        public bool TryGetHoveredDecisionRect(Vector2 mousePos, out Rect hoveredRect)
+        {
+            hoveredRect = default;
+
+            if (TextAreaRectIndex == null)
+            {
+                return false;
+            }
+
+            if (!TryGetHoveredDecisionIndex(mousePos, out int hoveredIndex))
+            {
+                return false;
+            }
+
+            if (!TextAreaRectIndex.GetByKey(hoveredIndex, out hoveredRect))
+            {
+                return false;
+            }
+
+            return hoveredRect != default;
+        }
+
+        private bool TryGetHoveredDecisionIndex(Vector2 mousePos, out int hoveredIndex)
+        {
+            hoveredIndex = -1;
+            if (TextAreaRectIndex == null) return false;
+
+            // Iterate by key to avoid fragile reverse Rect->index lookups.
+            foreach (int key in TextAreaRectIndex.Keys.OrderBy(x => x))
+            {
+                if (TextAreaRectIndex.GetByKey(key, out Rect optionRect) && optionRect.Contains(mousePos))
+                {
+                    hoveredIndex = key;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

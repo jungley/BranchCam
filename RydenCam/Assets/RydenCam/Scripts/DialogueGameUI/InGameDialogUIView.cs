@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.DialogueGameUI;
 using UnityEngine;
@@ -15,11 +15,14 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             {
                 if (_dialoguePanel == null)
                 {
-                    _dialoguePanel = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<VisualElement>("dialogue-panel");
+                    var root = ButtonManager.Instance?.DialogueUIDocument?.rootVisualElement;
+                    if (root == null) return null;
+                    _dialoguePanel = root.Q<VisualElement>("dialogue-panel");
                 }
                 return _dialoguePanel;
             }
         }
+
         private VisualElement _decisionPanel;
         private VisualElement DecisionPanel
         {
@@ -27,13 +30,13 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             {
                 if (_decisionPanel == null)
                 {
-                    _decisionPanel = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");
-
+                    var root = ButtonManager.Instance?.DialogueUIDocument?.rootVisualElement;
+                    if (root == null) return null;
+                    _decisionPanel = root.Q<ScrollView>("ScrollView");
                 }
                 return _decisionPanel;
             }
         }
-
 
         private VisualElement _decisionDialoguePanel;
         private VisualElement DecisionDialoguePanel
@@ -42,7 +45,9 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             {
                 if (_decisionDialoguePanel == null)
                 {
-                    _decisionDialoguePanel = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<VisualElement>("previous-dialogue-panel");
+                    var root = ButtonManager.Instance?.DialogueUIDocument?.rootVisualElement;
+                    if (root == null) return null;
+                    _decisionDialoguePanel = root.Q<VisualElement>("previous-dialogue-panel");
                 }
                 return _decisionDialoguePanel;
             }
@@ -58,56 +63,78 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
         public void DisplayDialogueText(string dialogue)
         {
             ClearPanels();
+            if (DialoguePanel == null) return;
+
             DialoguePanel.visible = true;
-            var textComponent = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<Label>("dialogue-text");
-            SetText(textComponent, dialogue);
+            var root = ButtonManager.Instance?.DialogueUIDocument?.rootVisualElement;
+            if (root == null) return;
+
+            var textComponent = root.Q<Label>("dialogue-text");
+            if (textComponent != null)
+                SetText(textComponent, dialogue);
         }
 
         public void DisplayDecisionNode()
         {
             ClearPanels();
-            DecisionNode node = Controller.CurrentNode as DecisionNode;
+            DecisionNode node = Controller?.CurrentNode as DecisionNode;
+            if (node == null || DecisionPanel == null) return;
+
             DecisionPanel.visible = true;
             CreateButtons(node);
 
-            if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog)
+            if (Controller.PreviousDialogue.Count != 0 && node.ShowPreviousDialog && DecisionDialoguePanel != null)
             {
                 DecisionDialoguePanel.visible = true;
 
-                var textComponent = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<Label>("previous-dialogue-text");
-                SetText(textComponent, Controller.PreviousDialogue.Peek());
+                var root = ButtonManager.Instance?.DialogueUIDocument?.rootVisualElement;
+                if (root == null) return;
+
+                var textComponent = root.Q<Label>("previous-dialogue-text");
+                if (textComponent != null)
+                    SetText(textComponent, Controller.PreviousDialogue.Peek());
             }
         }
 
         private void SetText(Label textLabel, string text)
         {
             textLabel.text = text;
-            textLabel.style.unityFont = GlobalSettings.Settings.defaultFont ? GlobalSettings.Settings.defaultFont : Resources.Load<Font>("Afacad-Regular");
-            textLabel.style.fontSize = GlobalSettings.Settings.defaultFontSize;
+
+            var settings = GlobalSettings.Settings;
+            if (settings != null)
+            {
+                textLabel.style.unityFont = settings.defaultFont
+                    ? settings.defaultFont
+                    : Resources.Load<Font>("Afacad-Regular");
+                textLabel.style.fontSize = settings.defaultFontSize;
+            }
         }
 
         private void CreateButtons(DecisionNode node)
         {
             var buttonManager = ButtonManager.Instance;
+            if (buttonManager == null) return;
+
             buttonManager.ButtonList.Clear();
+
+            if (node.DecisionOptions == null || node.DecisionOptions.Count == 0) return;
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {
                 buttonManager.ButtonList.Add(new ButtonHolder(node.DecisionOptions[i], i));
             }
 
-            //Automatically hover the first option.
-            buttonManager.ButtonList[0].Hover();
-
+            if (buttonManager.ButtonList.Count > 0)
+            {
+                buttonManager.ButtonList[0].Hover();
+            }
         }
 
         public void ClearPanels()
         {
-            DialoguePanel.visible = false;
-
-            DecisionDialoguePanel.visible = false;
-
-            DecisionPanel.visible = false;
+            if (DialoguePanel != null) DialoguePanel.visible = false;
+            if (DecisionDialoguePanel != null) DecisionDialoguePanel.visible = false;
+            if (DecisionPanel != null) DecisionPanel.visible = false;
         }
     }
 }

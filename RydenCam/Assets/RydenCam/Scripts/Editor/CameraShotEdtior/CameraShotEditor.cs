@@ -1,12 +1,13 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
-using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using Assets.RydenCam.Scripts.Editor.CameraShotEditor;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.Editor.Ribbon;
+using RydenCam.Editor.Styling;
 using RydenCam.SequenceData;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace RydenCam.Editor.CamersaShotEditor
+namespace RydenCam.Editor
 {
     public class CameraShotEditor : EditorWindow
     {
@@ -58,7 +59,7 @@ namespace RydenCam.Editor.CamersaShotEditor
         private void OnGUI()
         {
             //Draw the ribbon
-            ribbonRenderer.Draw();
+            ribbonRenderer.Draw(position.width);
 
             if (CameraShotsManager.Instance.CameraShots.Count == 0) return;
 
@@ -99,7 +100,8 @@ namespace RydenCam.Editor.CamersaShotEditor
         {
             GUIStyle largeBoldLabel = new GUIStyle(EditorStyles.boldLabel)
             {
-                fontSize = 20,
+                fontSize = BranchCamEditorTheme.FontTitle + 2,
+                normal = { textColor = BranchCamEditorTheme.TextPrimary },
                 alignment = TextAnchor.MiddleCenter
             };
 
@@ -113,7 +115,7 @@ namespace RydenCam.Editor.CamersaShotEditor
             Rect boxRect = new Rect(margin, margin + 50f, boxWidth, boxHeight);
 
             // Optional: draw a background to visualize the box
-            EditorGUI.DrawRect(boxRect, new Color(0.2f, 0.2f, 0.2f, 1f));
+            EditorGUI.DrawRect(boxRect, BranchCamEditorTheme.PanelBackground);
 
             if (!NodeManager.Instance.ActorsInScene.Any()) return;
 
@@ -288,13 +290,14 @@ namespace RydenCam.Editor.CamersaShotEditor
 
         private void DrawCameraShotListSection()
         {
-            GUIStyle largeBoldLabel = new GUIStyle(EditorStyles.boldLabel)
-            {
-                fontSize = 20,
-                alignment = TextAnchor.MiddleCenter
-            };
             EditorGUILayout.Space(20f);
-            GUILayout.Label("Camera Shots", EditorStyles.boldLabel);
+            GUIStyle sectionLabel = new GUIStyle(EditorStyles.boldLabel)
+            {
+                fontSize = BranchCamEditorTheme.FontTitle,
+                normal = { textColor = BranchCamEditorTheme.TextPrimary },
+                alignment = TextAnchor.MiddleLeft
+            };
+            GUILayout.Label("Camera Shots", sectionLabel);
 
             float scrollViewHeight = 120f;
 

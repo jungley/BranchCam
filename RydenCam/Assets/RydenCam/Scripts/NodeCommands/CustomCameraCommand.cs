@@ -1,11 +1,10 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System;
-using UnityEditor;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.NodeCommands

@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -40,9 +40,10 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
         public override void DrawNode(int index)
         {
+            Color previousBackgroundColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.gray;
 
-            actionCommand.WindowRect = GUI.Window(index, new Rect(actionNode.EditorPosition.x, actionNode.EditorPosition.y, actionNode.NodeWidth, actionNode.NodeHeight),
+            actionCommand.WindowRect = GUI.Window(index, new Rect(SnapToPixel(actionNode.EditorPosition.x), SnapToPixel(actionNode.EditorPosition.y), actionNode.NodeWidth, actionNode.NodeHeight),
                 (windowId) =>
                 {
                     GUI.DrawTextureWithTexCoords(new Rect(0, 0, 280.0f, 25f), HeaderTexture, new Rect(0, 0, 1, 1));
@@ -68,8 +69,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 }, "");
 
             Command.HighlightIfActive();
-
-            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
+            Node.EditorPosition = SnapToPixel(new Vector2(Command.WindowRect.x, Command.WindowRect.y));
+            GUI.backgroundColor = previousBackgroundColor;
 
         }
 

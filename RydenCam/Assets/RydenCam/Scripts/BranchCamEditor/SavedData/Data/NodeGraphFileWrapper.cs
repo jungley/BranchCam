@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -33,7 +33,7 @@ namespace RydenCam.BranchCamEditor.Serialization
         public NodeGraphFileWrapper()
         {
 
-            //Get last fileoath OPENED
+            //Get last filepath OPENED
             string cameraShotPath = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
 
             CameraShotJsonFilePath = cameraShotPath;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
@@ -62,8 +62,8 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public void RemoveConnection(Connection connection)
         {
-            connection.Point_A.ConnectedTo = null;
-            connection.Point_B.ConnectedTo = null;
+            if (connection.Point_A != null) connection.Point_A.ConnectedTo = null;
+            if (connection.Point_B != null) connection.Point_B.ConnectedTo = null;
 
             Connections.Remove(connection);
 
@@ -123,8 +123,9 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public void RemoveAssociatedConnections(Node node)
         {
-            var pointsToRemove = new HashSet<ConnectionPoint> { node.PointIn };
-            pointsToRemove.UnionWith(node.PointOut);
+            var pointsToRemove = new HashSet<ConnectionPoint>();
+            if (node.PointIn != null) pointsToRemove.Add(node.PointIn);
+            if (node.PointOut != null) pointsToRemove.UnionWith(node.PointOut);
 
             var connectionsToRemove = new List<Connection>();
 

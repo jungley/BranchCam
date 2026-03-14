@@ -1,10 +1,11 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
+using RydenCam.Editor;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -61,11 +62,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
         public override void DrawNode(int index)
         {
-
+            Color previousBackgroundColor = GUI.backgroundColor;
             int buffer = 42;
             GUI.backgroundColor = Color.gray;
 
-            Command.WindowRect = GUI.Window(index, new Rect(decisionNode.EditorPosition.x, decisionNode.EditorPosition.y, decisionNode.NodeWidth, decisionNode.NodeHeight),
+            Command.WindowRect = GUI.Window(index, new Rect(SnapToPixel(decisionNode.EditorPosition.x), SnapToPixel(decisionNode.EditorPosition.y), decisionNode.NodeWidth, decisionNode.NodeHeight),
                 (windowId) =>
                  {
                      GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
@@ -90,11 +91,21 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                      }
 
                      decisionCommand.TextAreaRectIndex.Clear();
+                     bool isConnectingLine = NodeGraphEditorWindow.Instance != null && NodeGraphEditorWindow.Instance.IsDrawingConnectionHandle;
                      for (int decisionIndex = 0; decisionIndex < decisionNode.DecisionOptions.Count; decisionIndex++)
                      {
                          GUILayout.BeginHorizontal();
-                            GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
+                         GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
+                         EditorGUI.BeginDisabledGroup(isConnectingLine);
                          decisionNode.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(Command.WindowRect, decisionCommand.TextAreaRectIndex, decisionIndex, ref buffer, decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: decisionNode.NodeWidth - 25);
+                         EditorGUI.EndDisabledGroup();
+                         Rect localTextAreaRect = GUILayoutUtility.GetLastRect();
+                         Rect globalTextAreaRect = new Rect(
+                             Command.WindowRect.x + localTextAreaRect.x,
+                             Command.WindowRect.y + localTextAreaRect.y,
+                             localTextAreaRect.width,
+                             localTextAreaRect.height);
+                         decisionCommand.TextAreaRectIndex.UpdateByKey(decisionIndex, globalTextAreaRect);
                          GUILayout.EndHorizontal();
                          GUILayout.Space(5);
 
@@ -108,8 +119,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                          Command.RemoveNode();
                      }
 
-
-
                      DrawConnectionPoints();
 
                      GUI.DragWindow();
@@ -117,10 +126,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                  }, "");
 
             preview.DrawPreviewWindow();
-
             Command.HighlightIfActive();
-
-            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
+            Node.EditorPosition = SnapToPixel(new Vector2(Command.WindowRect.x, Command.WindowRect.y));
+            GUI.backgroundColor = previousBackgroundColor;
         }
 
         public override void DrawNodeInspector()

@@ -1,8 +1,8 @@
-﻿using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.BranchCamEditor.BranchCam;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.RydenCam.Scripts.Editor.CameraShotEdtior
+namespace Assets.RydenCam.Scripts.Editor.CameraShotEditor
 {
     [System.Serializable]
     [ExecuteAlways]
