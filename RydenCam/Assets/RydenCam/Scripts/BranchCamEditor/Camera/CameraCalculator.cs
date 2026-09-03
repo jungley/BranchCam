@@ -150,6 +150,9 @@ namespace RydenCam.BranchCamEditor.BranchCam
         /// <returns></returns>
         public Vector3 CalculateMidPoint(List<Vector3> focusTargets)
         {
+            if (focusTargets == null || focusTargets.Count == 0)
+                return Vector3.zero;
+
             Vector3 vecCounter = Vector3.zero;
             foreach (var focusTarget in focusTargets)
             {
@@ -163,8 +166,10 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
         public Vector3 SetSide(List<Vector3> actorPositions)
         {
+            if (actorPositions == null || actorPositions.Count == 0)
+                return Vector3.zero;
 
-            Side camSide = NodeManager.Instance.StartNode.CameraSide;
+            Side camSide = NodeManager.Instance.StartNode?.CameraSide ?? Side.Right;
 
             if (actorPositions.Count == 1)
             {

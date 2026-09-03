@@ -115,13 +115,15 @@ namespace Assets.RydenCam.Scripts.DialogueGameUI
             var buttonManager = ButtonManager.Instance;
             if (buttonManager == null) return;
 
-            buttonManager.ButtonList.Clear();
+            buttonManager.Clear();
 
             if (node.DecisionOptions == null || node.DecisionOptions.Count == 0) return;
 
             for (int i = 0; i < node.DecisionOptions.Count; i++)
             {
-                buttonManager.ButtonList.Add(new ButtonHolder(node.DecisionOptions[i], i));
+                var holder = new ButtonHolder(node.DecisionOptions[i], i);
+                if (holder.Button != null)
+                    buttonManager.ButtonList.Add(holder);
             }
 
             if (buttonManager.ButtonList.Count > 0)

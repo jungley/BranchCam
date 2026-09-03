@@ -6,6 +6,7 @@ using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Serialization;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using SettingsService = RydenCam.BranchCamEditor.Serialization.SettingsService;
 
 
@@ -23,18 +24,17 @@ public class CameraShotViewModel
 
     public CameraShotViewModel()
     {
-        //Clear previously set if set
-        CameraShotsManager.Instance.CameraShots.Clear();
-
-
-        //Get Last Saved
-        string lastOpenedFile = FilePathSaveManager.Instance
-            .GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
-
-        CameraShotConfigurationWrapper shotswrapper =SettingsService.Load<CameraShotConfigurationWrapper>(lastOpenedFile);
-        if(shotswrapper != null && shotswrapper.Shots != null && shotswrapper.Shots.Any())
+        // Preserve unsaved shots when the window is reopened or redocked. The static
+        // manager is empty after a domain reload, which is when disk state should load.
+        if (!CameraShotsManager.Instance.InitialStateLoaded)
         {
-            CameraShotsManager.Instance.CameraShots = shotswrapper.Shots;
+            string lastOpenedFile = FilePathSaveManager.Instance
+                .GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+
+            CameraShotConfigurationWrapper shotsWrapper = SettingsService.Load<CameraShotConfigurationWrapper>(lastOpenedFile);
+            if (shotsWrapper?.Shots != null && shotsWrapper.Shots.Any())
+                CameraShotsManager.Instance.CameraShots = shotsWrapper.Shots;
+            CameraShotsManager.Instance.MarkInitialStateLoaded();
         }
 
         CurrentShot = CameraShotsManager.Instance.DefaultShot;
@@ -49,8 +49,12 @@ public class CameraShotViewModel
         }
 
         int index = CameraShotsManager.Instance.CameraShots.FindIndex(s => s.ShotId == shot.ShotId);
-        CurrentShot = CameraShotsManager.Instance.CameraShots[index - 1];
+        if (index < 0) return;
+
         CameraShotsManager.Instance.CameraShots.Remove(shot);
+        CurrentShot = CameraShotsManager.Instance.CameraShots.Count > 0
+            ? CameraShotsManager.Instance.CameraShots[Mathf.Max(0, index - 1)]
+            : CameraShotsManager.Instance.DefaultShot;
     }
 
     public void NewFile()
@@ -77,6 +81,7 @@ public class CameraShotViewModel
     public void Open()
     {
         CameraShotSettingsManager.OpenAndLoad();
+        CurrentShot = CameraShotsManager.Instance.DefaultShot;
     }
 
 }

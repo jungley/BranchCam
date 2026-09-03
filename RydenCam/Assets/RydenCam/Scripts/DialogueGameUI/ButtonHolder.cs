@@ -1,3 +1,4 @@
+using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.DialogueGameUI;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,25 +14,52 @@ public class ButtonHolder
     {
         this.optionIndex = optionIndex;
 
-        var container = ButtonManager.Instance.DialogueUIDocument.rootVisualElement.Q<VisualElement>("unity-content-container");
+        var buttonManager = ButtonManager.Instance;
+        var scrollView = buttonManager?.DialogueUIDocument?.rootVisualElement.Q<ScrollView>("ScrollView");
+        var template = Resources.Load<VisualTreeAsset>("option-button");
+        if (scrollView == null || template == null)
+        {
+            Debug.LogError("[RydenCam] Cannot create a decision option: the ScrollView or option-button UXML is missing.");
+            return;
+        }
 
-        Button = (Resources.Load("option-button") as VisualTreeAsset).CloneTree().Q<Button>();
+        Button = template.CloneTree().Q<Button>("option-button");
+        if (Button == null)
+        {
+            Debug.LogError("[RydenCam] option-button UXML requires a Button named 'option-button'.");
+            return;
+        }
 
         Button.text = buttonText;
-        Button.style.unityFont = GlobalSettings.Settings.defaultFont ? GlobalSettings.Settings.defaultFont : Resources.Load<Font>("Afacad-Regular");
-        Button.style.fontSize = GlobalSettings.Settings.defaultFontSize;
+        var settings = GlobalSettings.Settings;
+        if (settings != null)
+        {
+            Button.style.unityFont = settings.defaultFont ? settings.defaultFont : Resources.Load<Font>("Afacad-Regular");
+            Button.style.fontSize = settings.defaultFontSize;
+        }
 
-        if(GlobalSettings.Settings.isMouseAllowed) Button.RegisterCallback<ClickEvent>(evt => ButtonAction());
+        if (settings == null || settings.isMouseAllowed) Button.RegisterCallback<ClickEvent>(evt => ButtonAction());
         Button.RegisterCallback<MouseOverEvent>(evt => Hover());
         Button.RegisterCallback<MouseOutEvent>(evt => Unhover());
 
-        container.Add(Button);
+        scrollView.Add(Button);
     }
 
     public void ButtonAction()
     {
-        ButtonManager.Instance.DialoguePlayer.StatePlayer.MakeDecision(optionIndex);
-        ButtonManager.Instance.Clear();
+        var buttonManager = ButtonManager.Instance;
+        var statePlayer = buttonManager?.DialoguePlayer?.StatePlayer;
+        if (statePlayer == null) return;
+
+        var decision = statePlayer.CurrentNode as DecisionNode;
+        if (decision?.PointOut == null || optionIndex < 0 || optionIndex >= decision.PointOut.Count)
+        {
+            Debug.LogWarning($"[RydenCam] Decision option {optionIndex} has no matching output connection.");
+            return;
+        }
+
+        buttonManager.Clear();
+        statePlayer.MakeDecision(optionIndex);
     }
 
 
@@ -41,14 +69,16 @@ public class ButtonHolder
     {
         Unhover();
 
-        Button.style.backgroundColor = new Color(0, 0, 0, backgroundTransparencyValue);
+        if (Button != null)
+            Button.style.backgroundColor = new Color(0, 0, 0, backgroundTransparencyValue);
     }
 
     public void Unhover()
     {
         foreach(var buttonHolder in ButtonManager.Instance.ButtonList)
         {
-            buttonHolder.Button.style.backgroundColor = new Color(0, 0, 0, 0);
+            if (buttonHolder.Button != null)
+                buttonHolder.Button.style.backgroundColor = new Color(0, 0, 0, 0);
         }
     }
 }

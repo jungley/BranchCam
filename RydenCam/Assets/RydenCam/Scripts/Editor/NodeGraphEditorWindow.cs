@@ -66,7 +66,7 @@ namespace RydenCam.Editor
 
         
         private List<NodeDrawer> NodeDrawers { get; set; } = new List<NodeDrawer>();
-        private List<ConnectionDrawer> ConnectionDrawers { get; set; }
+        private List<ConnectionDrawer> ConnectionDrawers { get; set; } = new List<ConnectionDrawer>();
 
 
 
@@ -87,6 +87,9 @@ namespace RydenCam.Editor
 
         void OnGUI()
         {
+            if (viewModel == null || ribbonRenderer == null)
+                InitializeWindowState();
+
             if(!resourcesInitalized)
             {
                 InitializeStaticResources();
@@ -103,11 +106,11 @@ namespace RydenCam.Editor
             float snappedPanY = SnapToPixel(panY);
             Vector2 graphMousePosition = GetGraphMousePosition(mouseWindowPosition, graphViewport, snappedPanX, snappedPanY, effectiveZoom);
 
-            
+            EditorGUI.DrawRect(graphViewport, BranchCamEditorTheme.CanvasBackground);
+            GUI.BeginClip(graphViewport);
             Matrix4x4 previousMatrix = GUI.matrix;
             GUI.matrix =
-                Matrix4x4.TRS(new Vector3(graphViewport.x, graphViewport.y, 0f), Quaternion.identity, Vector3.one)
-                * Matrix4x4.Scale(new Vector3(effectiveZoom, effectiveZoom, 1f))
+                Matrix4x4.Scale(new Vector3(effectiveZoom, effectiveZoom, 1f))
                 * Matrix4x4.TRS(new Vector3(snappedPanX, snappedPanY, 0f), Quaternion.identity, Vector3.one)
                 * previousMatrix;
             
@@ -126,11 +129,10 @@ namespace RydenCam.Editor
 
             MousePan(mouseWindowPosition, graphMousePosition);
 
-            
             GUI.matrix = previousMatrix;
+            GUI.EndClip();
 
             // Ensure graph rendering cannot leak global GUI state into fixed UI panels.
-            GUI.matrix = Matrix4x4.identity;
             GUI.color = Color.white;
             GUI.backgroundColor = Color.white;
             GUI.contentColor = Color.white;
@@ -269,7 +271,7 @@ namespace RydenCam.Editor
             //If window was resized or moved
             lastEditorWindowPos = position;
 
-            if(viewModel.IsDrawingHandle)
+            if(viewModel != null && viewModel.IsDrawingHandle)
             {
                 Repaint();
             }
@@ -309,7 +311,17 @@ namespace RydenCam.Editor
             CameraShotEditor editorWindow = EditorWindow.GetWindow<CameraShotEditor>();
             editorWindow.titleContent = new GUIContent("Camera Shot Editor View");
             editorWindow.NodeGraphViewModel = window.viewModel;
-            Docker.Dock(window, editorWindow, Docker.DockPosition.Bottom);
+            if (!Docker.Dock(window, editorWindow, Docker.DockPosition.Bottom))
+            {
+                Rect graphRect = window.position;
+                editorWindow.position = new Rect(
+                    graphRect.x + 30f,
+                    graphRect.y + Mathf.Max(60f, graphRect.height * 0.35f),
+                    Mathf.Clamp(graphRect.width, 760f, 1100f),
+                    Mathf.Clamp(graphRect.height * 0.6f, 420f, 650f));
+                editorWindow.Show();
+                editorWindow.Focus();
+            }
         }
 
         private static void InitializeStaticResources()
@@ -355,10 +367,32 @@ namespace RydenCam.Editor
         // Called when the window is enabled or created
         private void OnEnable()
         {
+            EditorApplication.delayCall += () =>
+            {
+                if (this != null && (viewModel == null || ribbonRenderer == null))
+                    InitializeWindowState();
+            };
+        }
+
+        private void InitializeWindowState()
+        {
+            // Hot reload can preserve the EditorWindow while clearing nonserialized
+            // helpers. Rebuild them on demand and make subscriptions idempotent.
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
             //Handles events in the NodeGraphWindow
             viewModel = new NodeGraphViewModel();
+
+            // Static graph state is lost during a domain reload while the EditorWindow
+            // itself survives. Restore the last saved graph before rebuilding drawers.
+            if (NodeManager.Instance.Nodes.Count == 0)
+            {
+                string lastGraphPath = FilePathSaveManager.Instance
+                    .GetLastFilePathSaved(FilePathSaveManager.LastOpened_NodeGraphKey);
+                if (!string.IsNullOrEmpty(lastGraphPath))
+                    NodeGraphSettingsManager.Load(lastGraphPath);
+            }
 
             var ribbonDefinition = new RibbonDefinitionBuilder()
             .AddDropdown("File")
@@ -377,8 +411,11 @@ namespace RydenCam.Editor
 
             ribbonRenderer = new RibbonRenderer(ribbonDefinition);
 
+            NodeManager.Instance.Nodes.CollectionChanged -= OnNodesChanged;
             NodeManager.Instance.Nodes.CollectionChanged += OnNodesChanged;
+            NodeManager.Instance.PropertyChanged -= OnActiveNodeUpdated;
             NodeManager.Instance.PropertyChanged += OnActiveNodeUpdated;
+            ConnectionManager.Instance.Connections.CollectionChanged -= OnConnectionsChanged;
             ConnectionManager.Instance.Connections.CollectionChanged += OnConnectionsChanged;
 
             //Draw Nodes & connections
@@ -396,6 +433,7 @@ namespace RydenCam.Editor
         // Called when the window is disabled or closed
         private void OnDisable()
         {
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             NodeManager.Instance.Nodes.CollectionChanged -= OnNodesChanged;
             NodeManager.Instance.PropertyChanged -= OnActiveNodeUpdated;
             ConnectionManager.Instance.Connections.CollectionChanged -= OnConnectionsChanged;
@@ -462,6 +500,8 @@ namespace RydenCam.Editor
 
         private void DrawNodes()
         {
+            if (NodeDrawers == null) return;
+
             BeginWindows();
             for(int index = 0; index < NodeDrawers.Count; index++)
             {
@@ -474,9 +514,11 @@ namespace RydenCam.Editor
 
         public void DrawConnections()
         {
+            if (ConnectionDrawers == null) return;
+
             foreach (var connectionDrawer in ConnectionDrawers)
             {
-                connectionDrawer.Draw();
+                connectionDrawer?.Draw();
             }
         }
 

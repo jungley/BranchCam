@@ -32,6 +32,8 @@ namespace RydenCam.DialogueGameUI
             else
             {
                 BranchLog.Error("Multiple ButtonManagers found.");
+                enabled = false;
+                return;
             }
 
             if(DialoguePlayer == null)
@@ -39,8 +41,26 @@ namespace RydenCam.DialogueGameUI
                 DialoguePlayer = FindObjectOfType<DialoguePlayer>();
             }
 
+            if (DialogueUIDocument == null)
+            {
+                BranchLog.Error("ButtonManager requires a DialogueUIDocument reference.");
+                enabled = false;
+                return;
+            }
+
             scrollView = DialogueUIDocument.rootVisualElement.Q<ScrollView>("ScrollView");
+            if (scrollView == null)
+            {
+                BranchLog.Error("DialogueUIDocument requires a ScrollView named 'ScrollView'.");
+                enabled = false;
+            }
             #endregion
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
         }
 
 
@@ -50,7 +70,7 @@ namespace RydenCam.DialogueGameUI
 
             foreach(var buttonHolder in ButtonList)
             {
-                scrollView.Remove(buttonHolder.Button);
+                buttonHolder.Button?.RemoveFromHierarchy();
             }
 
             ButtonList.Clear();
@@ -59,7 +79,8 @@ namespace RydenCam.DialogueGameUI
         private void Update()
         {
             if (ButtonList.Count <= 0) return;
-            if (!GlobalSettings.Settings.isKeyboardAllowed) return;
+            var settings = GlobalSettings.Settings;
+            if (settings == null || !settings.isKeyboardAllowed) return;
             if (!Input.anyKey) return;
 
             if (ValidInputs.UpKeyPressed && !isInUpperBounds) Scroll(-1);

@@ -94,14 +94,46 @@ public class NodeGraphViewModel
 
     public void OpenCameraShotEditor()
     {
-        if (EditorWindow.HasOpenInstances<CameraShotEditor>()) return;
-
+        bool wasAlreadyOpen = EditorWindow.HasOpenInstances<CameraShotEditor>();
         CameraShotEditor camShotEditor = EditorWindow.GetWindow<CameraShotEditor>();
         camShotEditor.titleContent = new GUIContent("Camera Shot Editor View");
 
+        if (wasAlreadyOpen)
+        {
+            camShotEditor.Show();
+            camShotEditor.Focus();
+            Rect graphRect = EditorWindow.GetWindow<NodeGraphEditorWindow>().position;
+            if (camShotEditor.position.height < 280f && graphRect.height > 500f)
+            {
+                float desiredHeight = Mathf.Clamp(graphRect.height * 0.35f, 280f, 420f);
+                Rect shotRect = camShotEditor.position;
+                camShotEditor.position = new Rect(
+                    shotRect.x,
+                    graphRect.yMax - desiredHeight,
+                    shotRect.width,
+                    desiredHeight);
+            }
+            return;
+        }
+
         var nodeGraphWindow = EditorWindow.GetWindow<NodeGraphEditorWindow>();
 
-        Docker.Dock(nodeGraphWindow, camShotEditor, Docker.DockPosition.Bottom);
+        if (!Docker.Dock(nodeGraphWindow, camShotEditor, Docker.DockPosition.Bottom))
+            ShowCameraShotFallback(nodeGraphWindow, camShotEditor);
+    }
+
+    private static void ShowCameraShotFallback(EditorWindow nodeGraphWindow, CameraShotEditor cameraShotEditor)
+    {
+        Rect graphRect = nodeGraphWindow.position;
+        float width = Mathf.Clamp(graphRect.width, 760f, 1100f);
+        float height = Mathf.Clamp(graphRect.height * 0.6f, 420f, 650f);
+        cameraShotEditor.position = new Rect(
+            graphRect.x + 30f,
+            graphRect.y + Mathf.Max(60f, graphRect.height - height - 30f),
+            width,
+            height);
+        cameraShotEditor.Show();
+        cameraShotEditor.Focus();
     }
 
     public void LocateGlobalSettings()
@@ -322,10 +354,12 @@ public class NodeGraphViewModel
         else if (!NodeManager.Instance.ActorsInScene.Any())
         {
             menu.AddItem(new GUIContent("Must add an actor in the Start Node"), false, () => { });
+            AddActionNodeMenuItem(menu, mousePosition);
         }
         else if (NodeManager.Instance.ActorsInScene.Any(actor => actor.ActorGO == null))
         {
             menu.AddItem(new GUIContent("One of the actors have not been assigned in the Start Node."), false, () => { });
+            AddActionNodeMenuItem(menu, mousePosition);
         }
         else
         {
@@ -337,12 +371,17 @@ public class NodeGraphViewModel
             {
                 AddNode(mousePosition, NodeType.DecisionNode);
             });
-            menu.AddItem(new GUIContent("Add Action Node"), false, () =>
-            {
-                AddNode(mousePosition, NodeType.ActionNode);
-            });
+            AddActionNodeMenuItem(menu, mousePosition);
         }
         menu.ShowAsContext();
+    }
+
+    private void AddActionNodeMenuItem(GenericMenu menu, Vector2 mousePosition)
+    {
+        menu.AddItem(new GUIContent("Add Action Node"), false, () =>
+        {
+            AddNode(mousePosition, NodeType.ActionNode);
+        });
     }
 
     public void AddNode(Vector2 position, NodeType nodeType)

@@ -57,6 +57,11 @@ namespace RydenCam.DialogueGameUI
             }
 
             StatePlayer = new NodeStateController(DialogueCamera, DialogueCameraBrain);
+            if (!StatePlayer.IsInitialized)
+            {
+                StatePlayer = null;
+                return;
+            }
             StatePlayer.ToggleRelevantObjects(visibility: false);
         }
 
@@ -69,7 +74,11 @@ namespace RydenCam.DialogueGameUI
         private void OnDisable()
         {
             if (StatePlayer != null)
+            {
                 ValidInputs.OnValidInput -= StatePlayer.TraverseNodeNetwork;
+                if (StatePlayer.IsDialogueRunning)
+                    StatePlayer.EndSequence();
+            }
         }
 
         private void Update()
@@ -88,20 +97,29 @@ namespace RydenCam.DialogueGameUI
                 return;
             }
 
-            LoadConversation();
+            if (!LoadConversation())
+                return;
+
+            var startNode = NodeManager.Instance.StartNode;
+            if (startNode == null)
+            {
+                Debug.LogError("[RydenCam] The loaded conversation has no Start node.");
+                return;
+            }
+
             StatePlayer.IsDialogueRunning = true;
-            StatePlayer.CurrentNode = NodeManager.Instance.StartNode;
+            StatePlayer.CurrentNode = startNode;
             StatePlayer.TraverseNodeNetwork();
         }
 
-        public void LoadConversation()
+        public bool LoadConversation()
         {
-            if (string.IsNullOrEmpty(DialogueFilePath))
+            if (string.IsNullOrWhiteSpace(DialogueFilePath))
             {
                 Debug.LogWarning("[RydenCam] DialogueFilePath is empty. Cannot load conversation.");
-                return;
+                return false;
             }
-            NodeGraphSettingsManager.Load(DialogueFilePath);
+            return NodeGraphSettingsManager.Load(DialogueFilePath);
         }
 
 #if UNITY_EDITOR

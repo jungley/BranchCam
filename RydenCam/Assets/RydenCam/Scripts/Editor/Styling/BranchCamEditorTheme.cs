@@ -9,7 +9,7 @@ namespace RydenCam.Editor.Styling
         public static readonly Color CanvasBackground = new Color32(26, 28, 32, 255);
         public static readonly Color PanelBackground = new Color32(38, 42, 48, 255);
         public static readonly Color PanelBackgroundElevated = new Color32(46, 51, 58, 255);
-        public static readonly Color ToolbarBackground = new Color32(30, 34, 39, 255);
+        public static readonly Color ToolbarBackground = new Color32(30, 74, 126, 255);
         public static readonly Color BorderMuted = new Color32(77, 85, 96, 255);
         public static readonly Color TextPrimary = new Color32(235, 238, 242, 255);
         public static readonly Color TextSecondary = new Color32(170, 177, 186, 255);

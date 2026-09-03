@@ -11,18 +11,21 @@ namespace RydenCam.Editor.Ribbon
         private readonly RibbonDefinition definition;
         private readonly Dictionary<string, bool> dropdownState = new Dictionary<string, bool>();
 
-        private readonly GUIStyle toolbarPanelStyle;
-        private readonly GUIStyle toolbarButtonStyle;
+        private GUIStyle toolbarPanelStyle;
+        private GUIStyle toolbarButtonStyle;
 
         public RibbonRenderer(RibbonDefinition def)
         {
             definition = def;
-            toolbarPanelStyle = BranchCamEditorTheme.CreateToolbarPanelStyle();
-            toolbarButtonStyle = BranchCamEditorTheme.CreateToolbarButtonStyle();
         }
 
         public void Draw(float availableWidth)
         {
+            // EditorStyles is not available during some OnEnable/hot-reload phases.
+            // Build GUI styles lazily on the first actual GUI draw.
+            toolbarPanelStyle ??= BranchCamEditorTheme.CreateToolbarPanelStyle();
+            toolbarButtonStyle ??= BranchCamEditorTheme.CreateToolbarButtonStyle();
+
             GUILayout.BeginHorizontal(toolbarPanelStyle, GUILayout.Width(availableWidth), GUILayout.Height(50));
             //Weird bug requires a width of 1f to push everything to the left
             GUILayout.BeginHorizontal(GUILayout.Width(1f));

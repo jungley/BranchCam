@@ -51,7 +51,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
 
                     //Display Selected Methods
-                    foreach (GameActionData data in actionNode.GameActionDatas)
+                    foreach (GameActionData data in actionNode.GameActionDatas ?? new List<GameActionData>())
                     {
                         EditorGUILayout.LabelField(data.SelectedMethodName, labelStyleHead_Node);
                     }
@@ -100,7 +100,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 }
 
                 GameObject checkNewObject = (GameObject) EditorGUILayout.ObjectField("Select GameObject", selectedGameActionDatas[index].GameObj, typeof(GameObject), true);
-                if(checkNewObject!= null && checkNewObject?.name != selectedGameActionDatas[index]?.GameObjectName)
+                if (checkNewObject != selectedGameActionDatas[index].GameObj)
                 {
                     actionCommand.AssignActionObject(checkNewObject, index);
                 }
@@ -108,6 +108,12 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 //Displaying Parameters / Method info
                 if (selectedGameActionDatas[index].GameObj != null)
                 {
+                    if (selectedGameActionDatas[index].MethodNames == null || selectedGameActionDatas[index].MethodNames.Count == 0)
+                    {
+                        EditorGUILayout.HelpBox("This GameObject has no compatible public component methods.", MessageType.Info);
+                        continue;
+                    }
+
                     int checkSelectedIndex = EditorGUILayout.Popup("Select an method:", selectedGameActionDatas[index].SelectedMethodIndex, selectedGameActionDatas[index].MethodNames.ToArray());
                     if (checkSelectedIndex != selectedGameActionDatas[index].SelectedMethodIndex)
                     {
@@ -138,6 +144,22 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                             else if (type == typeof(int) || type == typeof(double) || type == typeof(float))
                             {
                                 selectedGameActionDatas[index].SelectedMethodArgValues[i] = EditorGUILayout.TextField("Set Numerical Value", selectedGameActionDatas[index].SelectedMethodArgValues[i]);
+                            }
+                            else if (type.IsEnum)
+                            {
+                                string current = selectedGameActionDatas[index].SelectedMethodArgValues[i];
+                                Array values = Enum.GetValues(type);
+                                int selected = 0;
+                                for (int enumIndex = 0; enumIndex < values.Length; enumIndex++)
+                                {
+                                    if (string.Equals(values.GetValue(enumIndex).ToString(), current, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        selected = enumIndex;
+                                        break;
+                                    }
+                                }
+                                selected = EditorGUILayout.Popup("Set Value", selected, Enum.GetNames(type));
+                                selectedGameActionDatas[index].SelectedMethodArgValues[i] = values.GetValue(selected).ToString();
                             }
                             else
                             {

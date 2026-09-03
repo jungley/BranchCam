@@ -115,7 +115,7 @@ public static class Docker
     /// Docks the second window to the first window at the given position.
     /// Uses internal Unity reflection; may fail silently on unsupported Unity versions.
     /// </summary>
-    public static void Dock(this EditorWindow wnd, EditorWindow other, DockPosition position)
+    public static bool Dock(this EditorWindow wnd, EditorWindow other, DockPosition position)
     {
         try
         {
@@ -127,31 +127,33 @@ public static class Docker
             if (parent.m_Parent == null || child.m_Parent == null)
             {
                 Debug.LogWarning("[RydenCam] Docker: Could not access internal Unity window parent. Docking skipped.");
-                return;
+                return false;
             }
 
             var dockArea = new _DockArea(parent.m_Parent);
             if (dockArea.window == null)
             {
                 Debug.LogWarning("[RydenCam] Docker: Could not access container window. Docking skipped.");
-                return;
+                return false;
             }
 
             var containerWindow = new _ContainerWindow(dockArea.window);
             if (containerWindow.rootSplitView == null)
             {
                 Debug.LogWarning("[RydenCam] Docker: Could not access root split view. Docking skipped.");
-                return;
+                return false;
             }
 
             var splitView = new _SplitView(containerWindow.rootSplitView);
             var dropInfo = splitView.DragOver(other, mousePosition);
             dockArea.s_OriginalDragSource = child.m_Parent;
             splitView.PerformDrop(other, dropInfo, mousePosition);
+            return true;
         }
         catch (Exception e)
         {
             Debug.LogWarning($"[RydenCam] Docker: Docking failed (likely due to Unity version incompatibility): {e.Message}");
+            return false;
         }
     }
 
@@ -171,7 +173,9 @@ public static class Docker
                 mousePosition = new Vector2(wnd.position.size.x - 20, wnd.position.size.y / 2);
                 break;
             case DockPosition.Bottom:
-                mousePosition = new Vector2(wnd.position.size.x / 2, wnd.position.size.y - 20);
+                // Dropping at the extreme bottom creates an almost-collapsed pane in
+                // recent Unity versions. Allocate roughly the lower third instead.
+                mousePosition = new Vector2(wnd.position.size.x / 2, wnd.position.size.y * 0.68f);
                 break;
         }
 

@@ -101,6 +101,7 @@ namespace RydenCam.BranchCamEditor.Controllers
         public bool IsDialogueRunning { get; set; } = false;
 
         public DirectorManager DirectorManager { get; set; }
+        public bool IsInitialized => DialogueCamera != null && DirectorManager != null && UIView != null;
 
         public NodeStateController(GameObject dcamera, GameObject dcameraBrain)
         {
@@ -148,6 +149,12 @@ namespace RydenCam.BranchCamEditor.Controllers
             if (decisionNode == null)
             {
                 Debug.LogWarning("[RydenCam] MakeDecision called but current node is not a DecisionNode.");
+                return;
+            }
+
+            if (decisionNode.PointOut == null || choiceIndex < 0 || choiceIndex >= decisionNode.PointOut.Count)
+            {
+                Debug.LogWarning($"[RydenCam] Decision index {choiceIndex} is outside the available choices.");
                 return;
             }
             CurrentNode = decisionNode.MakeDecision(choiceIndex);

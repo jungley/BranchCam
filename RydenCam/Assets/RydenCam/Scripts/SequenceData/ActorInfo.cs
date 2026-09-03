@@ -38,13 +38,12 @@ namespace RydenCam.SequenceData
             }
             set
             {
-                //New Actor assigned, recalculate positions in preview
-                if (value != null)
-                {
-                    SetupPreviewSceneData.CalculateActorsInPreviewSpace();
-                }
                 _actorGO = value;
                 ActorName = value?.name ?? BranchConstants.UnAssignedActor;
+
+                // Recalculate only after the new actor is observable through ActorGO.
+                if (value != null)
+                    SetupPreviewSceneData.CalculateActorsInPreviewSpace();
             }
 
         }

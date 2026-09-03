@@ -50,10 +50,34 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         private void SetCamera(Node CurrentNode, CinemachineVirtualCamera dialogueCamera)
         {
             ITalkable posNode = CurrentNode as ITalkable;
-            if (posNode?.NodeConvodata?.Actor?.PosData == null || posNode.NodeConvodata.ShotConfig == null) return;
+            if (posNode?.NodeConvodata?.ShotConfig == null || dialogueCamera == null) return;
 
-            Pose placement = CameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig, posNode.NodeConvodata.Actor.PosData);
+            GameObject actor = posNode.NodeConvodata.Actor?.ActorGO;
+            if (actor == null)
+            {
+                Debug.LogWarning("[RydenCam] Cannot place the dialogue camera because the speaking actor was not found in the scene.");
+                return;
+            }
+
+            ActorPositionData actorPosition = CreatePositionData(actor);
+            GameObject oppositeActor = posNode.NodeConvodata.OppositeActor?.ActorGO;
+            ActorPositionData oppositePosition = oppositeActor == null ? null : CreatePositionData(oppositeActor);
+            Pose placement = CameraCalculator.CalculatePlacement(
+                posNode.NodeConvodata.ShotConfig,
+                actorPosition,
+                oppositePosition);
             dialogueCamera.transform.SetPositionAndRotation(placement.position, placement.rotation);
+        }
+
+        private static ActorPositionData CreatePositionData(GameObject actor)
+        {
+            Transform actorTransform = actor.transform;
+            return new ActorPositionData
+            {
+                ActorPosition = actorTransform.position,
+                ActorRotation = actorTransform.rotation,
+                ForwardN = actorTransform.forward
+            };
         }
 
         /// <summary>

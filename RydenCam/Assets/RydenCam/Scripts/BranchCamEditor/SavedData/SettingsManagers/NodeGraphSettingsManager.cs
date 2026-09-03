@@ -3,6 +3,7 @@ using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RydenCam.BranchCamEditor.Serialization
@@ -57,65 +58,88 @@ namespace RydenCam.BranchCamEditor.Serialization
         }
 #endif
 
-        public static void Load(string filePath)
+        public static bool Load(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                return;
+                return false;
             }
 
             var container = SettingsService.Load<NodeGraphFileWrapper>(filePath);
             if (container == null)
             {
                 BranchLog.Error($"Failed to load node graph from: {filePath}");
-                return;
+                return false;
             }
 
             if (container.JsonList == null)
             {
                 BranchLog.Error("Node graph file has no node data.");
-                return;
+                return false;
             }
 
             List<Node> deserializedNodes = new List<Node>();
-            foreach (var nodeJsonContent in container.JsonList)
+            try
             {
-                if (string.IsNullOrEmpty(nodeJsonContent.JsonString)) continue;
-
-                switch (nodeJsonContent.NodeType)
+                foreach (var nodeJsonContent in container.JsonList)
                 {
-                    case NodeType.StartNode:
-                        StartNode startnode = JsonUtility.FromJson<StartNode>(nodeJsonContent.JsonString);
-                        if (startnode != null)
-                        {
-                            startnode.PointIn = null;
-                            deserializedNodes.Add(startnode);
-                        }
-                        break;
+                    if (nodeJsonContent == null || string.IsNullOrEmpty(nodeJsonContent.JsonString)) continue;
 
-                    case NodeType.DialogueNode:
-                        var dialogueNode = JsonUtility.FromJson<DialogueNode>(nodeJsonContent.JsonString);
-                        if (dialogueNode != null) deserializedNodes.Add(dialogueNode);
-                        break;
+                    switch (nodeJsonContent.NodeType)
+                    {
+                        case NodeType.StartNode:
+                            StartNode startnode = JsonUtility.FromJson<StartNode>(nodeJsonContent.JsonString);
+                            if (startnode != null)
+                            {
+                                startnode.PointIn = null;
+                                deserializedNodes.Add(startnode);
+                            }
+                            break;
 
-                    case NodeType.DecisionNode:
-                        var decisionNode = JsonUtility.FromJson<DecisionNode>(nodeJsonContent.JsonString);
-                        if (decisionNode != null) deserializedNodes.Add(decisionNode);
-                        break;
+                        case NodeType.DialogueNode:
+                            var dialogueNode = JsonUtility.FromJson<DialogueNode>(nodeJsonContent.JsonString);
+                            if (dialogueNode != null) deserializedNodes.Add(dialogueNode);
+                            break;
 
-                    case NodeType.ActionNode:
-                        ActionNode actionNode = JsonUtility.FromJson<ActionNode>(nodeJsonContent.JsonString);
-                        if (actionNode != null)
-                        {
-                            actionNode.GameActionDatas?.ForEach(data => data.AssignLoadedValues());
-                            deserializedNodes.Add(actionNode);
-                        }
-                        break;
+                        case NodeType.DecisionNode:
+                            var decisionNode = JsonUtility.FromJson<DecisionNode>(nodeJsonContent.JsonString);
+                            if (decisionNode != null) deserializedNodes.Add(decisionNode);
+                            break;
 
-                    default:
-                        BranchLog.Log($"Unknown node type '{nodeJsonContent.NodeType}' skipped during load.");
-                        break;
+                        case NodeType.ActionNode:
+                            ActionNode actionNode = JsonUtility.FromJson<ActionNode>(nodeJsonContent.JsonString);
+                            if (actionNode != null)
+                            {
+                                actionNode.GameActionDatas ??= new List<GameActionData>();
+                                actionNode.GameActionDatas.ForEach(data => data?.AssignLoadedValues());
+                                deserializedNodes.Add(actionNode);
+                            }
+                            break;
+
+                        default:
+                            BranchLog.Log($"Unknown node type '{nodeJsonContent.NodeType}' skipped during load.");
+                            break;
+                    }
                 }
+            }
+            catch (System.Exception exception)
+            {
+                BranchLog.Error($"Failed to deserialize node graph: {exception.Message}");
+                return false;
+            }
+
+            bool hasInvalidNode = deserializedNodes.Any(node =>
+                node == null || string.IsNullOrEmpty(node.NodeId) || node.PointOut == null ||
+                (node is DecisionNode decision &&
+                 (decision.DecisionOptions == null || decision.DecisionOptions.Count != decision.PointOut.Count)));
+            bool hasDuplicateIds = deserializedNodes
+                .Where(node => node != null && !string.IsNullOrEmpty(node.NodeId))
+                .GroupBy(node => node.NodeId)
+                .Any(group => group.Count() > 1);
+            if (deserializedNodes.Count == 0 || hasInvalidNode || hasDuplicateIds)
+            {
+                BranchLog.Error("Node graph contains missing or duplicate node data and was not loaded.");
+                return false;
             }
 
             NodeManager.Instance.Clear();
@@ -127,6 +151,8 @@ namespace RydenCam.BranchCamEditor.Serialization
             {
                 FilePathSaveManager.Instance.SetLastFilePath(container.CameraShotJsonFilePath, FilePathSaveManager.LastOpened_CameraShotsKey);
             }
+
+            return true;
         }
 
 #if UNITY_EDITOR

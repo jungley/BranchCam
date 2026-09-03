@@ -11,9 +11,6 @@ public class ValidInputs
     public static bool ProgressionInputPressed => ValidMouseInputPressed || ValidKeyPressed;
     public static bool ProgressionKeyPressed => ValidKeyPressed;
 
-    public static bool previousValidMouseInputPressed { get; set; }
-    public static bool previousValidKeyPressed { get; set; }
-
     // Event to notify subscribers of changes
     public static event Action OnValidInput;
 
@@ -23,26 +20,8 @@ public class ValidInputs
     {
         if (IsDecionsMakingLocked) return;
 
-        // Check if the ValidKeyPressed state has changed
-        if (ValidMouseInputPressed != previousValidMouseInputPressed)
-        {
-            previousValidMouseInputPressed = ValidMouseInputPressed;
-            if (ValidMouseInputPressed)
-            {
-                OnValidInput?.Invoke();
-            }
-        }
-
-
-        // Check if the ValidKeyPressed state has changed
-        if (ValidKeyPressed != previousValidKeyPressed )
-        {
-            previousValidKeyPressed = ValidKeyPressed;
-            if (ValidKeyPressed)
-            {
-                OnValidInput?.Invoke();
-            }
-        }
-        
+        // Mouse and keyboard can be pressed in the same frame. Progress only once.
+        if (ProgressionInputPressed)
+            OnValidInput?.Invoke();
     }
 }
