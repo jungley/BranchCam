@@ -1,24 +1,18 @@
 using Assets.RydenCam.Scripts.BranchCamCC;
-using Assets.RydenCam.Scripts.Editor.NodeDrawers;
-using Assets.RydenCam.Scripts.Editor;
-using RydenCam.BranchCamEditor;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.Common;
+using RydenCam.Editor;
+using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
-using RydenCam.Editor;
-using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
-using System;
-using Assets.RydenCam.Scripts.NodeCommands;
-using RydenCam.Editor.CamersaShotEditor;
-using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 
 public class NodeGraphViewModel
 {
-
     private Vector2 clickStartPos { get; set; }
     private bool isPanning { get; set; }
     private const float dragThreshold = 0.001f;
@@ -45,34 +39,32 @@ public class NodeGraphViewModel
         if (shouldReset)
         {
             ResetEverything();
-            EditorSettingsManager.Instance.SetLastFilePath(string.Empty);
+            FilePathSaveManager.Instance.ClearLastFilePath(FilePathSaveManager.LastOpened_NodeGraphKey);
         }
     }
 
     public void Save()
     {
-        SaveFile.SaveConversation();
-        SaveFile.SaveEditorSettings();
+        var fileResult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_NodeGraphKey);
+
+        if (string.IsNullOrEmpty(fileResult))
+        {
+            NodeGraphSettingsManager.SaveAs();
+        }
+        else
+        {
+            NodeGraphSettingsManager.Save(fileResult);
+        }
     }
 
     public void SaveAs()
     {
-        string filePath = SaveFile.SaveAsFileExplorer();
-        SaveFile.SaveConversation(filePath);
-        SaveFile.SaveEditorSettings();
+        NodeGraphSettingsManager.SaveAs();
     }
 
     public void Open()
     {
-        string filePath = LoadFile.OpenFileExplorer();
-        if (string.IsNullOrEmpty(filePath))
-        {
-            Debug.Log("No file path provided. Please select a file.");
-            return;
-        }
-        EditorSettingsManager.Instance.SetLastFilePath(filePath);
-        ResetEverything();
-        LoadFile.LoadSaveables(filePath);
+        NodeGraphSettingsManager.OpenAndLoad();
     }
 
     public void ResetEverything()
@@ -80,7 +72,6 @@ public class NodeGraphViewModel
         NodeManager.Instance.ClearActorsInScene();
         NodeManager.Instance.Clear();
         ConnectionManager.Instance.Clear();
-        NodeManager.StartNodeAdded = false;
         NodeManager.Instance.ActiveNode = null;
     }
 
@@ -103,10 +94,20 @@ public class NodeGraphViewModel
 
     public void OpenCameraShotEditor()
     {
-        CameraShotEditor window = EditorWindow.GetWindow<CameraShotEditor>();
-        window.titleContent = new GUIContent("Camera Shot Editor View");
+        CameraShotEditor camShotEditor = EditorWindow.GetWindow<CameraShotEditor>();
+        camShotEditor.titleContent = new GUIContent("Shot Configuration");
+        camShotEditor.NodeGraphViewModel = this;
+        camShotEditor.Show();
+        var nodeGraphWindow = editorWindow;
+        // Wait until Unity has created the window's host before docking it.
+        EditorApplication.delayCall += () =>
+        {
+            if (nodeGraphWindow == null || camShotEditor == null) return;
+            if (!Docker.Dock(nodeGraphWindow, camShotEditor, Docker.DockPosition.Bottom))
+                Debug.LogWarning("[BranchCam] Unity could not dock Shot Configuration below the graph.");
+            camShotEditor.Focus();
+        };
     }
-
     public void LocateGlobalSettings()
     {
         GlobalSettingsData globalSetting = FindGlobalSetting();
@@ -134,18 +135,14 @@ public class NodeGraphViewModel
 
     public void ToggleNodePreviewRender()
     {
-        EditorSettingsManager.Instance.FlipIsNodePreview();
+        FilePathSaveManager.Instance.SettingsData.IsNodePreviewEnabled 
+            = !FilePathSaveManager.Instance.SettingsData.IsNodePreviewEnabled;
     }
 
-    public void ToggleCornerPreviewRender()
-    {
-        EditorSettingsManager.Instance.FlipIsCornerPreview();
-    }
-
-    public void HandleInputClicks()
+    public void HandleInputClicks(Vector2? mousePosOverride = null)
     {
         Event e = Event.current;
-        Vector2 mousePos = e.mousePosition;
+        Vector2 mousePos = mousePosOverride ?? e.mousePosition;
 
         switch (e.type)
         {
@@ -160,7 +157,13 @@ public class NodeGraphViewModel
                 
             case EventType.MouseUp:
                 if (e.button == 0)
+                {
+                    if (IsDrawingHandle)
+                    {
+                        HandleConnectionPointSelected(mousePos);
+                    }
                     HandleLeftMouseUp(mousePos);
+                }
                 break;
         }
     }
@@ -303,6 +306,8 @@ public class NodeGraphViewModel
             ConnectionManager.Instance.AddConnection(fromPoint, SelectedConnectionPoint);
             IsDrawingHandle = false;
             SelectedConnectionPoint = null;
+            Event.current?.Use();
+            editorWindow?.Repaint();
         }
     }
     
@@ -310,7 +315,7 @@ public class NodeGraphViewModel
     {
         GenericMenu menu = new GenericMenu();
 
-        if (!NodeManager.StartNodeAdded)
+        if (!NodeManager.Instance.StartNodeAdded)
         {
             menu.AddItem(new GUIContent("Add Start Node"), false, () =>
             {
@@ -321,10 +326,12 @@ public class NodeGraphViewModel
         else if (!NodeManager.Instance.ActorsInScene.Any())
         {
             menu.AddItem(new GUIContent("Must add an actor in the Start Node"), false, () => { });
+            AddActionNodeMenuItem(menu, mousePosition);
         }
         else if (NodeManager.Instance.ActorsInScene.Any(actor => actor.ActorGO == null))
         {
             menu.AddItem(new GUIContent("One of the actors have not been assigned in the Start Node."), false, () => { });
+            AddActionNodeMenuItem(menu, mousePosition);
         }
         else
         {
@@ -336,12 +343,17 @@ public class NodeGraphViewModel
             {
                 AddNode(mousePosition, NodeType.DecisionNode);
             });
-            menu.AddItem(new GUIContent("Add Action Node"), false, () =>
-            {
-                AddNode(mousePosition, NodeType.ActionNode);
-            });
+            AddActionNodeMenuItem(menu, mousePosition);
         }
         menu.ShowAsContext();
+    }
+
+    private void AddActionNodeMenuItem(GenericMenu menu, Vector2 mousePosition)
+    {
+        menu.AddItem(new GUIContent("Add Action Node"), false, () =>
+        {
+            AddNode(mousePosition, NodeType.ActionNode);
+        });
     }
 
     public void AddNode(Vector2 position, NodeType nodeType)
@@ -351,7 +363,6 @@ public class NodeGraphViewModel
         {
             case NodeType.StartNode:
                 newNode = new StartNode(position);
-                NodeManager.StartNodeAdded = true;
                 break;
             case NodeType.DialogueNode:
                 newNode = new DialogueNode(position);

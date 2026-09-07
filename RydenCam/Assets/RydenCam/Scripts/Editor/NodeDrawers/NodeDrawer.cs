@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using RydenCam.Editor.Styling;
 
 namespace Assets.RydenCam.Scripts.Editor
 {
@@ -35,7 +36,7 @@ namespace Assets.RydenCam.Scripts.Editor
                 if (_headerTexture == null)
                 {
                     _headerTexture = new Texture2D(1, 1);
-                    _headerTexture.SetPixel(1, 1, Command.NodeColor);
+                    _headerTexture.SetPixel(0, 0, Command.NodeColor);
                     _headerTexture.Apply();
                 }
 
@@ -61,40 +62,80 @@ namespace Assets.RydenCam.Scripts.Editor
 
             //Styles used in Nodes
             labelStyleHead_Panel = new GUIStyle();
-            labelStyleHead_Panel.normal.textColor = Color.white;
+            labelStyleHead_Panel.normal.textColor = BranchCamEditorTheme.TextPrimary;
             labelStyleHead_Panel.fontStyle = FontStyle.Bold;
-            labelStyleHead_Panel.fontSize = 15;
+            labelStyleHead_Panel.fontSize = BranchCamEditorTheme.FontTitle;
 
             labelStyleHead_Node = new GUIStyle();
-            labelStyleHead_Node.normal.textColor = Color.white;
+            labelStyleHead_Node.normal.textColor = BranchCamEditorTheme.TextPrimary;
             labelStyleHead_Node.fontStyle = FontStyle.Bold;
-            labelStyleHead_Node.fontSize = 15;
+            labelStyleHead_Node.fontSize = BranchCamEditorTheme.FontBody;
 
             //TextArea Node
             textAreaStyleNode = new GUIStyle(EditorStyles.textArea);
             textAreaStyleNode.wordWrap = true;
             textAreaStyleNode.alignment = TextAnchor.MiddleCenter;
+            textAreaStyleNode.fontSize = BranchCamEditorTheme.FontBody;
 
 
             //TextArea Inspector
             textAreaStyleInspector = new GUIStyle(EditorStyles.textArea);
             textAreaStyleInspector.wordWrap = true;
             textAreaStyleInspector.margin = new RectOffset(-20, 0, 0, 0);
+            textAreaStyleInspector.fontSize = BranchCamEditorTheme.FontBody;
 
             inspectorText = new GUIStyle();
-            inspectorText.normal.textColor = Color.white;
+            inspectorText.normal.textColor = BranchCamEditorTheme.TextSecondary;
+            inspectorText.fontSize = BranchCamEditorTheme.FontBody;
 
             inspectorTextBold = new GUIStyle();
-            inspectorTextBold.normal.textColor = Color.white;
+            inspectorTextBold.normal.textColor = BranchCamEditorTheme.TextPrimary;
             inspectorTextBold.fontStyle = FontStyle.Bold;
+            inspectorTextBold.fontSize = BranchCamEditorTheme.FontBody;
         }
 
         public abstract void DrawNode(int index);
 
         public abstract void DrawNodeInspector();
 
+        protected void DrawActorPopup(int selectedIndex, string[] actorNames, Action<int> onSelected)
+        {
+            Rect localRect = GUILayoutUtility.GetRect(200f, EditorGUIUtility.singleLineHeight,
+                GUILayout.Width(200f));
+            string label = selectedIndex >= 0 && selectedIndex < actorNames.Length
+                ? actorNames[selectedIndex] : "Select Actor";
+            using (new EditorGUI.DisabledScope(actorNames.Length == 0))
+            {
+                if (!GUI.Button(localRect, new GUIContent(label), EditorStyles.popup)) return;
+            }
+
+            var menu = new GenericMenu();
+            for (int i = 0; i < actorNames.Length; i++)
+            {
+                int actorIndex = i;
+                menu.AddItem(new GUIContent(actorNames[i]), i == selectedIndex, () =>
+                {
+                    onSelected(actorIndex);
+                    global::RydenCam.Editor.NodeGraphEditorWindow.Instance?.Repaint();
+                });
+            }
+            Rect graphRect = new Rect(Command.WindowRect.position + localRect.position, localRect.size);
+            global::RydenCam.Editor.NodeGraphEditorWindow.Instance.ShowGraphPopup(menu, graphRect);
+        }
+
         protected int heightConnectionPoint => 18;
         protected int widthConnectionPoint => 20;
+
+        protected static float SnapToPixel(float value)
+        {
+            float pixelsPerPoint = Mathf.Max(1f, EditorGUIUtility.pixelsPerPoint);
+            return Mathf.Round(value * pixelsPerPoint) / pixelsPerPoint;
+        }
+
+        protected static Vector2 SnapToPixel(Vector2 value)
+        {
+            return new Vector2(SnapToPixel(value.x), SnapToPixel(value.y));
+        }
         
         protected void DrawPoint(Rect bounds, bool isConnected)
         {
@@ -124,6 +165,15 @@ namespace Assets.RydenCam.Scripts.Editor
             return totalHeight;
         }
 
+        protected int GetActorIndex(string name)
+        {
+            var list = NodeManager.Instance.ActorsInScene;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].ActorName == name)
+                    return i;
+            return -1;
+        }
+
         protected void DrawConnectionPoints()
         {
             //Draw In Point
@@ -139,10 +189,12 @@ namespace Assets.RydenCam.Scripts.Editor
 
         protected virtual void DrawOutPoint()
         {
+            var firstOut = Node.PointOut?.FirstOrDefault();
+            if (firstOut == null) return;
+
             Rect pointBoundsOut = new Rect((Node.NodeWidth / 2 - 10), Node.NodeHeight - 16, widthConnectionPoint, heightConnectionPoint);
-            //RS TODO Move to command eventually? 
-            Node.PointOut.FirstOrDefault().LocalBounds = pointBoundsOut;
-            DrawPoint(pointBoundsOut, Node.PointOut.FirstOrDefault().ConnectedTo != null);
+            firstOut.LocalBounds = pointBoundsOut;
+            DrawPoint(pointBoundsOut, firstOut.ConnectedTo != null);
         }
     }
 }

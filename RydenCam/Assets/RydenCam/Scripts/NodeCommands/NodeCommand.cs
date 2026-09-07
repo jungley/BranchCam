@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
@@ -110,7 +110,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             if (incomingType == ConnectionPointType.Out)
                 return Node.PointIn;
 
-            if (incomingType == ConnectionPointType.In)
+            if (incomingType == ConnectionPointType.In && Node.PointOut != null && Node.PointOut.Count > 0)
                 return Node.PointOut[0];
 
             return null;

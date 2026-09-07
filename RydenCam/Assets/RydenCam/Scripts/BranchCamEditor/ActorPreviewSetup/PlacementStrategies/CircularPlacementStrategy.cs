@@ -1,9 +1,5 @@
-﻿using RydenCam.SequenceData;
-using System;
+﻿using RydenCam.BranchCamEditor.Managers;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup
@@ -12,8 +8,11 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
     {
         public float defaultPreviewDistance = 2.0f;
 
-        public List<PreviewActorData> GeneratePreviewData(List<ActorInfo> actors, float distanceBetween)
+        public void GeneratePreviewData(float distanceBetween)
         {
+
+            var actors = NodeManager.Instance.ActorsInScene;
+
             float radius = distanceBetween;
             float angleStep = 360f / actors.Count;
             var result = new List<PreviewActorData>();
@@ -24,10 +23,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
                 Vector3 origin = new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
                 Vector3 forward = -origin.normalized;
 
-                result.Add(PreviewPlacementMeshGenerator.Create(actors[i], origin, Quaternion.LookRotation(forward), forward));
+                actors[i].PreviewData = PreviewPlacementMeshGenerator.Create(actors[i], origin, Quaternion.LookRotation(forward), forward);
             }
-
-            return result;
         }
     }
 }

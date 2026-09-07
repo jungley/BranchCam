@@ -1,15 +1,10 @@
-﻿
 using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-
-
-
 public static class Docker
 {
-
     #region Reflection Types
     private class _EditorWindow
     {
@@ -19,7 +14,7 @@ public static class Docker
         public _EditorWindow(EditorWindow instance)
         {
             this.instance = instance;
-            type = instance.GetType();
+            type = typeof(EditorWindow);
         }
 
         public object m_Parent
@@ -27,7 +22,7 @@ public static class Docker
             get
             {
                 var field = type.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
-                return field.GetValue(instance);
+                return field?.GetValue(instance);
             }
         }
     }
@@ -48,7 +43,7 @@ public static class Docker
             get
             {
                 var property = type.GetProperty("window", BindingFlags.Instance | BindingFlags.Public);
-                return property.GetValue(instance, null);
+                return property?.GetValue(instance, null);
             }
         }
 
@@ -57,7 +52,7 @@ public static class Docker
             set
             {
                 var field = type.GetField("s_OriginalDragSource", BindingFlags.Static | BindingFlags.NonPublic);
-                field.SetValue(null, value);
+                field?.SetValue(null, value);
             }
         }
     }
@@ -73,13 +68,12 @@ public static class Docker
             type = instance.GetType();
         }
 
-
         public object rootSplitView
         {
             get
             {
                 var property = type.GetProperty("rootSplitView", BindingFlags.Instance | BindingFlags.Public);
-                return property.GetValue(instance, null);
+                return property?.GetValue(instance, null);
             }
         }
     }
@@ -98,13 +92,13 @@ public static class Docker
         public object DragOver(EditorWindow child, Vector2 screenPoint)
         {
             var method = type.GetMethod("DragOver", BindingFlags.Instance | BindingFlags.Public);
-            return method.Invoke(instance, new object[] { child, screenPoint });
+            return method?.Invoke(instance, new object[] { child, screenPoint });
         }
 
-        public void PerformDrop(EditorWindow child, object dropInfo, Vector2 screenPoint)
+        public bool PerformDrop(EditorWindow child, object dropInfo, Vector2 screenPoint)
         {
             var method = type.GetMethod("PerformDrop", BindingFlags.Instance | BindingFlags.Public);
-            method.Invoke(instance, new object[] { child, dropInfo, screenPoint });
+            return method?.Invoke(instance, new object[] { child, dropInfo, screenPoint }) is bool success && success;
         }
     }
     #endregion
@@ -118,28 +112,65 @@ public static class Docker
     }
 
     /// <summary>
-    /// Docks the second window to the first window at the given position
+    /// Docks the second window to the first window at the given position.
+    /// Uses internal Unity reflection; may fail silently on unsupported Unity versions.
     /// </summary>
-    public static void Dock(this EditorWindow wnd, EditorWindow other, DockPosition position)
+    public static bool Dock(this EditorWindow wnd, EditorWindow other, DockPosition position)
     {
-        var mousePosition = GetFakeMousePosition(wnd, position);
+        try
+        {
+            var mousePosition = GetFakeMousePosition(wnd, position);
 
-        var parent = new _EditorWindow(wnd);
-        var child = new _EditorWindow(other);
-        var dockArea = new _DockArea(parent.m_Parent);
-        var containerWindow = new _ContainerWindow(dockArea.window);
-        var splitView = new _SplitView(containerWindow.rootSplitView);
-        var dropInfo = splitView.DragOver(other, mousePosition);
-        dockArea.s_OriginalDragSource = child.m_Parent;
-        splitView.PerformDrop(other, dropInfo, mousePosition);
+            var parent = new _EditorWindow(wnd);
+            var child = new _EditorWindow(other);
+
+            if (parent.m_Parent == null || child.m_Parent == null)
+            {
+                Debug.LogWarning("[BranchCam] Docker: Could not access internal Unity window parent. Docking skipped.");
+                return false;
+            }
+
+            var dockArea = new _DockArea(parent.m_Parent);
+            if (dockArea.window == null)
+            {
+                Debug.LogWarning("[BranchCam] Docker: Could not access container window. Docking skipped.");
+                return false;
+            }
+
+            var containerWindow = new _ContainerWindow(dockArea.window);
+            if (containerWindow.rootSplitView == null)
+            {
+                Debug.LogWarning("[BranchCam] Docker: Could not access root split view. Docking skipped.");
+                return false;
+            }
+
+            // Use the graph's immediate split: the root skips nested split views.
+            var splitParent = parent.m_Parent.GetType().GetProperty("parent",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(parent.m_Parent);
+            var splitView = new _SplitView(splitParent ?? containerWindow.rootSplitView);
+            var dropInfo = splitView.DragOver(other, mousePosition);
+            if (dropInfo == null) return false;
+            dockArea.s_OriginalDragSource = child.m_Parent;
+            try
+            {
+                return splitView.PerformDrop(other, dropInfo, mousePosition);
+            }
+            finally
+            {
+                dockArea.s_OriginalDragSource = null;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[BranchCam] Docker: Docking failed (likely due to Unity version incompatibility): {e.Message}");
+            return false;
+        }
     }
 
     private static Vector2 GetFakeMousePosition(EditorWindow wnd, DockPosition position)
     {
         Vector2 mousePosition = Vector2.zero;
 
-        // The 20 is required to make the docking work.
-        // Smaller values might not work when faking the mouse position.
         switch (position)
         {
             case DockPosition.Left:
@@ -152,11 +183,11 @@ public static class Docker
                 mousePosition = new Vector2(wnd.position.size.x - 20, wnd.position.size.y / 2);
                 break;
             case DockPosition.Bottom:
-                mousePosition = new Vector2(wnd.position.size.x / 2, wnd.position.size.y - 20);
+                // The drop location selects the edge; Unity sizes the resulting pane.
+                mousePosition = new Vector2(wnd.position.size.x / 2, wnd.position.size.y - 20f);
                 break;
         }
 
-        //return GUIUtility.GUIToScreenPoint(mousePosition);
         return new Vector2(wnd.position.x + mousePosition.x, wnd.position.y + mousePosition.y);
     }
 }

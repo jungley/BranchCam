@@ -1,4 +1,4 @@
-﻿using RydenCam.BranchCamEditor.Nodes.Connections;
+using RydenCam.BranchCamEditor.Nodes.Connections;
 using RydenCam.Common;
 using System.Collections.Generic;
 using UnityEditor;
@@ -43,17 +43,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
     public class ConnectionRenderer
     {
-        private static Texture2D arrowImageLoaded;
-        private static Texture2D ArrowImage
-        {
-            get
-            {
-                if (arrowImageLoaded == null)
-                    arrowImageLoaded = Resources.Load("arrowImage2") as Texture2D;
-                return arrowImageLoaded;
-            }
-        }
-
         public void Draw(Connection connection, bool isUserDrawing = false)
         {
             // 1. Get connection points
@@ -78,11 +67,15 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             {
                 var inPoint = connection.GetInPoint() ?? connection.GetOutPoint();
                 var outPoint = connection.GetUserHandlePoint();
+                if (inPoint == null || outPoint == null) return (Vector2.zero, Vector2.zero);
                 return (inPoint.GlobalPoint, outPoint.GlobalPoint);
             }
             else
             {
-                return (connection.GetInPoint().GlobalPoint, connection.GetOutPoint().GlobalPoint);
+                var inPoint = connection.GetInPoint();
+                var outPoint = connection.GetOutPoint();
+                if (inPoint == null || outPoint == null) return (Vector2.zero, Vector2.zero);
+                return (inPoint.GlobalPoint, outPoint.GlobalPoint);
             }
         }
 
@@ -121,10 +114,22 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             if (isUserDrawing)
                 (start, end) = (end, start);
 
-            float angle = Mathf.Atan2(end.y - start.y, end.x - start.x) * Mathf.Rad2Deg - 90;
-            GUIUtility.RotateAroundPivot(angle, end);
-            GUI.DrawTexture(new Rect(end.x - 10, end.y - 25, 20, 20), ArrowImage, ScaleMode.StretchToFill, true, 20.0F);
-            GUIUtility.RotateAroundPivot(-angle, end);
+            Vector2 direction = (end - start);
+            if (direction.sqrMagnitude < 0.001f) return;
+            direction.Normalize();
+
+            // Draw a small vector triangle at the end point to keep arrowheads aligned under zoom.
+            Vector2 normal = new Vector2(-direction.y, direction.x);
+            float arrowLength = 14f;
+            float arrowWidth = 8f;
+
+            Vector2 tip = end;
+            Vector2 baseCenter = tip - direction * arrowLength;
+            Vector3 left = baseCenter + normal * (arrowWidth * 0.5f);
+            Vector3 right = baseCenter - normal * (arrowWidth * 0.5f);
+
+            Handles.color = Color.green;
+            Handles.DrawAAConvexPolygon(tip, left, right);
         }
 
         private void DrawGotoCurve(Connection connection, Vector2 start, Vector2 end)

@@ -15,7 +15,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public DialogueNodeCommand(Node _node) : base(_node)    
         {
             node = _node as DialogueNode;
-            CustomCameraCommand = new CustomCameraCommand(node);
+            //CustomCameraCommand = new CustomCameraCommand(node);
         }
 
         public override void AddSpeakingEntry(int index)

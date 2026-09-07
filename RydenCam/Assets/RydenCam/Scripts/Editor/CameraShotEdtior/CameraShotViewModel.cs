@@ -1,48 +1,87 @@
-using Assets.RydenCam.Scripts.Editor.CameraShotEdtior;
+using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
+using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
+using Assets.RydenCam.Scripts.Editor.CameraShotEditor;
 using RydenCam.BranchCamEditor.BranchCam;
-using System.Collections.Generic;
+using RydenCam.BranchCamEditor.Managers;
+using RydenCam.BranchCamEditor.Serialization;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
+using SettingsService = RydenCam.BranchCamEditor.Serialization.SettingsService;
+
 
 public class CameraShotViewModel
-{
-    private string defaultShotId { get; set; }
-
-    public CamShotConfig CurrentShot { get; set; }
-
-    public void RemoveShot(CamShotConfig shot)
+{    
+    private CameraShotConfiguration currentShot;
+    public CameraShotConfiguration CurrentShot
     {
-        if(shot.ShotId == defaultShotId)
+        get => currentShot ??= CameraShotsManager.Instance.DefaultShot;
+        set => currentShot = value;
+    }
+    
+    public PreviewRenderer PreviewRenderer { get; set; }
+    public float DistancePreviewSlider { get; set; } = 1f;
+
+    public CameraShotViewModel()
+    {
+        // Preserve unsaved shots when the window is reopened or redocked. The static
+        // manager is empty after a domain reload, which is when disk state should load.
+        if (!CameraShotsManager.Instance.InitialStateLoaded)
+        {
+            string lastOpenedFile = FilePathSaveManager.Instance
+                .GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+
+            CameraShotConfigurationWrapper shotsWrapper = SettingsService.Load<CameraShotConfigurationWrapper>(lastOpenedFile);
+            if (shotsWrapper?.Shots != null && shotsWrapper.Shots.Any())
+                CameraShotsManager.Instance.CameraShots = shotsWrapper.Shots;
+            CameraShotsManager.Instance.MarkInitialStateLoaded();
+        }
+
+        CurrentShot = CameraShotsManager.Instance.DefaultShot;
+        PreviewRenderer = new PreviewRenderer();
+    }
+
+    public void RemoveShot(CameraShotConfiguration shot)
+    {
+        if(shot.IsDefault)
         {
             return;
         }
 
         int index = CameraShotsManager.Instance.CameraShots.FindIndex(s => s.ShotId == shot.ShotId);
-        CurrentShot = CameraShotsManager.Instance.CameraShots[index - 1];
+        if (index < 0) return;
+
         CameraShotsManager.Instance.CameraShots.Remove(shot);
+        CurrentShot = CameraShotsManager.Instance.CameraShots.Count > 0
+            ? CameraShotsManager.Instance.CameraShots[Mathf.Max(0, index - 1)]
+            : CameraShotsManager.Instance.DefaultShot;
     }
 
-
-    public CameraShotViewModel()
+    public void NewFile()
     {
-        //If Settings has any saved shots, load them
-        //Else
-
-
-        CameraShotsManager.Instance.CameraShots = new List<CamShotConfig>();
-        if (CameraShotsManager.Instance.CameraShots.Count == 0)
+        bool shouldReset = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset everything?", "Yes", "No");
+        if (shouldReset)
         {
-            CamShotConfig defaultShot = new CamShotConfig(shotName: "Default");
-            defaultShotId = defaultShot.ShotId; 
-            CameraShotsManager.Instance.CameraShots.Add(defaultShot);
-
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 1"));
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 2"));
-            CameraShotsManager.Instance.CameraShots.Add(new CamShotConfig(shotName: "Shot 3"));
+            FilePathSaveManager.Instance.ClearLastFilePath(FilePathSaveManager.LastOpened_CameraShotsKey);
+            CameraShotSettingsManager.New();
         }
-
-        CurrentShot = CameraShotsManager.Instance.CameraShots
-            .Where(x => x.ShotId == defaultShotId)
-            .FirstOrDefault();
-
     }
+
+    public void Save()
+    {
+        var fileresult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+        CameraShotSettingsManager.Save(fileresult);
+    }
+
+    public void SaveAs()
+    {
+        CameraShotSettingsManager.SaveAs();
+    }
+
+    public void Open()
+    {
+        CameraShotSettingsManager.OpenAndLoad();
+        CurrentShot = CameraShotsManager.Instance.DefaultShot;
+    }
+
 }

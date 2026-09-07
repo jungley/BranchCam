@@ -5,10 +5,10 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
 {
     public static class SetupPreviewSceneData
     {
-        public static List<PreviewActorData> PreviewActorDatas { get; set; }
-
         public static void CalculateActorsInPreviewSpace()
         {
+            if (NodeManager.Instance.ActorsInScene.Count == 0) return;
+
             var actors = NodeManager.Instance.ActorsInScene;
             IActorPlacementStrategy strategy;
 
@@ -21,7 +21,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetu
             else
                 strategy = new CircularPlacementStrategy();
 
-            PreviewActorDatas = strategy.GeneratePreviewData(actors);
+             strategy.GeneratePreviewData();
         }
     }
 }

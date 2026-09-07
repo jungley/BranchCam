@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.Common;
 using RydenCam.SequenceData;
@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Node = Assets.RydenCam.Scripts.BranchCamCC.Node;
 using Assets.RydenCam.Scripts.NodeCommands;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 
 namespace RydenCam.BranchCamEditor.Managers
 {
@@ -47,7 +47,7 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public StartNode StartNode => Nodes.ToList().Find(n => n.TypeOfNode == NodeType.StartNode) as StartNode;
 
-        public static bool StartNodeAdded { get; set; }
+        public bool StartNodeAdded => StartNode != null;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -75,10 +75,6 @@ namespace RydenCam.BranchCamEditor.Managers
         {
             UnregisterNodeCommand(node);
 
-            if (node.TypeOfNode == NodeType.StartNode)
-            {
-                StartNodeAdded = false;
-            }
             Nodes.Remove(node);
         }
 
@@ -87,7 +83,6 @@ namespace RydenCam.BranchCamEditor.Managers
             Nodes.Clear();
             NodeCommandLookup.Clear();
             ActiveNode = null;
-            StartNodeAdded = false;
         }
 
         public bool IsValidSequence()
@@ -103,12 +98,16 @@ namespace RydenCam.BranchCamEditor.Managers
             }
         }
 
-        public List<ActorInfo> ActorsInScene => StartNode?.ActorsInScene.Where(actor => actor.ActorGO != null).ToList() ?? new List<ActorInfo>();
-            
+        public ObservableCollection<ActorInfo> ActorsInScene =>
+            StartNode?.ActorsInScene != null
+                ? new ObservableCollection<ActorInfo>(
+                    StartNode.ActorsInScene.Where(actor => actor.ActorGO != null))
+                : new ObservableCollection<ActorInfo>();
+
         public void ClearActorsInScene()
         {
             var startNode = Nodes.OfType<StartNode>().FirstOrDefault();
-            if (startNode != null) startNode.ActorsInScene = new List<ActorInfo>();
+            if (startNode != null) startNode.ActorsInScene = new ObservableList<ActorInfo>();
         }
 
        

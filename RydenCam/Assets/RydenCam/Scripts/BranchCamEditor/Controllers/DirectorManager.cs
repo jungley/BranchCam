@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Cinemachine;
 using RydenCam.BranchCamEditor.BranchCam;
@@ -6,9 +6,7 @@ using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using RydenCam.Common;
 
 namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
 {
@@ -52,8 +50,34 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         private void SetCamera(Node CurrentNode, CinemachineVirtualCamera dialogueCamera)
         {
             ITalkable posNode = CurrentNode as ITalkable;
-            Pose placement = CameraCalculator.CalculatePlacement(posNode.NodeConvodata.ShotConfig, new ActorPositionWrapper(posNode), calculateInGame: true);
+            if (posNode?.NodeConvodata?.ShotConfig == null || dialogueCamera == null) return;
+
+            GameObject actor = posNode.NodeConvodata.Actor?.ActorGO;
+            if (actor == null)
+            {
+                Debug.LogWarning("[BranchCam] Cannot place the dialogue camera because the speaking actor was not found in the scene.");
+                return;
+            }
+
+            ActorPositionData actorPosition = CreatePositionData(actor);
+            GameObject oppositeActor = posNode.NodeConvodata.OppositeActor?.ActorGO;
+            ActorPositionData oppositePosition = oppositeActor == null ? null : CreatePositionData(oppositeActor);
+            Pose placement = CameraCalculator.CalculatePlacement(
+                posNode.NodeConvodata.ShotConfig,
+                actorPosition,
+                oppositePosition);
             dialogueCamera.transform.SetPositionAndRotation(placement.position, placement.rotation);
+        }
+
+        private static ActorPositionData CreatePositionData(GameObject actor)
+        {
+            Transform actorTransform = actor.transform;
+            return new ActorPositionData
+            {
+                ActorPosition = actorTransform.position,
+                ActorRotation = actorTransform.rotation,
+                ForwardN = actorTransform.forward
+            };
         }
 
         /// <summary>
@@ -61,6 +85,8 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         /// </summary>
         private void ActorsLookAtEachOther(ITalkable node)
         {
+            if (node?.NodeConvodata?.Actor?.ActorGO == null) return;
+
             int actorCount = NodeManager.Instance.ActorsInScene.Count;
             if (actorCount <= 1) return;
 
@@ -95,7 +121,14 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
 
         private Vector3 GetMidPoint(List<Vector3> focusTargets = null)
         {
-            focusTargets = NodeManager.Instance.ActorsInScene.Select(x => x.ActorGO.transform.root.position).ToList();
+            var actors = NodeManager.Instance.ActorsInScene;
+            if (actors == null || actors.Count == 0) return Vector3.zero;
+
+            focusTargets = actors
+                .Where(x => x?.ActorGO != null)
+                .Select(x => x.ActorGO.transform.root.position)
+                .ToList();
+            if (focusTargets.Count == 0) return Vector3.zero;
 
             Vector3 midPoint = CameraCalculator.CalculateMidPoint(focusTargets);
 
@@ -127,9 +160,10 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
         {
             if (NodeManager.Instance.StartNode == null || !NodeManager.Instance.StartNode.ReturnToOriginalPositions) return;
 
-            foreach (ActorInfo actorInfo in NodeManager.Instance.StartNode.ActorsInScene)
+            foreach (ActorInfo actor in NodeManager.Instance.StartNode.ActorsInScene)
             {
-                actorInfo.ActorGO.transform.root.position = actorInfo.OriginalPositionAtStartOfDialogue.position;
+                if (actor?.ActorGO == null) continue;
+                actor.ActorGO.transform.root.position = actor.OriginalPositionAtStartOfDialogue.position;
             }
 
             //ActorsLookAtMidPoint();

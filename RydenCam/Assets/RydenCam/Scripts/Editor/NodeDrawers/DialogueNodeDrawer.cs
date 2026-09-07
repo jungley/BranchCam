@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using RydenCam.BranchCamEditor.PreviewRender;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 
 namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 {
@@ -25,7 +25,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
 
         private DialoguePreview<DialogueNode> preview { get; set; }
-        private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
+        private NodeCamShotSelector nodeCamShotSelector { get; set; }
 
         private Vector2 scrollPosInspector { get; set; }
         private int ActorEditorDropdownIndex { get; set; }
@@ -38,8 +38,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             dialogueCommand = new DialogueNodeCommand(dialogueNode);
             preview = new DialoguePreview<DialogueNode>(dialogueNode);
 
-            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(dialogueNode, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.UpdateShotRender += () => preview.UpdateShotRender();
+            nodeCamShotSelector = new NodeCamShotSelector(dialogueNode, inspectorText, labelStyleHead_Panel);
+            nodeCamShotSelector.UpdateShotRender += () => preview.UpdateShotRender();
+
 
             dialogueCommand.WindowRect = new Rect(dialogueNode.EditorPosition.x, dialogueNode.EditorPosition.y, dialogueNode.NodeWidth, dialogueNode.NodeHeight);
 
@@ -48,16 +49,18 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             ColorUtility.TryParseHtmlString("#1700FF", out Color colorref);
             Command.NodeColor = colorref;
 
-            ActorEditorDropdownIndex = dialogueNode?.NodeConvodata?.Actor?.ActorName is string actorName
-                ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
+            ActorEditorDropdownIndex =
+                dialogueNode?.NodeConvodata?.Actor?.ActorName is string actorName
+                ? GetActorIndex(actorName)
                 : -1;
 
         }
 
         public override void DrawNode(int index)
         {
+            Color previousBackgroundColor = GUI.backgroundColor;
             int buffer = 42;
-            Command.WindowRect = GUI.Window(index, new Rect(dialogueNode.EditorPosition.x, dialogueNode.EditorPosition.y, dialogueNode.NodeWidth, dialogueNode.NodeHeight),
+            Command.WindowRect = GUI.Window(index, new Rect(SnapToPixel(dialogueNode.EditorPosition.x), SnapToPixel(dialogueNode.EditorPosition.y), dialogueNode.NodeWidth, dialogueNode.NodeHeight),
                 (windowId) =>
                 {
 
@@ -65,14 +68,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                     EditorGUI.LabelField(new Rect(4, 4, dialogueNode.NodeWidth, dialogueNode.NodeHeight), "Dialogue", labelStyleHead_Node);
 
 
-                    int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
-                    if (indexx != ActorEditorDropdownIndex)
-                    {
-                        dialogueCommand.AssignNewActor(indexx);
-                        preview.UpdateShotRender();
-                        ActorEditorDropdownIndex = indexx;
-                    }
-
+                    DrawActorPopup(ActorEditorDropdownIndex,
+                        NodeManager.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), index =>
+                        {
+                            dialogueCommand.AssignNewActor(index);
+                            preview.UpdateShotRender();
+                            ActorEditorDropdownIndex = index;
+                        });
                     dialogueCommand.TextAreaRectIndex.Clear();
                     for (int i = 0; i < dialogueNode.NodeConvodata.DialogTextList.Count; i++)
                     {
@@ -97,9 +99,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             preview.DrawPreviewWindow();
 
             Command.HighlightIfActive();
-
-            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
-
+            Node.EditorPosition = SnapToPixel(new Vector2(Command.WindowRect.x, Command.WindowRect.y));
+            GUI.backgroundColor = previousBackgroundColor;
         }
 
         public override void DrawNodeInspector()
@@ -118,13 +119,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 ActorEditorDropdownIndex = indexx;
             }
 
-            nodeCameraOptionsDrawer.DrawUICamCompOptions();
+            nodeCamShotSelector?.DrawUICamCompOptions();
 
         }
 
         public void Clear()
         {
-            dialogueCommand.CustomCameraCommand.ClearCameraSceneObject();
+            //dialogueCommand.CustomCameraCommand.ClearCameraSceneObject();
         }
     }
 }

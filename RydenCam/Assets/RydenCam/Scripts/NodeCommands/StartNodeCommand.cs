@@ -1,6 +1,5 @@
 ﻿using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
-using RydenCam.BranchCamEditor.BranchCam;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.SequenceData;
 using System.Linq;
@@ -21,23 +20,6 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         public void AddActor()
         {
             node.ActorsInScene.Add(new ActorInfo());
-
-            //Check if there any nodes with null Actors and assign them the 
-            //first in the list
-            var firstActor = node.ActorsInScene.FirstOrDefault(x => x?.ActorID != null);
-            if (firstActor != null)
-            {
-                foreach (var node in NodeManager.Instance.Nodes.OfType<ITalkable>())
-                {
-                    if (node.NodeConvodata.Actor == null)
-                    {
-                        node.NodeConvodata.Actor = firstActor;
-                        node.NodeConvodata.ShotConfig.Actor = firstActor.ActorName;
-                    }
-                }
-            }
-
-            SetupPreviewSceneData.CalculateActorsInPreviewSpace();
         }
 
         public void RemoveActor(int index)
@@ -59,22 +41,23 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             //Remove Actor from Actors List
             node.ActorsInScene.RemoveAt(index);
 
+            //Recalculate Actor Positions in Preview
             SetupPreviewSceneData.CalculateActorsInPreviewSpace();
 
         }
 
-        public string GetPreDefinedStartPositionDisplayData(ActorInfo actorInfo)
+        public string GetPreDefinedStartPositionDisplayData(ActorInfo actor)
         {
-            if (actorInfo.PreDefinedStartPosition.position == Vector3.zero)
+            if (actor.PreDefinedStartPosition.position == Vector3.zero)
             {
                 return "<Not Assigned>";
             }
             else
             {
                 // Format the position components to two decimal places
-                float x = Mathf.Round(actorInfo.PreDefinedStartPosition.position.x * 100) / 100;
-                float y = Mathf.Round(actorInfo.PreDefinedStartPosition.position.y * 100) / 100;
-                float z = Mathf.Round(actorInfo.PreDefinedStartPosition.position.z * 100) / 100;
+                float x = Mathf.Round(actor.PreDefinedStartPosition.position.x * 100) / 100;
+                float y = Mathf.Round(actor.PreDefinedStartPosition.position.y * 100) / 100;
+                float z = Mathf.Round(actor.PreDefinedStartPosition.position.z * 100) / 100;
 
                 // Create a formatted string with the position data
                 return $"Position Set ✓ X:{x:0.00} Y:{y:0.00} Z:{z:0.00}";

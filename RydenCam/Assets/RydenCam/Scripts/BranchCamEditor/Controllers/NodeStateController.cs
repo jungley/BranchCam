@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using RydenCam.SequenceData;
 using RydenCam.BranchCamEditor.BranchCam;
@@ -21,11 +21,9 @@ namespace RydenCam.BranchCamEditor.Controllers
     {
         public void Traverse(NodeStateController controller)
         {
-            //Set Up Sequence
             controller.ToggleRelevantObjects(true);
 
             controller.DirectorManager.SetUpScene();
-
             controller.DirectorManager.SetPreDefinedActorPositions();
             controller.DirectorManager.SetDepthOfField(true);
 
@@ -43,13 +41,13 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void HandleDialogue(Node node, NodeStateController controller)
         {
-
             DialogueNode dialogueNode = node as DialogueNode;
             if (dialogueNode == null) return;
 
-            if (dialogueNode.NodeConvodata.DialogTextList.Count == 0) return;
+            if (dialogueNode.NodeConvodata == null || 
+                dialogueNode.NodeConvodata.DialogTextList == null || 
+                dialogueNode.NodeConvodata.DialogTextList.Count == 0) return;
 
-            //Display Dialogue
             controller.DialogueIndex++;
             if (controller.DialogueIndex < dialogueNode.NodeConvodata.DialogTextList.Count)
             {
@@ -58,11 +56,9 @@ namespace RydenCam.BranchCamEditor.Controllers
                 controller.PreviousDialogue.Push(currentDialogue);
             }
 
-            //Camera and Rotation(s)
             controller.DirectorManager.SetCameraAndActorRotations(controller.CurrentNode);
 
-            //Get Next Node
-            if (controller.DialogueIndex == dialogueNode.NodeConvodata.DialogTextList.Count -1)
+            if (controller.DialogueIndex == dialogueNode.NodeConvodata.DialogTextList.Count - 1)
             {
                 controller.DialogueIndex = -1;
                 controller.CurrentNode = controller.CurrentNode.GetNextNode();
@@ -75,9 +71,7 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void Traverse(NodeStateController controller)
         {
             controller.UIView.DisplayDecisionNode();
-
             controller.DirectorManager.SetCameraAndActorRotations(controller.CurrentNode);
-
             ValidInputs.IsDecionsMakingLocked = true;
         }
     }
@@ -107,10 +101,23 @@ namespace RydenCam.BranchCamEditor.Controllers
         public bool IsDialogueRunning { get; set; } = false;
 
         public DirectorManager DirectorManager { get; set; }
+        public bool IsInitialized => DialogueCamera != null && DirectorManager != null && UIView != null;
 
         public NodeStateController(GameObject dcamera, GameObject dcameraBrain)
         {
+            if (dcamera == null)
+            {
+                Debug.LogError("[BranchCam] Dialogue camera GameObject is null. NodeStateController cannot initialize.");
+                return;
+            }
+
             DialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
+            if (DialogueCamera == null)
+            {
+                Debug.LogError("[BranchCam] No CinemachineVirtualCamera found on the dialogue camera GameObject.");
+                return;
+            }
+
             CamCalculator = new CameraCalculator();
             DirectorManager = new DirectorManager(CamCalculator, DialogueCamera);
             UIView = new InGameDialogUIView(this);
@@ -124,8 +131,14 @@ namespace RydenCam.BranchCamEditor.Controllers
             while (CurrentNode != null)
             {
                 INodePlayer nodePlayer = CreateNodePlayer(CurrentNode);
+                if (nodePlayer == null)
+                {
+                    Debug.LogWarning($"[BranchCam] No player handler for node type: {CurrentNode.GetType().Name}. Ending sequence.");
+                    EndSequence();
+                    return;
+                }
                 nodePlayer.Traverse(this);
-                return; // Exit after handling the current node
+                return;
             }
             EndSequence();
         }
@@ -133,6 +146,17 @@ namespace RydenCam.BranchCamEditor.Controllers
         public void MakeDecision(int choiceIndex)
         {
             var decisionNode = CurrentNode as DecisionNode;
+            if (decisionNode == null)
+            {
+                Debug.LogWarning("[BranchCam] MakeDecision called but current node is not a DecisionNode.");
+                return;
+            }
+
+            if (decisionNode.PointOut == null || choiceIndex < 0 || choiceIndex >= decisionNode.PointOut.Count)
+            {
+                Debug.LogWarning($"[BranchCam] Decision index {choiceIndex} is outside the available choices.");
+                return;
+            }
             CurrentNode = decisionNode.MakeDecision(choiceIndex);
             ValidInputs.IsDecionsMakingLocked = false;
             TraverseNodeNetwork();
@@ -153,9 +177,12 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void EndSequence()
         {
-            DirectorManager.ReturnActorsToOriginalPositionsIfEnabled();
-            DirectorManager.SetDepthOfField(enabled: false);
-            UIView.ClearPanels();
+            if (DirectorManager != null)
+            {
+                DirectorManager.ReturnActorsToOriginalPositionsIfEnabled();
+                DirectorManager.SetDepthOfField(enabled: false);
+            }
+            UIView?.ClearPanels();
             ToggleRelevantObjects(visibility: false);
             PreviousDialogue.Clear();
             IsDialogueRunning = false;
@@ -164,7 +191,8 @@ namespace RydenCam.BranchCamEditor.Controllers
 
         public void ToggleRelevantObjects(bool visibility)
         {
-            DialogueCamera.enabled = visibility;
+            if (DialogueCamera != null)
+                DialogueCamera.enabled = visibility;
         }
     }
 }

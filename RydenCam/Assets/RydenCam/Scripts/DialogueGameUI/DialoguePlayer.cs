@@ -1,9 +1,11 @@
-﻿using RydenCam.BranchCamEditor.Serialization;
+using RydenCam.BranchCamEditor.Serialization;
 using RydenCam.BranchCamEditor.Controllers;
 using RydenCam.Common;
-using UnityEditor;
 using UnityEngine;
 using RydenCam.BranchCamEditor.Managers;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace RydenCam.DialogueGameUI
 {
@@ -36,35 +38,51 @@ namespace RydenCam.DialogueGameUI
             }
             set
             {
-                _requiredDialogueCamera = value;
+                _requiredDialogueCameraBrain = value;
             }
         }
 
 
         [HideInInspector]
         public string DialogueFilePath;
-        public NodeStateController SatePlayer;
-        public bool IsDialogueRunning => SatePlayer.IsDialogueRunning;
+        public NodeStateController StatePlayer;
+        public bool IsDialogueRunning => StatePlayer != null && StatePlayer.IsDialogueRunning;
 
         public void Awake()
         {
-            SatePlayer = new NodeStateController(DialogueCamera, DialogueCameraBrain);
-            SatePlayer.ToggleRelevantObjects(visibility: false);
+            if (DialogueCamera == null)
+            {
+                Debug.LogError("[BranchCam] DialoguePlayer requires a DialogueCamera reference. Assign it in the Inspector.");
+                return;
+            }
+
+            StatePlayer = new NodeStateController(DialogueCamera, DialogueCameraBrain);
+            if (!StatePlayer.IsInitialized)
+            {
+                StatePlayer = null;
+                return;
+            }
+            StatePlayer.ToggleRelevantObjects(visibility: false);
         }
 
         private void OnEnable()
         {
-            ValidInputs.OnValidInput += SatePlayer.TraverseNodeNetwork;
+            if (StatePlayer != null)
+                ValidInputs.OnValidInput += StatePlayer.TraverseNodeNetwork;
         }
 
         private void OnDisable()
         {
-            ValidInputs.OnValidInput -= SatePlayer.TraverseNodeNetwork;
+            if (StatePlayer != null)
+            {
+                ValidInputs.OnValidInput -= StatePlayer.TraverseNodeNetwork;
+                if (StatePlayer.IsDialogueRunning)
+                    StatePlayer.EndSequence();
+            }
         }
 
         private void Update()
         {
-            // Call the Update method of ValidInputs to check for changes
             ValidInputs.Update();
         }
 
@@ -73,15 +91,35 @@ namespace RydenCam.DialogueGameUI
         /// </summary>
         public void StartSequence()
         {
-            LoadConversation();
-            SatePlayer.IsDialogueRunning = true;
-            SatePlayer.CurrentNode = NodeManager.Instance.StartNode;
-            SatePlayer.TraverseNodeNetwork();
+            if (StatePlayer == null)
+            {
+                Debug.LogError("[BranchCam] DialoguePlayer not initialized. Ensure DialogueCamera is assigned.");
+                return;
+            }
+
+            if (!LoadConversation())
+                return;
+
+            var startNode = NodeManager.Instance.StartNode;
+            if (startNode == null)
+            {
+                Debug.LogError("[BranchCam] The loaded conversation has no Start node.");
+                return;
+            }
+
+            StatePlayer.IsDialogueRunning = true;
+            StatePlayer.CurrentNode = startNode;
+            StatePlayer.TraverseNodeNetwork();
         }
 
-        public void LoadConversation()
+        public bool LoadConversation()
         {
-            LoadFile.LoadSaveables(DialogueFilePath);
+            if (string.IsNullOrWhiteSpace(DialogueFilePath))
+            {
+                Debug.LogWarning("[BranchCam] DialogueFilePath is empty. Cannot load conversation.");
+                return false;
+            }
+            return NodeGraphSettingsManager.Load(DialogueFilePath);
         }
 
 #if UNITY_EDITOR

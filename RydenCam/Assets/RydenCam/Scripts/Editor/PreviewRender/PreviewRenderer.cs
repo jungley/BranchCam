@@ -1,7 +1,9 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender.ActorPreviewSetup;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using RydenCam.BranchCamEditor.BranchCam;
+using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
-using System.Collections.Generic;
+using RydenCam.SequenceData;
+using System.Collections.ObjectModel;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,8 +12,6 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
     public class PreviewRenderer
     {
         public Texture CachedRenderTexture { get; set; }
-
-        private List<PreviewActorData> actors => SetupPreviewSceneData.PreviewActorDatas;
 
         private PreviewRenderUtility _prevRenderUtility { get; set; }
         private PreviewRenderUtility previewRenderUtility
@@ -28,6 +28,13 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
 
                 return _prevRenderUtility;
             }
+        }
+
+        private CameraCalculator cameraCalculator { get; }
+
+        public PreviewRenderer()
+        {
+            cameraCalculator = new CameraCalculator();
         }
 
         public static Texture2D RenderGlobalSceneFromPosition(Vector3 camPosition, Quaternion camRotation, int width, int height)
@@ -64,7 +71,17 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return tex;
         }
 
-        public void RenderPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
+        public void ComposePreviewImage(Rect windowRect, CameraShotConfiguration shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
+        {
+            if(actorPosData == null)
+                return;
+
+            Pose camPose = cameraCalculator.CalculatePlacement(shot, actorPosData, oppActorPosData);
+            RenderPreview(windowRect, camPose, shot);
+        }
+
+
+        private void RenderPreview(Rect windowRect, Pose camPose, CameraShotConfiguration shot)
         {
             if (shot.GoalType == CameraGoal.Custom)
             {
@@ -77,7 +94,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
         }
 
         // Handles rendering for custom camera shots
-        private void RenderCustomPreview(Rect windowRect, Pose camPose, CamShotConfig shot)
+        private void RenderCustomPreview(Rect windowRect, Pose camPose, CameraShotConfiguration shot)
         {
             // Skip if custom camera config isn't set
             if (!shot.IsCustomSet)
@@ -113,16 +130,18 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
             previewRenderUtility.camera.transform.SetPositionAndRotation(cameraPosition, cameraRotation);
 
-            foreach (var actor in actors)
+            foreach (var actor in NodeManager.Instance.ActorsInScene)
             {
-                foreach (var meshMatScale in actor.MeshMatScale)
+                if (actor?.PreviewData?.MeshMatScale == null) continue;
+
+                foreach (var meshMatScale in actor.PreviewData.MeshMatScale)
                 {
-                    if (meshMatScale.Mesh == null)
+                    if (meshMatScale.Mesh == null || meshMatScale.Mat == null)
                         continue;
 
                     var matrix = Matrix4x4.TRS(
-                        actor.ActorPositionData.MeshOriginPoint,
-                        actor.ActorPositionData.ActorRotation,
+                        actor.PreviewData.MeshOriginPoint,
+                        actor.PreviewData.ActorPositionData.ActorRotation,
                         Vector3.one // Replace with meshMatScale.Scale if needed
                     );
 

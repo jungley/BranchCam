@@ -1,10 +1,11 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Extensions;
-using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DatatStructures;
+using Assets.RydenCam.Scripts.BranchCamEditor.Extensions.DataStructures;
 using Assets.RydenCam.Scripts.NodeCommands;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.BranchCamEditor.PreviewRender;
 using RydenCam.Common;
+using RydenCam.Editor;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -24,7 +25,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         }
 
         private DialoguePreview<DecisionNode> preview { get; set; }
-        private NodeCameraOptionsDrawer nodeCameraOptionsDrawer { get; set; }
+        private NodeCamShotSelector camShotSelector { get; set; }
+
         private int ActorEditorDropdownIndex { get; set; }
         private Vector2 scrollPosInspector { get; set; }
         private GUIStyle decisionOptionNumber { get; set; }
@@ -37,8 +39,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
 
             preview = new DialoguePreview<DecisionNode>(decisionNode);
 
-            nodeCameraOptionsDrawer = new NodeCameraOptionsDrawer(decisionNode, inspectorText, labelStyleHead_Panel);
-            nodeCameraOptionsDrawer.UpdateShotRender += () => preview.UpdateShotRender();
+            camShotSelector = new NodeCamShotSelector(decisionNode, inspectorText, labelStyleHead_Panel);
+            camShotSelector.UpdateShotRender += () => preview.UpdateShotRender();
+
 
             decisionCommand.WindowRect = new Rect(decisionNode.EditorPosition.x, decisionNode.EditorPosition.y, decisionNode.NodeWidth, decisionNode.NodeHeight);
 
@@ -51,38 +54,57 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             decisionOptionNumber.fontSize = 13;
             decisionOptionNumber.normal.textColor = Color.black;
 
-            ActorEditorDropdownIndex = decisionNode?.NodeConvodata?.Actor?.ActorName is string actorName
-                ? NodeManager.Instance.ActorsInScene.FindIndex(actor => actor.ActorName == actorName)
-                : -1;
+            ActorEditorDropdownIndex =
+                decisionNode?.NodeConvodata?.Actor?.ActorName is string actorName
+                    ? GetActorIndex(actorName)
+                    : -1;
         }
 
         public override void DrawNode(int index)
         {
+            Color previousBackgroundColor = GUI.backgroundColor;
 
-            int buffer = 42;
             GUI.backgroundColor = Color.gray;
 
-            Command.WindowRect = GUI.Window(index, new Rect(decisionNode.EditorPosition.x, decisionNode.EditorPosition.y, decisionNode.NodeWidth, decisionNode.NodeHeight),
+            Command.WindowRect = GUI.Window(index, new Rect(SnapToPixel(decisionNode.EditorPosition.x), SnapToPixel(decisionNode.EditorPosition.y), decisionNode.NodeWidth, decisionNode.NodeHeight),
                 (windowId) =>
                  {
                      GUI.DrawTextureWithTexCoords(new Rect(0, 0, 200.0f, 25.0f), HeaderTexture, new Rect(0, 0, 1, 1.0f));
                      EditorGUI.LabelField(new Rect(4, 4, decisionNode.NodeWidth, decisionNode.NodeHeight), "Decision", labelStyleHead_Node);
 
-                     int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.StartNode.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+                     var actorNames = (NodeManager.Instance.StartNode?.ActorsInScene)?
+                                         .Select(x => x.ActorName)
+                                         .ToArray()
+                                      ?? new string[0];
 
-                     if (indexx != ActorEditorDropdownIndex)
+                     DrawActorPopup(ActorEditorDropdownIndex, actorNames, index =>
                      {
-                         decisionCommand.AssignNewActor(indexx);
+                         decisionCommand.AssignNewActor(index);
                          preview.UpdateShotRender();
-                         ActorEditorDropdownIndex = indexx;
-                     }
-
-                     decisionCommand.TextAreaRectIndex.Clear();
+                         ActorEditorDropdownIndex = index;
+                     });
+                     if (Event.current.type == EventType.Repaint)
+                         decisionCommand.TextAreaRectIndex.Clear();
+                     bool isConnectingLine = NodeGraphEditorWindow.Instance != null && NodeGraphEditorWindow.Instance.IsDrawingConnectionHandle;
                      for (int decisionIndex = 0; decisionIndex < decisionNode.DecisionOptions.Count; decisionIndex++)
                      {
                          GUILayout.BeginHorizontal();
-                            GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
-                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(Command.WindowRect, decisionCommand.TextAreaRectIndex, decisionIndex, ref buffer, decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: decisionNode.NodeWidth - 25);
+                         GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
+                         EditorGUI.BeginDisabledGroup(isConnectingLine);
+                         float textWidth = decisionNode.NodeWidth - 25;
+                         float textHeight = Mathf.Max(50f, EditorGUILayoutExtensions.GetTextAreaHeight(decisionNode.DecisionOptions[decisionIndex], textWidth) + 10f);
+                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayout.TextArea(
+                             decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode,
+                             GUILayout.Width(textWidth), GUILayout.Height(textHeight));
+                         EditorGUI.EndDisabledGroup();
+                         Rect localTextAreaRect = GUILayoutUtility.GetLastRect();
+                         Rect globalTextAreaRect = new Rect(
+                             Command.WindowRect.x + localTextAreaRect.x,
+                             Command.WindowRect.y + localTextAreaRect.y,
+                             localTextAreaRect.width,
+                             localTextAreaRect.height);
+                         if (Event.current.type == EventType.Repaint)
+                             decisionCommand.TextAreaRectIndex.UpdateByKey(decisionIndex, globalTextAreaRect);
                          GUILayout.EndHorizontal();
                          GUILayout.Space(5);
 
@@ -96,8 +118,6 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                          Command.RemoveNode();
                      }
 
-
-
                      DrawConnectionPoints();
 
                      GUI.DragWindow();
@@ -105,10 +125,9 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                  }, "");
 
             preview.DrawPreviewWindow();
-
             Command.HighlightIfActive();
-
-            Node.EditorPosition = new Vector2(Command.WindowRect.x, Command.WindowRect.y);
+            Node.EditorPosition = SnapToPixel(new Vector2(Command.WindowRect.x, Command.WindowRect.y));
+            GUI.backgroundColor = previousBackgroundColor;
         }
 
         public override void DrawNodeInspector()
@@ -117,25 +136,35 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
             EditorGUILayout.Space();
             GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 
-            int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex,  NodeManager.Instance.StartNode.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
+            var actorNames = (NodeManager.Instance.StartNode?.ActorsInScene)?
+                                .Select(x => x.ActorName)
+                                .ToArray()
+                             ?? new string[0];
 
-            if(indexx != ActorEditorDropdownIndex)
+            int indexx = EditorGUILayout.Popup(
+                ActorEditorDropdownIndex,
+                actorNames,
+                GUILayout.Width(200)
+            );
+
+            if (indexx != ActorEditorDropdownIndex)
             {
                 decisionCommand.AssignNewActor(indexx);
                 preview.UpdateShotRender();
                 ActorEditorDropdownIndex = indexx;
             }
 
-            using (var horizontalScopeShowPreviewOption = new GUILayout.HorizontalScope())
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                GUILayout.Label("Show Previous Dialog", inspectorText, GUILayout.Width(150));
-                decisionNode.ShowPreviousDialog = EditorGUILayout.Toggle(decisionNode.ShowPreviousDialog);
+                decisionNode.ShowPreviousDialog = EditorGUILayout.ToggleLeft(
+                    new GUIContent("Show Previous Dialog", "Display the preceding dialogue above the decision choices."),
+                    decisionNode.ShowPreviousDialog, EditorStyles.boldLabel, GUILayout.Height(26));
             }
 
             EditorGUILayout.Space();
 
-
-            nodeCameraOptionsDrawer.DrawUICamCompOptions();        
+            camShotSelector.DrawUICamCompOptions();
+            //nodeCameraOptionsDrawer.DrawUICamCompOptions();
         }
 
         //Draws and recalculates the spacing of the decision out points based on
@@ -165,7 +194,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         }
         public void Clear()
         {
-            decisionCommand.CustomCameraCommand.ClearCameraSceneObject();
+            //decisionCommand.CustomCameraCommand.ClearCameraSceneObject();
         }
     }
 }
