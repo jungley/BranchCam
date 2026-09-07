@@ -1,6 +1,6 @@
-# RydenCam (BranchCam) — Branching Dialogue & Camera System for Unity
+# BranchCam — Branching Dialogue & Camera System for Unity
 
-RydenCam is a visual node-graph editor and runtime system for authoring branching dialogue sequences with automatic cinematic camera placement. It is designed for RPG-style conversations where characters talk, the camera dynamically frames each shot, and the player can make decisions that branch the story.
+BranchCam is a visual node-graph editor and runtime system for authoring branching dialogue sequences with automatic cinematic camera placement. It is designed for RPG-style conversations where characters talk, the camera dynamically frames each shot, and the player can make decisions that branch the story.
 
 ## Features
 

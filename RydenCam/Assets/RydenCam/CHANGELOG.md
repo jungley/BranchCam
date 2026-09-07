@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the RydenCam (BranchCam) package will be documented in this file.
+All notable changes to the BranchCam package will be documented in this file.
 
 ## [1.0.0] - 2026-03-12
 
@@ -34,7 +34,7 @@ All notable changes to the RydenCam (BranchCam) package will be documented in th
 - Save flow gracefully falls back to Save As when no prior file path exists.
 - Load flow validates JSON structure and skips malformed nodes instead of crashing.
 - Docker (editor window docking via reflection) wrapped in try-catch for Unity version compatibility.
-- `BranchLog` now prefixes all messages with `[RydenCam]` and properly logs exceptions.
+- `BranchLog` now prefixes all messages with `[BranchCam]` and properly logs exceptions.
 - `EnumPopupExtensions` clamps selected index to prevent out-of-range errors.
 - `NodeCamShotSelector` validates camera shot list before rendering popup.
 - Fixed namespace typos: `CameraShotEdtior` → `CameraShotEditor`, `CamersaShotEditor` → `CameraShotEditor`, `DatatStructures` → `DataStructures`.

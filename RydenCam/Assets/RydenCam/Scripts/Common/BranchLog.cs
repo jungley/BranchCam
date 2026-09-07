@@ -6,16 +6,16 @@ namespace RydenCam.Common
     public static class BranchLog
     {
         /// <summary>
-        /// Set to false to suppress informational log messages from RydenCam.
+        /// Set to false to suppress informational log messages from BranchCam.
         /// </summary>
         public static bool DebugEnableLogging = true;
 
         /// <summary>
-        /// Set to false to suppress error log messages from RydenCam.
+        /// Set to false to suppress error log messages from BranchCam.
         /// </summary>
         public static bool EnableProductErrorLogging = true;
 
-        private const string Prefix = "[RydenCam] ";
+        private const string Prefix = "[BranchCam] ";
 
         public static void Log(string message)
         {

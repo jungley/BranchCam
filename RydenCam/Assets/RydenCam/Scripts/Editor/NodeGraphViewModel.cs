@@ -94,48 +94,20 @@ public class NodeGraphViewModel
 
     public void OpenCameraShotEditor()
     {
-        bool wasAlreadyOpen = EditorWindow.HasOpenInstances<CameraShotEditor>();
         CameraShotEditor camShotEditor = EditorWindow.GetWindow<CameraShotEditor>();
-        camShotEditor.titleContent = new GUIContent("Camera Shot Editor View");
-
-        if (wasAlreadyOpen)
+        camShotEditor.titleContent = new GUIContent("Shot Configuration");
+        camShotEditor.NodeGraphViewModel = this;
+        camShotEditor.Show();
+        var nodeGraphWindow = editorWindow;
+        // Wait until Unity has created the window's host before docking it.
+        EditorApplication.delayCall += () =>
         {
-            camShotEditor.Show();
+            if (nodeGraphWindow == null || camShotEditor == null) return;
+            if (!Docker.Dock(nodeGraphWindow, camShotEditor, Docker.DockPosition.Bottom))
+                Debug.LogWarning("[BranchCam] Unity could not dock Shot Configuration below the graph.");
             camShotEditor.Focus();
-            Rect graphRect = EditorWindow.GetWindow<NodeGraphEditorWindow>().position;
-            if (camShotEditor.position.height < 280f && graphRect.height > 500f)
-            {
-                float desiredHeight = Mathf.Clamp(graphRect.height * 0.35f, 280f, 420f);
-                Rect shotRect = camShotEditor.position;
-                camShotEditor.position = new Rect(
-                    shotRect.x,
-                    graphRect.yMax - desiredHeight,
-                    shotRect.width,
-                    desiredHeight);
-            }
-            return;
-        }
-
-        var nodeGraphWindow = EditorWindow.GetWindow<NodeGraphEditorWindow>();
-
-        if (!Docker.Dock(nodeGraphWindow, camShotEditor, Docker.DockPosition.Bottom))
-            ShowCameraShotFallback(nodeGraphWindow, camShotEditor);
+        };
     }
-
-    private static void ShowCameraShotFallback(EditorWindow nodeGraphWindow, CameraShotEditor cameraShotEditor)
-    {
-        Rect graphRect = nodeGraphWindow.position;
-        float width = Mathf.Clamp(graphRect.width, 760f, 1100f);
-        float height = Mathf.Clamp(graphRect.height * 0.6f, 420f, 650f);
-        cameraShotEditor.position = new Rect(
-            graphRect.x + 30f,
-            graphRect.y + Mathf.Max(60f, graphRect.height - height - 30f),
-            width,
-            height);
-        cameraShotEditor.Show();
-        cameraShotEditor.Focus();
-    }
-
     public void LocateGlobalSettings()
     {
         GlobalSettingsData globalSetting = FindGlobalSetting();

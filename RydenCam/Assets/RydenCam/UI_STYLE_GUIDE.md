@@ -1,4 +1,4 @@
-# RydenCam Editor UI Style Guide (v1)
+# BranchCam Editor UI Style Guide (v1)
 
 ## Design Goals
 - Prioritize clarity for long authoring sessions.

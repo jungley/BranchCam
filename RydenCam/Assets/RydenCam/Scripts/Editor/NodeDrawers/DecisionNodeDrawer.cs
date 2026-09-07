@@ -63,7 +63,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         public override void DrawNode(int index)
         {
             Color previousBackgroundColor = GUI.backgroundColor;
-            int buffer = 42;
+
             GUI.backgroundColor = Color.gray;
 
             Command.WindowRect = GUI.Window(index, new Rect(SnapToPixel(decisionNode.EditorPosition.x), SnapToPixel(decisionNode.EditorPosition.y), decisionNode.NodeWidth, decisionNode.NodeHeight),
@@ -77,27 +77,25 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                                          .ToArray()
                                       ?? new string[0];
 
-                     int indexx = EditorGUILayout.Popup(
-                         ActorEditorDropdownIndex,
-                         actorNames,
-                         GUILayout.Width(200)
-                     );
-
-                     if (indexx != ActorEditorDropdownIndex)
+                     DrawActorPopup(ActorEditorDropdownIndex, actorNames, index =>
                      {
-                         decisionCommand.AssignNewActor(indexx);
+                         decisionCommand.AssignNewActor(index);
                          preview.UpdateShotRender();
-                         ActorEditorDropdownIndex = indexx;
-                     }
-
-                     decisionCommand.TextAreaRectIndex.Clear();
+                         ActorEditorDropdownIndex = index;
+                     });
+                     if (Event.current.type == EventType.Repaint)
+                         decisionCommand.TextAreaRectIndex.Clear();
                      bool isConnectingLine = NodeGraphEditorWindow.Instance != null && NodeGraphEditorWindow.Instance.IsDrawingConnectionHandle;
                      for (int decisionIndex = 0; decisionIndex < decisionNode.DecisionOptions.Count; decisionIndex++)
                      {
                          GUILayout.BeginHorizontal();
                          GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
                          EditorGUI.BeginDisabledGroup(isConnectingLine);
-                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayoutExtensions.SetTextAreaExpandable(Command.WindowRect, decisionCommand.TextAreaRectIndex, decisionIndex, ref buffer, decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode, areaHeight: 50, textWidth: decisionNode.NodeWidth - 25);
+                         float textWidth = decisionNode.NodeWidth - 25;
+                         float textHeight = Mathf.Max(50f, EditorGUILayoutExtensions.GetTextAreaHeight(decisionNode.DecisionOptions[decisionIndex], textWidth) + 10f);
+                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayout.TextArea(
+                             decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode,
+                             GUILayout.Width(textWidth), GUILayout.Height(textHeight));
                          EditorGUI.EndDisabledGroup();
                          Rect localTextAreaRect = GUILayoutUtility.GetLastRect();
                          Rect globalTextAreaRect = new Rect(
@@ -105,7 +103,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                              Command.WindowRect.y + localTextAreaRect.y,
                              localTextAreaRect.width,
                              localTextAreaRect.height);
-                         decisionCommand.TextAreaRectIndex.UpdateByKey(decisionIndex, globalTextAreaRect);
+                         if (Event.current.type == EventType.Repaint)
+                             decisionCommand.TextAreaRectIndex.UpdateByKey(decisionIndex, globalTextAreaRect);
                          GUILayout.EndHorizontal();
                          GUILayout.Space(5);
 
@@ -155,10 +154,11 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 ActorEditorDropdownIndex = indexx;
             }
 
-            using (var horizontalScopeShowPreviewOption = new GUILayout.HorizontalScope())
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                GUILayout.Label("Show Previous Dialog", inspectorText, GUILayout.Width(150));
-                decisionNode.ShowPreviousDialog = EditorGUILayout.Toggle(decisionNode.ShowPreviousDialog);
+                decisionNode.ShowPreviousDialog = EditorGUILayout.ToggleLeft(
+                    new GUIContent("Show Previous Dialog", "Display the preceding dialogue above the decision choices."),
+                    decisionNode.ShowPreviousDialog, EditorStyles.boldLabel, GUILayout.Height(26));
             }
 
             EditorGUILayout.Space();

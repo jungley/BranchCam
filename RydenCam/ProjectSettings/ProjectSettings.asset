@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: RydenCam
+  productName: BranchCam
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -783,7 +783,7 @@ PlayerSettings:
   cloudProjectId: d123e0f7-fed5-49cc-b6f5-9452e05d684f
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: RydenCam
+  projectName: BranchCam
   organizationId: pepperbot
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

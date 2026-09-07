@@ -19,14 +19,14 @@ public class ButtonHolder
         var template = Resources.Load<VisualTreeAsset>("option-button");
         if (scrollView == null || template == null)
         {
-            Debug.LogError("[RydenCam] Cannot create a decision option: the ScrollView or option-button UXML is missing.");
+            Debug.LogError("[BranchCam] Cannot create a decision option: the ScrollView or option-button UXML is missing.");
             return;
         }
 
         Button = template.CloneTree().Q<Button>("option-button");
         if (Button == null)
         {
-            Debug.LogError("[RydenCam] option-button UXML requires a Button named 'option-button'.");
+            Debug.LogError("[BranchCam] option-button UXML requires a Button named 'option-button'.");
             return;
         }
 
@@ -54,7 +54,7 @@ public class ButtonHolder
         var decision = statePlayer.CurrentNode as DecisionNode;
         if (decision?.PointOut == null || optionIndex < 0 || optionIndex >= decision.PointOut.Count)
         {
-            Debug.LogWarning($"[RydenCam] Decision option {optionIndex} has no matching output connection.");
+            Debug.LogWarning($"[BranchCam] Decision option {optionIndex} has no matching output connection.");
             return;
         }
 

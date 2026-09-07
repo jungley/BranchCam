@@ -14,7 +14,7 @@ public static class Docker
         public _EditorWindow(EditorWindow instance)
         {
             this.instance = instance;
-            type = instance.GetType();
+            type = typeof(EditorWindow);
         }
 
         public object m_Parent
@@ -95,10 +95,10 @@ public static class Docker
             return method?.Invoke(instance, new object[] { child, screenPoint });
         }
 
-        public void PerformDrop(EditorWindow child, object dropInfo, Vector2 screenPoint)
+        public bool PerformDrop(EditorWindow child, object dropInfo, Vector2 screenPoint)
         {
             var method = type.GetMethod("PerformDrop", BindingFlags.Instance | BindingFlags.Public);
-            method?.Invoke(instance, new object[] { child, dropInfo, screenPoint });
+            return method?.Invoke(instance, new object[] { child, dropInfo, screenPoint }) is bool success && success;
         }
     }
     #endregion
@@ -126,33 +126,43 @@ public static class Docker
 
             if (parent.m_Parent == null || child.m_Parent == null)
             {
-                Debug.LogWarning("[RydenCam] Docker: Could not access internal Unity window parent. Docking skipped.");
+                Debug.LogWarning("[BranchCam] Docker: Could not access internal Unity window parent. Docking skipped.");
                 return false;
             }
 
             var dockArea = new _DockArea(parent.m_Parent);
             if (dockArea.window == null)
             {
-                Debug.LogWarning("[RydenCam] Docker: Could not access container window. Docking skipped.");
+                Debug.LogWarning("[BranchCam] Docker: Could not access container window. Docking skipped.");
                 return false;
             }
 
             var containerWindow = new _ContainerWindow(dockArea.window);
             if (containerWindow.rootSplitView == null)
             {
-                Debug.LogWarning("[RydenCam] Docker: Could not access root split view. Docking skipped.");
+                Debug.LogWarning("[BranchCam] Docker: Could not access root split view. Docking skipped.");
                 return false;
             }
 
-            var splitView = new _SplitView(containerWindow.rootSplitView);
+            // Use the graph's immediate split: the root skips nested split views.
+            var splitParent = parent.m_Parent.GetType().GetProperty("parent",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(parent.m_Parent);
+            var splitView = new _SplitView(splitParent ?? containerWindow.rootSplitView);
             var dropInfo = splitView.DragOver(other, mousePosition);
+            if (dropInfo == null) return false;
             dockArea.s_OriginalDragSource = child.m_Parent;
-            splitView.PerformDrop(other, dropInfo, mousePosition);
-            return true;
+            try
+            {
+                return splitView.PerformDrop(other, dropInfo, mousePosition);
+            }
+            finally
+            {
+                dockArea.s_OriginalDragSource = null;
+            }
         }
         catch (Exception e)
         {
-            Debug.LogWarning($"[RydenCam] Docker: Docking failed (likely due to Unity version incompatibility): {e.Message}");
+            Debug.LogWarning($"[BranchCam] Docker: Docking failed (likely due to Unity version incompatibility): {e.Message}");
             return false;
         }
     }
@@ -173,9 +183,8 @@ public static class Docker
                 mousePosition = new Vector2(wnd.position.size.x - 20, wnd.position.size.y / 2);
                 break;
             case DockPosition.Bottom:
-                // Dropping at the extreme bottom creates an almost-collapsed pane in
-                // recent Unity versions. Allocate roughly the lower third instead.
-                mousePosition = new Vector2(wnd.position.size.x / 2, wnd.position.size.y * 0.68f);
+                // The drop location selects the edge; Unity sizes the resulting pane.
+                mousePosition = new Vector2(wnd.position.size.x / 2, wnd.position.size.y - 20f);
                 break;
         }
 

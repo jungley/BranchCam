@@ -98,6 +98,31 @@ namespace Assets.RydenCam.Scripts.Editor
 
         public abstract void DrawNodeInspector();
 
+        protected void DrawActorPopup(int selectedIndex, string[] actorNames, Action<int> onSelected)
+        {
+            Rect localRect = GUILayoutUtility.GetRect(200f, EditorGUIUtility.singleLineHeight,
+                GUILayout.Width(200f));
+            string label = selectedIndex >= 0 && selectedIndex < actorNames.Length
+                ? actorNames[selectedIndex] : "Select Actor";
+            using (new EditorGUI.DisabledScope(actorNames.Length == 0))
+            {
+                if (!GUI.Button(localRect, new GUIContent(label), EditorStyles.popup)) return;
+            }
+
+            var menu = new GenericMenu();
+            for (int i = 0; i < actorNames.Length; i++)
+            {
+                int actorIndex = i;
+                menu.AddItem(new GUIContent(actorNames[i]), i == selectedIndex, () =>
+                {
+                    onSelected(actorIndex);
+                    global::RydenCam.Editor.NodeGraphEditorWindow.Instance?.Repaint();
+                });
+            }
+            Rect graphRect = new Rect(Command.WindowRect.position + localRect.position, localRect.size);
+            global::RydenCam.Editor.NodeGraphEditorWindow.Instance.ShowGraphPopup(menu, graphRect);
+        }
+
         protected int heightConnectionPoint => 18;
         protected int widthConnectionPoint => 20;
 

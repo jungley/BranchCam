@@ -52,7 +52,7 @@ namespace RydenCam.DialogueGameUI
         {
             if (DialogueCamera == null)
             {
-                Debug.LogError("[RydenCam] DialoguePlayer requires a DialogueCamera reference. Assign it in the Inspector.");
+                Debug.LogError("[BranchCam] DialoguePlayer requires a DialogueCamera reference. Assign it in the Inspector.");
                 return;
             }
 
@@ -93,7 +93,7 @@ namespace RydenCam.DialogueGameUI
         {
             if (StatePlayer == null)
             {
-                Debug.LogError("[RydenCam] DialoguePlayer not initialized. Ensure DialogueCamera is assigned.");
+                Debug.LogError("[BranchCam] DialoguePlayer not initialized. Ensure DialogueCamera is assigned.");
                 return;
             }
 
@@ -103,7 +103,7 @@ namespace RydenCam.DialogueGameUI
             var startNode = NodeManager.Instance.StartNode;
             if (startNode == null)
             {
-                Debug.LogError("[RydenCam] The loaded conversation has no Start node.");
+                Debug.LogError("[BranchCam] The loaded conversation has no Start node.");
                 return;
             }
 
@@ -116,7 +116,7 @@ namespace RydenCam.DialogueGameUI
         {
             if (string.IsNullOrWhiteSpace(DialogueFilePath))
             {
-                Debug.LogWarning("[RydenCam] DialogueFilePath is empty. Cannot load conversation.");
+                Debug.LogWarning("[BranchCam] DialogueFilePath is empty. Cannot load conversation.");
                 return false;
             }
             return NodeGraphSettingsManager.Load(DialogueFilePath);

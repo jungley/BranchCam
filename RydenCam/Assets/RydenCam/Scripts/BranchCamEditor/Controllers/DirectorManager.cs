@@ -55,7 +55,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Controllers
             GameObject actor = posNode.NodeConvodata.Actor?.ActorGO;
             if (actor == null)
             {
-                Debug.LogWarning("[RydenCam] Cannot place the dialogue camera because the speaking actor was not found in the scene.");
+                Debug.LogWarning("[BranchCam] Cannot place the dialogue camera because the speaking actor was not found in the scene.");
                 return;
             }
 

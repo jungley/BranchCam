@@ -107,14 +107,14 @@ namespace RydenCam.BranchCamEditor.Controllers
         {
             if (dcamera == null)
             {
-                Debug.LogError("[RydenCam] Dialogue camera GameObject is null. NodeStateController cannot initialize.");
+                Debug.LogError("[BranchCam] Dialogue camera GameObject is null. NodeStateController cannot initialize.");
                 return;
             }
 
             DialogueCamera = dcamera.GetComponent<CinemachineVirtualCamera>();
             if (DialogueCamera == null)
             {
-                Debug.LogError("[RydenCam] No CinemachineVirtualCamera found on the dialogue camera GameObject.");
+                Debug.LogError("[BranchCam] No CinemachineVirtualCamera found on the dialogue camera GameObject.");
                 return;
             }
 
@@ -133,7 +133,7 @@ namespace RydenCam.BranchCamEditor.Controllers
                 INodePlayer nodePlayer = CreateNodePlayer(CurrentNode);
                 if (nodePlayer == null)
                 {
-                    Debug.LogWarning($"[RydenCam] No player handler for node type: {CurrentNode.GetType().Name}. Ending sequence.");
+                    Debug.LogWarning($"[BranchCam] No player handler for node type: {CurrentNode.GetType().Name}. Ending sequence.");
                     EndSequence();
                     return;
                 }
@@ -148,13 +148,13 @@ namespace RydenCam.BranchCamEditor.Controllers
             var decisionNode = CurrentNode as DecisionNode;
             if (decisionNode == null)
             {
-                Debug.LogWarning("[RydenCam] MakeDecision called but current node is not a DecisionNode.");
+                Debug.LogWarning("[BranchCam] MakeDecision called but current node is not a DecisionNode.");
                 return;
             }
 
             if (decisionNode.PointOut == null || choiceIndex < 0 || choiceIndex >= decisionNode.PointOut.Count)
             {
-                Debug.LogWarning($"[RydenCam] Decision index {choiceIndex} is outside the available choices.");
+                Debug.LogWarning($"[BranchCam] Decision index {choiceIndex} is outside the available choices.");
                 return;
             }
             CurrentNode = decisionNode.MakeDecision(choiceIndex);

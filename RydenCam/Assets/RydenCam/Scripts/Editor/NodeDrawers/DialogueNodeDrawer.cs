@@ -68,14 +68,13 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                     EditorGUI.LabelField(new Rect(4, 4, dialogueNode.NodeWidth, dialogueNode.NodeHeight), "Dialogue", labelStyleHead_Node);
 
 
-                    int indexx = EditorGUILayout.Popup(ActorEditorDropdownIndex, NodeManager.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), GUILayout.Width(200));
-                    if (indexx != ActorEditorDropdownIndex)
-                    {
-                        dialogueCommand.AssignNewActor(indexx);
-                        preview.UpdateShotRender();
-                        ActorEditorDropdownIndex = indexx;
-                    }
-
+                    DrawActorPopup(ActorEditorDropdownIndex,
+                        NodeManager.Instance.ActorsInScene.Select(x => x.ActorName).ToArray(), index =>
+                        {
+                            dialogueCommand.AssignNewActor(index);
+                            preview.UpdateShotRender();
+                            ActorEditorDropdownIndex = index;
+                        });
                     dialogueCommand.TextAreaRectIndex.Clear();
                     for (int i = 0; i < dialogueNode.NodeConvodata.DialogTextList.Count; i++)
                     {

@@ -30,7 +30,7 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             var actors = NodeManager.Instance.ActorsInScene;
             if (actors == null || actorIndex < 0 || actorIndex >= actors.Count)
             {
-                Debug.LogWarning("[RydenCam] Invalid actor index for assignment.");
+                Debug.LogWarning("[BranchCam] Invalid actor index for assignment.");
                 return;
             }
 

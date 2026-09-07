@@ -16,6 +16,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -55,14 +56,31 @@ namespace RydenCam.Editor
         public static float panX = 0;
         public static float panY = 0;
         private float zoomScale = 1f;
-        private const float MinZoomScale = 0.7f;
+        private const float MinZoomScale = 0.05f;
         private const float MaxZoomScale = 1.35f;
-        private const float VirtualCanvasHalfSize = 4000f;
         private const float HardPanLimit = 50000f;
         private const float FramePadding = 120f;
         private bool useZoomTransform = true;
         private Rect lastEditorWindowPos;
         private bool isPanningCanvas;
+        private bool windowStateInitialized;
+        private Action pendingGraphPopup;
+
+        public void ShowGraphPopup(GenericMenu menu, Rect graphAnchor)
+        {
+            float scale = useZoomTransform ? zoomScale : 1f;
+            Rect viewport = GraphViewportArea;
+            Rect windowAnchor = new Rect(
+                viewport.x + (graphAnchor.x + SnapToPixel(panX)) * scale,
+                viewport.y + (graphAnchor.y + SnapToPixel(panY)) * scale,
+                graphAnchor.width * scale, graphAnchor.height * scale);
+            // Native popup windows must be opened after restoring window coordinates.
+            pendingGraphPopup = () => menu.DropDown(windowAnchor);
+        }
+
+        private static readonly MethodInfo GetTopClipRect = typeof(GUI).Assembly
+            .GetType("UnityEngine.GUIClip")
+            .GetMethod("GetTopRect", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
         
         private List<NodeDrawer> NodeDrawers { get; set; } = new List<NodeDrawer>();
@@ -87,7 +105,7 @@ namespace RydenCam.Editor
 
         void OnGUI()
         {
-            if (viewModel == null || ribbonRenderer == null)
+            if (!windowStateInitialized || viewModel == null || ribbonRenderer == null)
                 InitializeWindowState();
 
             if(!resourcesInitalized)
@@ -100,37 +118,51 @@ namespace RydenCam.Editor
             float effectiveZoom = useZoomTransform ? zoomScale : 1f;
             Rect graphViewport = GraphViewportArea;
             SanitizeViewState(graphViewport, effectiveZoom);
-            ApplySoftPanBounds(graphViewport, effectiveZoom);
 
             float snappedPanX = SnapToPixel(panX);
             float snappedPanY = SnapToPixel(panY);
             Vector2 graphMousePosition = GetGraphMousePosition(mouseWindowPosition, graphViewport, snappedPanX, snappedPanY, effectiveZoom);
 
-            EditorGUI.DrawRect(graphViewport, BranchCamEditorTheme.CanvasBackground);
-            GUI.BeginClip(graphViewport);
-            Matrix4x4 previousMatrix = GUI.matrix;
-            GUI.matrix =
-                Matrix4x4.Scale(new Vector3(effectiveZoom, effectiveZoom, 1f))
-                * Matrix4x4.TRS(new Vector3(snappedPanX, snappedPanY, 0f), Quaternion.identity, Vector3.one)
-                * previousMatrix;
-            
-
+            // Hit-test in graph space, but open context menus in the original GUI
+            // coordinate system so Unity anchors them at the actual mouse position.
             bool isMouseInFixedUi = ButtonPanelArea.Contains(mouseWindowPosition) || InspectorPanelArea.Contains(mouseWindowPosition);
             if (!isMouseInFixedUi)
-            {
                 viewModel.HandleInputClicks(graphMousePosition);
+
+            EditorGUI.DrawRect(graphViewport, BranchCamEditorTheme.CanvasBackground);
+            Matrix4x4 previousMatrix = GUI.matrix;
+            // EditorWindow supplies an outer clip before OnGUI. At zoom < 1,
+            // that clip otherwise cuts the graph off at windowSize * zoom.
+            // Expand it in graph units, preserving Unity's actual tab/dock offset.
+            Rect editorClip = (Rect)GetTopClipRect.Invoke(null, null);
+            Rect zoomClip = editorClip;
+            zoomClip.width /= Mathf.Min(1f, effectiveZoom);
+            zoomClip.height /= Mathf.Min(1f, effectiveZoom);
+            GUI.EndClip();
+            GUI.BeginClip(zoomClip);
+            GUI.matrix = previousMatrix * Matrix4x4.Scale(new Vector3(effectiveZoom, effectiveZoom, 1f));
+            // Establish the clip in scaled coordinates. Pan belongs to the clip's
+            // content offset so GUI.Window uses the same bounds as the graph.
+            GUI.BeginClip(new Rect(graphViewport.x / effectiveZoom, graphViewport.y / effectiveZoom,
+                graphViewport.width / effectiveZoom, graphViewport.height / effectiveZoom),
+                new Vector2(snappedPanX, snappedPanY), Vector2.zero, false);
+            try
+            {
+                DrawNodes();
+                DrawUserDragConnectionCurve(graphMousePosition);
+                DrawConnections();
+            }
+            finally
+            {
+                GUI.EndClip();
+                GUI.matrix = previousMatrix;
+                GUI.EndClip();
+                GUI.BeginClip(editorClip);
             }
 
-            DrawNodes();
-
-            DrawUserDragConnectionCurve(graphMousePosition);
-
-            DrawConnections();
-
+            // Event.delta must be read outside the scaled clip; inside it Unity
+            // has already divided by zoom, which would scale pan twice.
             MousePan(mouseWindowPosition, graphMousePosition);
-
-            GUI.matrix = previousMatrix;
-            GUI.EndClip();
 
             // Ensure graph rendering cannot leak global GUI state into fixed UI panels.
             GUI.color = Color.white;
@@ -141,6 +173,9 @@ namespace RydenCam.Editor
             ribbonRenderer.Draw(position.width);
 
             DrawInspector();
+            Action popup = pendingGraphPopup;
+            pendingGraphPopup = null;
+            popup?.Invoke();
         }
 
         private void MousePan(Vector2 mouseWindowPosition, Vector2 graphMousePosition)
@@ -202,7 +237,6 @@ namespace RydenCam.Editor
                         float panDeltaDivisor = useZoomTransform ? zoomScale : 1f;
                         panX += e.delta.x / panDeltaDivisor;
                         panY += e.delta.y / panDeltaDivisor;
-                        ApplySoftPanBounds(GraphViewportArea, panDeltaDivisor);
                         Repaint();
                         e.Use();
                     }
@@ -246,8 +280,9 @@ namespace RydenCam.Editor
 
             Rect graphViewport = GraphViewportArea;
             float oldZoom = zoomScale;
-            float zoomDelta = -e.delta.y * 0.02f;
-            zoomScale = Mathf.Clamp(zoomScale + zoomDelta, MinZoomScale, MaxZoomScale);
+            // A constant percentage per wheel step stays smooth after Frame All,
+            // even when fitting a large graph requires a very small scale.
+            zoomScale = Mathf.Clamp(oldZoom * Mathf.Exp(-e.delta.y * 0.02f), MinZoomScale, MaxZoomScale);
 
             if (Mathf.Approximately(oldZoom, zoomScale))
             {
@@ -260,7 +295,6 @@ namespace RydenCam.Editor
 
             panX = ((mouseWindowPosition.x - graphViewport.x) / zoomScale) - graphX;
             panY = ((mouseWindowPosition.y - graphViewport.y) / zoomScale) - graphY;
-            ApplySoftPanBounds(graphViewport, zoomScale);
 
             e.Use();
             Repaint();
@@ -307,21 +341,7 @@ namespace RydenCam.Editor
 
             window.Show();
 
-            //Dock Window
-            CameraShotEditor editorWindow = EditorWindow.GetWindow<CameraShotEditor>();
-            editorWindow.titleContent = new GUIContent("Camera Shot Editor View");
-            editorWindow.NodeGraphViewModel = window.viewModel;
-            if (!Docker.Dock(window, editorWindow, Docker.DockPosition.Bottom))
-            {
-                Rect graphRect = window.position;
-                editorWindow.position = new Rect(
-                    graphRect.x + 30f,
-                    graphRect.y + Mathf.Max(60f, graphRect.height * 0.35f),
-                    Mathf.Clamp(graphRect.width, 760f, 1100f),
-                    Mathf.Clamp(graphRect.height * 0.6f, 420f, 650f));
-                editorWindow.Show();
-                editorWindow.Focus();
-            }
+            window.viewModel.OpenCameraShotEditor();
         }
 
         private static void InitializeStaticResources()
@@ -367,11 +387,10 @@ namespace RydenCam.Editor
         // Called when the window is enabled or created
         private void OnEnable()
         {
-            EditorApplication.delayCall += () =>
-            {
-                if (this != null && (viewModel == null || ribbonRenderer == null))
-                    InitializeWindowState();
-            };
+            // Node drawers construct EditorStyles and must be initialized inside
+            // OnGUI, after Unity's GUI skin is available following a reload.
+            windowStateInitialized = false;
+            Repaint();
         }
 
         private void InitializeWindowState()
@@ -421,6 +440,7 @@ namespace RydenCam.Editor
             //Draw Nodes & connections
             CreateInitialNodeDrawers();
             UpdateConnectionDrawers();
+            windowStateInitialized = true;
             EditorApplication.delayCall += () =>
             {
                 if (this != null)
@@ -558,28 +578,6 @@ namespace RydenCam.Editor
             EditorGUI.DrawRect(new Rect(rect.xMax - thickness, rect.yMin, thickness, rect.height), color);
         }
 
-        private void ApplySoftPanBounds(Rect graphViewport, float effectiveZoom)
-        {
-            if (effectiveZoom <= 0f || graphViewport.width <= 0f || graphViewport.height <= 0f)
-            {
-                return;
-            }
-
-            float viewHalfXGraph = graphViewport.width / (2f * effectiveZoom);
-            float viewHalfYGraph = graphViewport.height / (2f * effectiveZoom);
-
-            float minPanX = -VirtualCanvasHalfSize + viewHalfXGraph;
-            float maxPanX = VirtualCanvasHalfSize - viewHalfXGraph;
-            float minPanY = -VirtualCanvasHalfSize + viewHalfYGraph;
-            float maxPanY = VirtualCanvasHalfSize - viewHalfYGraph;
-
-            if (minPanX > maxPanX) panX = 0f;
-            else panX = Mathf.Clamp(panX, minPanX, maxPanX);
-
-            if (minPanY > maxPanY) panY = 0f;
-            else panY = Mathf.Clamp(panY, minPanY, maxPanY);
-        }
-
         private void SanitizeViewState(Rect graphViewport, float effectiveZoom)
         {
             bool invalidZoom = float.IsNaN(zoomScale) || float.IsInfinity(zoomScale);
@@ -603,7 +601,8 @@ namespace RydenCam.Editor
         private bool TryGetNodeBounds(out Rect bounds)
         {
             bounds = default;
-            if (NodeDrawers == null || NodeDrawers.Count == 0)
+            var nodes = NodeManager.Instance.Nodes;
+            if (nodes == null || nodes.Count == 0)
             {
                 return false;
             }
@@ -613,12 +612,10 @@ namespace RydenCam.Editor
             float maxX = float.MinValue;
             float maxY = float.MinValue;
 
-            for (int i = 0; i < NodeDrawers.Count; i++)
+            for (int i = 0; i < nodes.Count; i++)
             {
-                NodeDrawer drawer = NodeDrawers[i];
-                if (drawer?.Node == null) continue;
-
-                Node node = drawer.Node;
+                Node node = nodes[i];
+                if (node == null) continue;
                 minX = Mathf.Min(minX, node.EditorPosition.x);
                 minY = Mathf.Min(minY, node.EditorPosition.y);
                 maxX = Mathf.Max(maxX, node.EditorPosition.x + node.NodeWidth);
@@ -650,13 +647,14 @@ namespace RydenCam.Editor
 
             float contentWidth = Mathf.Max(1f, bounds.width + (FramePadding * 2f));
             float contentHeight = Mathf.Max(1f, bounds.height + (FramePadding * 2f));
-            float fitX = graphViewport.width / contentWidth;
+            float inspectorWidth = InspectorPanelArea.width;
+            float fitX = Mathf.Max(1f, graphViewport.width - inspectorWidth) / contentWidth;
             float fitY = graphViewport.height / contentHeight;
 
             zoomScale = Mathf.Clamp(Mathf.Min(fitX, fitY), MinZoomScale, MaxZoomScale);
-            panX = -bounds.center.x;
-            panY = -bounds.center.y;
-            ApplySoftPanBounds(graphViewport, zoomScale);
+            float effectiveZoom = useZoomTransform ? zoomScale : 1f;
+            panX = (inspectorWidth + graphViewport.width) / (2f * effectiveZoom) - bounds.center.x;
+            panY = graphViewport.height / (2f * effectiveZoom) - bounds.center.y;
             Repaint();
         }
 
@@ -665,7 +663,6 @@ namespace RydenCam.Editor
             panX = 0f;
             panY = 0f;
             zoomScale = 1f;
-            ApplySoftPanBounds(GraphViewportArea, zoomScale);
             Repaint();
         }
     }
