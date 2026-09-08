@@ -63,7 +63,12 @@ namespace RydenCam.BranchCamEditor.Managers
 
         public void LoadNodes(List<Node> nodes) => nodes.ForEach(n => { Nodes.Add(n); });
 
-        public void AddNode(Node node) => Nodes.Add(node);
+        public void AddNode(Node node)
+        {
+            Nodes.Add(node);
+            if (node is StartNode start)
+                Assets.RydenCam.Scripts.Editor.CameraShotEditor.CameraShotsManager.Instance.LoadFile(start.CameraShotFilePath);
+        }
 
         public Node GetNode(int index) => Nodes[index];
 

@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamCC;
+using Assets.RydenCam.Scripts.BranchCamCC;
 using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using Assets.RydenCam.Scripts.BranchCamEditor.Managers;
 using Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender;
@@ -67,10 +67,7 @@ namespace RydenCam.BranchCamEditor.PreviewRender
                 */
 
                 CameraShotConfiguration shot = node.NodeConvodata.ShotConfig;
-                ActorPositionData actorPosData = node.NodeConvodata.Actor?.PreviewData?.ActorPositionData;
-                ActorPositionData oppActorPosData = node.NodeConvodata.OppositeActor?.PreviewData?.ActorPositionData;
-
-                previewRenderer.ComposePreviewImage(windowRect, shot, actorPosData, oppActorPosData);
+                previewRenderer.ComposePreviewImage(windowRect, shot, node.NodeConvodata.Actor, node.NodeConvodata.OppositeActor);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
+using Assets.RydenCam.Scripts.BranchCamEditor.Camera;
 using RydenCam.BranchCamEditor.Extensions;
 using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
@@ -12,6 +12,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
     {
 
         public CameraSettings CamSettings { get; set; }
+        public List<Vector3> PreviewActorPositions { get; set; }
 
         //RS TODO Revist this: Remove dependency on GameObject
         List<Transform> ActorsInScene
@@ -88,7 +89,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
 
             Vector3 option1 = Orbit(targetPos, camPos, orbitAngle);
             Vector3 option2 = Orbit(targetPos, camPos, -orbitAngle);
-            Vector3 chosenPos = SetSide(ActorsInScene.Select(x => x.position).ToList()).GetClosest(option1, option2);
+            Vector3 chosenPos = SetSide(PreviewActorPositions ?? ActorsInScene.Select(x => x.position).ToList()).GetClosest(option1, option2);
 
             Quaternion camRot = Quaternion.LookRotation(targetPos - chosenPos);
             chosenPos += camRot * Vector3.right * biasX;
@@ -110,7 +111,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             Vector3 option1 = baseCamPos + rightN * distance;
             Vector3 option2 = baseCamPos - rightN * distance;
 
-            Vector3 chosenPos = SetSide(ActorsInScene.Select(x => x.position).ToList())
+            Vector3 chosenPos = SetSide(PreviewActorPositions ?? ActorsInScene.Select(x => x.position).ToList())
                 .GetClosest(option1, option2);
 
             chosenPos.y += height;
@@ -134,7 +135,7 @@ namespace RydenCam.BranchCamEditor.BranchCam
             Vector3 option1 = MidPoint + PDir1 * (actorDistance + CamSettings.GetDistance(shot));
             Vector3 option2 = MidPoint + PDir2 * (actorDistance + CamSettings.GetDistance(shot));
 
-            Vector3 ChosenSideMarker = SetSide(ActorsInScene.Select(x => x.position).ToList());
+            Vector3 ChosenSideMarker = SetSide(PreviewActorPositions ?? ActorsInScene.Select(x => x.position).ToList());
             Vector3 camPos = ChosenSideMarker.GetClosest(option1, option2);
             float angleHeight = CamSettings.GetAngle(shot);
             camPos = new Vector3(camPos.x, camPos.y + angleHeight, camPos.z);

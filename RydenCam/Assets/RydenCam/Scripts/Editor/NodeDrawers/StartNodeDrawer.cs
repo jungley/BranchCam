@@ -90,6 +90,23 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 startNode.CameraSide = (Side)EditorGUILayout.EnumPopup(startNode.CameraSide);
 
                 EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Camera Shot File", inspectorText);
+                EditorGUILayout.SelectableLabel(startNode.CameraShotFilePath ?? BranchConstants.DefaultCameraShotFile,
+                    EditorStyles.textField, GUILayout.Height(36));
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("Choose File"))
+                    {
+                        string path = global::RydenCam.BranchCamEditor.Serialization.SettingsService.ShowOpenFileDialog(
+                            "Choose Camera Shot File", BranchConstants.DefaultDialogueFolder, "json");
+                        if (!string.IsNullOrEmpty(path))
+                            global::RydenCam.BranchCamEditor.Serialization.CameraShotSettingsManager.Load(path);
+                    }
+                    if (GUILayout.Button("Use Default"))
+                        global::RydenCam.BranchCamEditor.Serialization.CameraShotSettingsManager.Load(BranchConstants.DefaultCameraShotFile);
+                }
+
+                EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Actors in Scene", labelStyleHead_Panel);
                 EditorGUILayout.Space();
 
