@@ -200,13 +200,6 @@ public class NodeGraphViewModel
             return;
         }
 
-        //Click over inspector area
-        //RS TODO Move InspectorPanelArea to VM?
-        if (editorWindow.InspectorPanelArea.Contains(new Vector2(Math.Abs(mousePos.x), Math.Abs(mousePos.y))))
-        {
-            return;
-        }
-
         NodeManager.Instance.ActiveNode = GetNodeFromMousePosition(mousePos);
 
         if (NodeManager.Instance.ActiveNode == null)
@@ -256,16 +249,11 @@ public class NodeGraphViewModel
     public Node GetNodeFromMousePosition(Vector2 mousePosition)
     {
 
-        NodeCommand command = NodeManager.Instance.NodeCommandLookup.Values.Where(x => x.WindowRect.Contains(mousePosition)).FirstOrDefault();
-        if (command != null)
-        {
-            NodeManager.Instance.NodeCommandLookup.GetByValue(command, out Node node);
-            return node;
-        }
-        return null;
+        // Hit-test the actual model bounds, not a command that another view may
+        // have recreated without its drawing rectangle. Last drawn node wins.
+        return NodeManager.Instance.Nodes.Reverse().FirstOrDefault(node =>
+            new Rect(node.EditorPosition.x, node.EditorPosition.y, node.NodeWidth, node.NodeHeight).Contains(mousePosition));
     }
-
-    
     public void HandleConnectionPointSelected(Vector2 mousePosition)
     {
         Node node = GetNodeFromMousePosition(mousePosition);

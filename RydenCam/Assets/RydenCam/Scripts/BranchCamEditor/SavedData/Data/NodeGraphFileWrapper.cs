@@ -34,9 +34,9 @@ namespace RydenCam.BranchCamEditor.Serialization
         {
 
             //Get last filepath OPENED
-            string cameraShotPath = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+            string cameraShotPath = NodeManager.Instance.StartNode?.CameraShotFilePath;
 
-            CameraShotJsonFilePath = cameraShotPath;
+            CameraShotJsonFilePath = string.IsNullOrEmpty(cameraShotPath) ? BranchConstants.DefaultCameraShotFile : cameraShotPath;
 
             foreach (Node save in NodeManager.Instance.Nodes)
             {

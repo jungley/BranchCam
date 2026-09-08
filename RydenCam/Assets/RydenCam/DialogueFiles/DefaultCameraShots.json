@@ -1,0 +1,67 @@
+{
+    "Shots":  [
+                  {
+                      "ShotName":  "Portrait",
+                      "ShotId":  "ryden-default-portrait",
+                      "IsDefault":  true,
+                      "GoalType":  0,
+                      "GoalDistance":  0,
+                      "GoalAngle":  0,
+                      "IsCustomSet":  false,
+                      "TogglePreviewRenderSceneView":  false,
+                      "GlobalCustomCamPos":  {
+                                                 "x":  0.0,
+                                                 "y":  0.0,
+                                                 "z":  0.0
+                                             },
+                      "GlobalCustomCamRot":  {
+                                                 "x":  0.0,
+                                                 "y":  0.0,
+                                                 "z":  0.0,
+                                                 "w":  1.0
+                                             }
+                  },
+                  {
+                      "ShotName":  "Over Shoulder",
+                      "ShotId":  "ryden-default-over-shoulder",
+                      "IsDefault":  true,
+                      "GoalType":  1,
+                      "GoalDistance":  1,
+                      "GoalAngle":  0,
+                      "IsCustomSet":  false,
+                      "TogglePreviewRenderSceneView":  false,
+                      "GlobalCustomCamPos":  {
+                                                 "x":  0.0,
+                                                 "y":  0.0,
+                                                 "z":  0.0
+                                             },
+                      "GlobalCustomCamRot":  {
+                                                 "x":  0.0,
+                                                 "y":  0.0,
+                                                 "z":  0.0,
+                                                 "w":  1.0
+                                             }
+                  },
+                  {
+                      "ShotName":  "Frame Share",
+                      "ShotId":  "ryden-default-frame-share",
+                      "IsDefault":  true,
+                      "GoalType":  2,
+                      "GoalDistance":  1,
+                      "GoalAngle":  0,
+                      "IsCustomSet":  false,
+                      "TogglePreviewRenderSceneView":  false,
+                      "GlobalCustomCamPos":  {
+                                                 "x":  0.0,
+                                                 "y":  0.0,
+                                                 "z":  0.0
+                                             },
+                      "GlobalCustomCamRot":  {
+                                                 "x":  0.0,
+                                                 "y":  0.0,
+                                                 "z":  0.0,
+                                                 "w":  1.0
+                                             }
+                  }
+              ]
+}

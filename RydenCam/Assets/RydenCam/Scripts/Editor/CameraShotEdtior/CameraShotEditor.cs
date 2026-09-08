@@ -20,6 +20,9 @@ namespace RydenCam.Editor
     public class CameraShotEditor : EditorWindow
     {
         private float distanceValue = 2f;
+        private string previewActorId;
+        private string previewOppositeActorId;
+        private bool overridePreviewSpacing;
         private Vector2 scrollPos;
         private Vector2 windowScrollPos;
 
@@ -50,10 +53,13 @@ namespace RydenCam.Editor
             ViewModel = new CameraShotViewModel();
 
             var ribbonDefinition = new RibbonDefinitionBuilder()
-                .AddButton("New", ViewModel.NewFile)
+                .AddDropdown("File")
+                .AddDropdownOption("File", "New", ViewModel.NewFile)
+                .AddDropdownOption("File", "Open", ViewModel.Open)
+                .AddDropdownOption("File", "Save", ViewModel.Save)
+                .AddDropdownOption("File", "Save As", ViewModel.SaveAs)
                 .AddButton("Open", ViewModel.Open)
-                //.AddButton("Save", ViewModel.Save)
-                .AddButton("Save As", ViewModel.SaveAs)
+                .AddButton("Save", ViewModel.Save)
                 .Build();
 
             ribbonRenderer = new RibbonRenderer(ribbonDefinition);
@@ -93,7 +99,7 @@ namespace RydenCam.Editor
             GUILayout.EndVertical();
 
             // List Section
-            GUILayout.BeginVertical(GUILayout.Width(200));
+            GUILayout.BeginVertical(GUILayout.Width(230));
                 DrawCameraShotListSection();
             GUILayout.EndVertical();
 
@@ -117,51 +123,16 @@ namespace RydenCam.Editor
 
             GUILayout.Label("Shot Configuration Manager", largeBoldLabel);
 
-            float margin = 10f;
-            float boxWidth = 300f; // Fixed width on the left
-            float boxHeight = Mathf.Max(200, position.height * 0.5f);
-
-            // Define the preview box rect on the left side of the window
-            Rect boxRect = new Rect(margin, margin + 50f, boxWidth, boxHeight);
-
-            // Optional: draw a background to visualize the box
+            // Match the node preview's 200:120 aspect ratio and respect scrolling.
+            Rect boxRect = GUILayoutUtility.GetRect(300f, 180f, GUILayout.Width(300f), GUILayout.Height(180f));
             EditorGUI.DrawRect(boxRect, BranchCamEditorTheme.PanelBackground);
-
             var actors = NodeManager.Instance.ActorsInScene;
-            if (actors.Count == 0 || actors[0]?.PreviewData?.ActorPositionData == null) return;
-
-            // Get position data
-            var posData = actors[0].PreviewData.ActorPositionData;
-            var oppPosData = actors.Count > 1 ? actors[1]?.PreviewData?.ActorPositionData : null;
-
-            // Render the preview
-            ActorPositionData dataCopy = new ActorPositionData
-            {
-                ActorPosition = posData.ActorPosition,
-                ActorRotation = posData.ActorRotation,
-                ForwardN = posData.ForwardN
-            };           
-
-            ActorPositionData oppositeCopy = null;
-            if (oppPosData != null)
-            {
-                Vector3 direction = oppPosData.ActorPosition - posData.ActorPosition;
-                if (direction.sqrMagnitude < 0.0001f)
-                    direction = posData.ForwardN.sqrMagnitude > 0.0001f ? posData.ForwardN : Vector3.forward;
-
-                oppositeCopy = new ActorPositionData
-                {
-                    ActorPosition = posData.ActorPosition + direction.normalized * distanceValue,
-                    ActorRotation = oppPosData.ActorRotation,
-                    ForwardN = oppPosData.ForwardN
-                };
-            }
-
-            ViewModel.PreviewRenderer.ComposePreviewImage(boxRect, ViewModel.CurrentShot, dataCopy, oppositeCopy);
-            GUILayout.Space(boxHeight + 35f);
-
+            var primary = actors.FirstOrDefault(a => a.ActorID == previewActorId) ?? actors.FirstOrDefault();
+            var opposite = actors.FirstOrDefault(a => a.ActorID == previewOppositeActorId && a != primary)
+                ?? actors.FirstOrDefault(a => a != primary);
+            ViewModel.PreviewRenderer.ComposePreviewImage(boxRect, ViewModel.CurrentShot, primary, opposite,
+                overridePreviewSpacing ? distanceValue : (float?)null);
         }
-
         private void DrawShotConfigurationSection()
         {
             EditorGUILayout.Space(20f);
@@ -353,10 +324,44 @@ namespace RydenCam.Editor
                 }
 
                 EditorGUILayout.LabelField($"Selected: {shot.ShotName}");
+                var actors = NodeManager.Instance.ActorsInScene.ToList();
+                if (actors.Count == 0)
+                {
+                    EditorGUILayout.HelpBox("Assign actor targets in the Start node to test previews.", MessageType.Info);
+                    return;
+                }
+                int primaryIndex = Mathf.Max(0, actors.FindIndex(a => a.ActorID == previewActorId));
+                int selectedPrimary = EditorGUILayout.Popup("Preview Actor", primaryIndex, actors.Select(a => a.ActorName).ToArray());
+                if (previewActorId != actors[selectedPrimary].ActorID) overridePreviewSpacing = false;
+                previewActorId = actors[selectedPrimary].ActorID;
+                var primary = actors[selectedPrimary];
+                var others = actors.Where(a => a != primary).ToList();
                 if (shot.GoalType == CameraGoal.OverShoulder || shot.GoalType == CameraGoal.FrameShare)
                 {
-                    distanceValue = EditorGUILayout.Slider("Actor Spacing", distanceValue, 1f, 20f);
-                    EditorGUILayout.HelpBox("Actor Spacing changes the two-actor preview layout.", MessageType.None);
+                    if (others.Count == 0)
+                    {
+                        EditorGUILayout.HelpBox("Assign a second actor target in the Start node.", MessageType.Info);
+                        return;
+                    }
+                    int oppositeIndex = Mathf.Max(0, others.FindIndex(a => a.ActorID == previewOppositeActorId));
+                    int selectedOpposite = EditorGUILayout.Popup("Opposite Actor", oppositeIndex, others.Select(a => a.ActorName).ToArray());
+                    if (previewOppositeActorId != others[selectedOpposite].ActorID) overridePreviewSpacing = false;
+                    previewOppositeActorId = others[selectedOpposite].ActorID;
+                    if (!overridePreviewSpacing)
+                        distanceValue = Vector3.ProjectOnPlane(
+                            others[selectedOpposite].PreviewData.ActorPositionData.ActorPosition
+                            - primary.PreviewData.ActorPositionData.ActorPosition, Vector3.up).magnitude;
+                    EditorGUI.BeginChangeCheck();
+                    float spacing = EditorGUILayout.Slider("Actor Spacing", distanceValue, 0.25f, 20f);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        distanceValue = spacing;
+                        overridePreviewSpacing = true;
+                        Repaint();
+                    }
+                    if (GUILayout.Button("Use Scene Spacing", GUILayout.Width(160)))
+                        overridePreviewSpacing = false;
+                    EditorGUILayout.HelpBox("Test spacing moves preview actors only. Scene actors and node previews keep their configured spacing.", MessageType.None);
                 }
                 else if (shot.GoalType == CameraGoal.Custom)
                 {
@@ -403,12 +408,12 @@ namespace RydenCam.Editor
                     GUILayout.BeginHorizontal();
 
                     // Slightly reduced width to avoid layout overflow (prevents unwanted horizontal bar)
-                    if (GUILayout.Button(shot.ShotName, GUILayout.Width(145)))
+                    if (GUILayout.Button(shot.ShotName, GUILayout.ExpandWidth(true)))
                     {
                         ViewModel.CurrentShot = shot;
                     }
 
-                    using (new EditorGUI.DisabledScope(shot.IsDefault))
+                    using (new EditorGUI.DisabledScope(!CameraShotsManager.Instance.CanRemoveShot(shot)))
                     {
                         if (GUILayout.Button("X", GUILayout.Width(20)))
                             shotsToRemove.Add(shot);

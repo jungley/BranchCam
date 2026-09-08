@@ -18,10 +18,29 @@ namespace Assets.RydenCam.Scripts.Editor.CameraShotEditor
         private const string PortraitDefaultId = "ryden-default-portrait";
         private const string OverShoulderDefaultId = "ryden-default-over-shoulder";
         private const string FrameShareDefaultId = "ryden-default-frame-share";
-        private const string CustomDefaultId = "ryden-default-custom";
 
         private List<CameraShotConfiguration> cameraShots = new List<CameraShotConfiguration>();
         public bool InitialStateLoaded { get; private set; }
+        public string CurrentFilePath { get; set; }
+
+        public bool LoadFile(string path)
+        {
+            var data = global::RydenCam.BranchCamEditor.Serialization.SettingsService.Load<global::RydenCam.BranchCamEditor.Serialization.CameraShotConfigurationWrapper>(path);
+            if (data?.Shots == null)
+            {
+                BranchLog.Error($"Unable to load camera shot file: {path}");
+                return false;
+            }
+            CameraShots = data.Shots;
+            CurrentFilePath = path;
+            InitialStateLoaded = true;
+            foreach (var node in NodeManager.Instance.Nodes.OfType<Assets.RydenCam.Scripts.BranchCamCC.ITalkable>())
+            {
+                if (node.NodeConvodata == null) continue;
+                node.NodeConvodata.ShotConfig = CameraShots.FirstOrDefault(s => s.ShotId == node.NodeConvodata.ShotConfig?.ShotId) ?? DefaultShot;
+            }
+            return true;
+        }
         public List<CameraShotConfiguration> CameraShots
         {
             get
@@ -60,10 +79,13 @@ namespace Assets.RydenCam.Scripts.Editor.CameraShotEditor
         private void EnsureBuiltInShots()
         {
             cameraShots ??= new List<CameraShotConfiguration>();
+            // Old files can mark Custom (or a user-created shot) as a default.
+            // Preserve their IDs/settings, but only protect the three built-ins.
+            foreach (var shot in cameraShots)
+                shot.IsDefault = IsBuiltInId(shot.ShotId);
             EnsureBuiltInShot("Portrait", PortraitDefaultId, CameraGoal.Portrait);
             EnsureBuiltInShot("Over Shoulder", OverShoulderDefaultId, CameraGoal.OverShoulder);
             EnsureBuiltInShot("Frame Share", FrameShareDefaultId, CameraGoal.FrameShare);
-            EnsureBuiltInShot("Custom", CustomDefaultId, CameraGoal.Custom);
             defaultShot = cameraShots.First(shot => shot.ShotId == PortraitDefaultId);
         }
 
@@ -91,7 +113,18 @@ namespace Assets.RydenCam.Scripts.Editor.CameraShotEditor
         private static bool IsBuiltInId(string id)
         {
             return id == PortraitDefaultId || id == OverShoulderDefaultId ||
-                   id == FrameShareDefaultId || id == CustomDefaultId;
+                   id == FrameShareDefaultId;
+        }
+
+        public bool CanRemoveShot(CameraShotConfiguration shot)
+        {
+            return shot != null && !IsBuiltInId(shot.ShotId);
+        }
+
+        public bool RemoveShot(CameraShotConfiguration shot)
+        {
+            if (!CanRemoveShot(shot)) return false;
+            return CameraShots.Remove(shot);
         }
 
         private static CameraShotsManager instance;

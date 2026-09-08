@@ -30,6 +30,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             {
                 BranchLog.Log($"Saved camera shots to {filePath}");
                 FilePathSaveManager.Instance.SetLastFilePath(filePath, FilePathSaveManager.LastOpened_CameraShotsKey);
+                AssociateFile(filePath);
             }
             
             return ok;
@@ -51,24 +52,26 @@ namespace RydenCam.BranchCamEditor.Serialization
             Load(path);
         }
 
-        public static void Load(string filePath)
+        public static bool Load(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath)) return;
-
-            var container = SettingsService.Load<CameraShotConfigurationWrapper>(filePath);
-            if (container == null || container.Shots == null)
-            {
-                BranchLog.Error("Failed to load camera shots.");
-                return;
-            }
-
-            CameraShotsManager.Instance.CameraShots = container.Shots;
+            if (!CameraShotsManager.Instance.LoadFile(filePath)) return false;
+            AssociateFile(filePath);
             FilePathSaveManager.Instance.SetLastFilePath(filePath, FilePathSaveManager.LastOpened_CameraShotsKey);
+            return true;
+        }
+
+        private static void AssociateFile(string path)
+        {
+            path = UnityEditor.FileUtil.GetProjectRelativePath(path) is string relative && !string.IsNullOrEmpty(relative) ? relative : path;
+            CameraShotsManager.Instance.CurrentFilePath = path;
+            if (NodeManager.Instance.StartNode != null)
+                NodeManager.Instance.StartNode.CameraShotFilePath = path;
         }
 
         public static void New()
         {
             CameraShotsManager.Instance.CameraShots.Clear();
+            CameraShotsManager.Instance.CurrentFilePath = null;
             var _ = CameraShotsManager.Instance.DefaultShot;
         }
     }

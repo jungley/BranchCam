@@ -142,15 +142,26 @@ namespace RydenCam.BranchCamEditor.Serialization
                 return false;
             }
 
+            var loadedStart = deserializedNodes.OfType<StartNode>().FirstOrDefault();
+            // The wrapper path also supports scenes saved before Start nodes owned the association.
+            string shotPath = !string.IsNullOrEmpty(container.CameraShotJsonFilePath)
+                ? container.CameraShotJsonFilePath : loadedStart?.CameraShotFilePath;
+            if (string.IsNullOrEmpty(shotPath)) shotPath = BranchConstants.DefaultCameraShotFile;
+            var shotData = SettingsService.Load<CameraShotConfigurationWrapper>(shotPath);
+            if (shotData?.Shots == null)
+            {
+                BranchLog.Error($"Scene was not loaded because its camera shot file is missing or invalid: {shotPath}");
+                return false;
+            }
+            if (loadedStart != null) loadedStart.CameraShotFilePath = shotPath;
+
             NodeManager.Instance.Clear();
             ConnectionManager.Instance.Clear();
             NodeManager.Instance.LoadNodes(deserializedNodes);
             ConnectionManager.Instance.CreateConnections(deserializedNodes);
 
-            if (!string.IsNullOrEmpty(container.CameraShotJsonFilePath))
-            {
-                FilePathSaveManager.Instance.SetLastFilePath(container.CameraShotJsonFilePath, FilePathSaveManager.LastOpened_CameraShotsKey);
-            }
+            Assets.RydenCam.Scripts.Editor.CameraShotEditor.CameraShotsManager.Instance.LoadFile(shotPath);
+            FilePathSaveManager.Instance.SetLastFilePath(shotPath, FilePathSaveManager.LastOpened_CameraShotsKey);
 
             return true;
         }
@@ -163,7 +174,7 @@ namespace RydenCam.BranchCamEditor.Serialization
             ConnectionManager.Instance.Clear();
             NodeManager.Instance.ActiveNode = null;
             FilePathSaveManager.Instance.SetLastFilePath(string.Empty, FilePathSaveManager.LastOpened_NodeGraphKey);
-            FilePathSaveManager.Instance.SetLastFilePath(string.Empty, FilePathSaveManager.LastOpened_CameraShotsKey);
+            CameraShotSettingsManager.Load(BranchConstants.DefaultCameraShotFile);
             BranchLog.Log("New node graph (cleared).");
         }
 #endif

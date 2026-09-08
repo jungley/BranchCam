@@ -27,6 +27,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         //Scene Information
         public string UnitySceneName;
         public string SequenceName;
+        public string CameraShotFilePath = BranchConstants.DefaultCameraShotFile;
         public Side CameraSide;
 
         public override float NodeHeight => 70;

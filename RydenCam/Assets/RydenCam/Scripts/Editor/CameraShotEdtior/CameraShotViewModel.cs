@@ -15,7 +15,7 @@ public class CameraShotViewModel
     private CameraShotConfiguration currentShot;
     public CameraShotConfiguration CurrentShot
     {
-        get => currentShot ??= CameraShotsManager.Instance.DefaultShot;
+        get => currentShot = CameraShotsManager.Instance.CameraShots.FirstOrDefault(s => s.ShotId == currentShot?.ShotId) ?? CameraShotsManager.Instance.DefaultShot;
         set => currentShot = value;
     }
     
@@ -28,13 +28,7 @@ public class CameraShotViewModel
         // manager is empty after a domain reload, which is when disk state should load.
         if (!CameraShotsManager.Instance.InitialStateLoaded)
         {
-            string lastOpenedFile = FilePathSaveManager.Instance
-                .GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
-
-            CameraShotConfigurationWrapper shotsWrapper = SettingsService.Load<CameraShotConfigurationWrapper>(lastOpenedFile);
-            if (shotsWrapper?.Shots != null && shotsWrapper.Shots.Any())
-                CameraShotsManager.Instance.CameraShots = shotsWrapper.Shots;
-            CameraShotsManager.Instance.MarkInitialStateLoaded();
+            CameraShotSettingsManager.Load(NodeManager.Instance.StartNode?.CameraShotFilePath ?? RydenCam.Common.BranchConstants.DefaultCameraShotFile);
         }
 
         CurrentShot = CameraShotsManager.Instance.DefaultShot;
@@ -43,18 +37,10 @@ public class CameraShotViewModel
 
     public void RemoveShot(CameraShotConfiguration shot)
     {
-        if(shot.IsDefault)
-        {
-            return;
-        }
-
-        int index = CameraShotsManager.Instance.CameraShots.FindIndex(s => s.ShotId == shot.ShotId);
-        if (index < 0) return;
-
-        CameraShotsManager.Instance.CameraShots.Remove(shot);
-        CurrentShot = CameraShotsManager.Instance.CameraShots.Count > 0
-            ? CameraShotsManager.Instance.CameraShots[Mathf.Max(0, index - 1)]
-            : CameraShotsManager.Instance.DefaultShot;
+        var manager = CameraShotsManager.Instance;
+        if (!manager.RemoveShot(shot)) return;
+        if (CurrentShot == null || CurrentShot.ShotId == shot.ShotId)
+            CurrentShot = manager.DefaultShot;
     }
 
     public void NewFile()
@@ -69,7 +55,7 @@ public class CameraShotViewModel
 
     public void Save()
     {
-        var fileresult = FilePathSaveManager.Instance.GetLastFilePathSaved(FilePathSaveManager.LastOpened_CameraShotsKey);
+        var fileresult = CameraShotsManager.Instance.CurrentFilePath;
         CameraShotSettingsManager.Save(fileresult);
     }
 

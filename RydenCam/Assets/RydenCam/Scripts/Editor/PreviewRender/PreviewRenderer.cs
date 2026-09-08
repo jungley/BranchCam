@@ -4,6 +4,8 @@ using RydenCam.BranchCamEditor.Managers;
 using RydenCam.Common;
 using RydenCam.SequenceData;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,7 +25,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                     _prevRenderUtility = new PreviewRenderUtility();
                     _prevRenderUtility.camera.fieldOfView = 40;
                     _prevRenderUtility.camera.nearClipPlane = 0.01f;
-                    _prevRenderUtility.camera.farClipPlane = 20;
+                    _prevRenderUtility.camera.farClipPlane = 200;
                 }
 
                 return _prevRenderUtility;
@@ -71,16 +73,49 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             return tex;
         }
 
-        public void ComposePreviewImage(Rect windowRect, CameraShotConfiguration shot, ActorPositionData actorPosData, ActorPositionData oppActorPosData = null)
-        {
-            if(actorPosData == null)
-                return;
+        private List<ActorInfo> renderActors = new List<ActorInfo>();
+        private readonly Dictionary<string, Vector3> renderOffsets = new Dictionary<string, Vector3>();
 
-            Pose camPose = cameraCalculator.CalculatePlacement(shot, actorPosData, oppActorPosData);
-            RenderPreview(windowRect, camPose, shot);
+        public void ComposePreviewImage(Rect windowRect, CameraShotConfiguration shot, ActorInfo primary,
+            ActorInfo opposite = null, float? spacing = null)
+        {
+            if (Event.current.type != EventType.Repaint || shot == null) return;
+            var actors = NodeManager.Instance.ActorsInScene.ToList();
+            primary = actors.FirstOrDefault(a => a.ActorID == primary?.ActorID) ?? actors.FirstOrDefault();
+            opposite = actors.FirstOrDefault(a => a.ActorID == opposite?.ActorID && a != primary)
+                ?? actors.FirstOrDefault(a => a != primary);
+            bool pair = shot.GoalType == CameraGoal.OverShoulder || shot.GoalType == CameraGoal.FrameShare;
+            if (primary?.PreviewData?.ActorPositionData == null || (pair && opposite == null))
+            {
+                GUI.Label(windowRect, pair ? "Assign two actor targets to preview this shot." : "Assign an actor target to preview.");
+                return;
+            }
+            renderActors = shot.GoalType == CameraGoal.Custom ? actors
+                : actors.Where(a => a == primary || (pair && a == opposite)).ToList();
+            renderOffsets.Clear();
+            var primaryPose = primary.PreviewData.ActorPositionData;
+            var oppositePose = pair ? opposite.PreviewData.ActorPositionData : null;
+            if (pair && spacing.HasValue)
+            {
+                Vector3 direction = oppositePose.ActorPosition - primaryPose.ActorPosition;
+                direction.y = 0;
+                if (direction.sqrMagnitude < 0.0001f) direction = Vector3.forward;
+                Vector3 newPosition = primaryPose.ActorPosition + direction.normalized * spacing.Value;
+                newPosition.y = oppositePose.ActorPosition.y;
+                renderOffsets[opposite.ActorID] = newPosition - oppositePose.ActorPosition;
+                oppositePose = new ActorPositionData {
+                    ActorPosition = newPosition, ActorRotation = oppositePose.ActorRotation,
+                    ForwardN = oppositePose.ForwardN
+                };
+            }
+            cameraCalculator.PreviewActorPositions = renderActors.Select(a =>
+                a.PreviewData.ActorPositionData.ActorPosition + GetRenderOffset(a)).ToList();
+            Pose pose = cameraCalculator.CalculatePlacement(shot, primaryPose, oppositePose);
+            RenderPreview(windowRect, pose, shot);
         }
 
-
+        private Vector3 GetRenderOffset(ActorInfo actor) =>
+            renderOffsets.TryGetValue(actor.ActorID, out var offset) ? offset : Vector3.zero;
         private void RenderPreview(Rect windowRect, Pose camPose, CameraShotConfiguration shot)
         {
             if (shot.GoalType == CameraGoal.Custom)
@@ -130,7 +165,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             previewRenderUtility.BeginPreview(windowRect, GUIStyle.none);
             previewRenderUtility.camera.transform.SetPositionAndRotation(cameraPosition, cameraRotation);
 
-            foreach (var actor in NodeManager.Instance.ActorsInScene)
+            foreach (var actor in renderActors)
             {
                 if (actor?.PreviewData?.MeshMatScale == null) continue;
 
@@ -140,7 +175,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
                         continue;
 
                     var matrix = Matrix4x4.TRS(
-                        actor.PreviewData.MeshOriginPoint,
+                        actor.PreviewData.MeshOriginPoint + GetRenderOffset(actor),
                         actor.PreviewData.ActorPositionData.ActorRotation,
                         Vector3.one // Replace with meshMatScale.Scale if needed
                     );
@@ -153,6 +188,7 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.PreviewRender
             CachedRenderTexture = previewRenderUtility.EndPreview();
             GUI.DrawTexture(windowRect, CachedRenderTexture);
             previewRenderUtility.Cleanup();
+            _prevRenderUtility = null;
         }
     }
 }
