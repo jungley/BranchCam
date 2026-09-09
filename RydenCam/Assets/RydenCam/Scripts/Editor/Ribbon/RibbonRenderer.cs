@@ -1,5 +1,4 @@
 using RydenCam.Editor.Ribbon.RibbonItem;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using RydenCam.Editor.Styling;
@@ -8,9 +7,9 @@ namespace RydenCam.Editor.Ribbon
 {
     public class RibbonRenderer
     {
+        // Graph drawing and hit testing share the ribbon's actual height.
+        public const float Height = 30f;
         private readonly RibbonDefinition definition;
-        private readonly Dictionary<string, bool> dropdownState = new Dictionary<string, bool>();
-
         private GUIStyle toolbarPanelStyle;
         private GUIStyle toolbarButtonStyle;
 
@@ -21,60 +20,39 @@ namespace RydenCam.Editor.Ribbon
 
         public void Draw(float availableWidth)
         {
-            // EditorStyles is not available during some OnEnable/hot-reload phases.
-            // Build GUI styles lazily on the first actual GUI draw.
+            // Create styles during GUI drawing, after Unity's skin is available.
             toolbarPanelStyle ??= BranchCamEditorTheme.CreateToolbarPanelStyle();
             toolbarButtonStyle ??= BranchCamEditorTheme.CreateToolbarButtonStyle();
 
-            GUILayout.BeginHorizontal(toolbarPanelStyle, GUILayout.Width(availableWidth), GUILayout.Height(50));
-            //Weird bug requires a width of 1f to push everything to the left
-            GUILayout.BeginHorizontal(GUILayout.Width(1f));
-
-            foreach (var item in definition.Items)
+            using (new GUILayout.HorizontalScope(toolbarPanelStyle,
+                GUILayout.Width(availableWidth), GUILayout.Height(Height)))
             {
-                if (item is RibbonButton btn)
+                foreach (var item in definition.Items)
                 {
-                    float buttonHeight = Mathf.Max(btn.Height, 34f);
-                    if (GUILayout.Button(btn.Label, toolbarButtonStyle,
-                        GUILayout.Width(btn.Width),
-                        GUILayout.Height(buttonHeight)))
-                        {
-                            btn.Action?.Invoke();
-                        }
+                    if (item is RibbonButton button) DrawButton(button);
+                    else if (item is RibbonDropdown dropdown) DrawDropdown(dropdown);
                 }
-                else if (item is RibbonDropdown dropdown)
-                {
-                    GUILayout.BeginVertical();
-
-                    bool visible = dropdownState.ContainsKey(dropdown.Label) && dropdownState[dropdown.Label];
-                    float dropdownHeight = Mathf.Max(dropdown.Height, 34f);
-                    if (GUILayout.Button(dropdown.Label, toolbarButtonStyle,
-                        GUILayout.Width(dropdown.Width),
-                        GUILayout.Height(dropdownHeight)))
-                        {
-                            dropdownState[dropdown.Label] = !visible;
-                        }
-
-                        if (dropdownState.ContainsKey(dropdown.Label) && dropdownState[dropdown.Label])
-                        {
-                            foreach (var opt in dropdown.Options)
-                            {
-                                float optionHeight = Mathf.Max(opt.Height, 28f);
-                                if (GUILayout.Button(opt.Label, toolbarButtonStyle,
-                                    GUILayout.Width(opt.Width),
-                                    GUILayout.Height(optionHeight)))
-                                    {
-                                        opt.Action?.Invoke();
-                                        dropdownState[dropdown.Label] = false;
-                            }
-                            }
-                        }
-
-                    GUILayout.EndVertical();
-                }
+                GUILayout.FlexibleSpace();
             }
-            GUILayout.EndHorizontal();
-            GUILayout.EndHorizontal();
+        }
+
+        private void DrawButton(RibbonButton button)
+        {
+            if (GUILayout.Button(button.Label, toolbarButtonStyle,
+                GUILayout.Width(button.Width), GUILayout.Height(button.Height)))
+                button.Action?.Invoke();
+        }
+
+        private void DrawDropdown(RibbonDropdown dropdown)
+        {
+            Rect anchor = GUILayoutUtility.GetRect(dropdown.Width, dropdown.Height);
+            if (!GUI.Button(anchor, dropdown.Label, toolbarButtonStyle)) return;
+
+            // A popup keeps File options from expanding the ribbon over the canvas.
+            var menu = new GenericMenu();
+            foreach (var option in dropdown.Options)
+                menu.AddItem(new GUIContent(option.Label), false, () => option.Action?.Invoke());
+            menu.DropDown(anchor);
         }
 
         public void Draw()

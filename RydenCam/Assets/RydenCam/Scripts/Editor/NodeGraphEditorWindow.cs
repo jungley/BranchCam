@@ -92,10 +92,10 @@ namespace RydenCam.Editor
         private static GUIStyle panelstyle_inspector;
         
         //Define fixed UI areas in window space (do not move with graph pan)
-        private Rect ButtonPanelArea => new Rect(0, 0, position.width, 50);
+        private Rect ButtonPanelArea => new Rect(0, 0, position.width, RibbonRenderer.Height);
         private Rect GraphViewportArea => new Rect(0, ButtonPanelArea.height, position.width, Mathf.Max(0f, position.height - ButtonPanelArea.height));
 
-        public Rect InspectorPanelArea => new Rect(0, 50, ActiveNodeDrawView != null ? ActiveNodeDrawView.InspectorWidth : 230, position.height - 50);
+        public Rect InspectorPanelArea => new Rect(0, RibbonRenderer.Height, ActiveNodeDrawView != null ? ActiveNodeDrawView.InspectorWidth : 230, Mathf.Max(0f, position.height - RibbonRenderer.Height));
 
         //Text Style
         private static GUIStyle inspectorText;
@@ -341,7 +341,6 @@ namespace RydenCam.Editor
 
             window.Show();
 
-            window.viewModel.OpenCameraShotEditor();
         }
 
         private static void InitializeStaticResources()
@@ -387,6 +386,7 @@ namespace RydenCam.Editor
         // Called when the window is enabled or created
         private void OnEnable()
         {
+            titleContent = new GUIContent("BranchCam");
             // Node drawers construct EditorStyles and must be initialized inside
             // OnGUI, after Unity's GUI skin is available following a reload.
             windowStateInitialized = false;
@@ -421,12 +421,9 @@ namespace RydenCam.Editor
                 .AddDropdownOption("File", "Save As", viewModel.SaveAs)
              .AddButton("Open", viewModel.Open)
              .AddButton("Save", viewModel.Save)
-             .AddButton("Toggle Preview", () => viewModel.ToggleNodePreviewRender(), width: 120)
-             .AddButton("Frame All", FrameAllNodes, width: 90)
-             .AddButton("Reset View", ResetView, width: 90)
-             .AddButton("Shot Configuration", () => viewModel.OpenCameraShotEditor(), width:140)
-             .AddButton("Ink Integration", viewModel.OpenInkIntegration, width:120)
-             .AddButton("PlayMode Settings", () => viewModel.LocateGlobalSettings(), width: 140)
+             .AddButton("Toggle Preview", () => viewModel.ToggleNodePreviewRender(), width: 105)
+             .AddButton("Frame All", FrameAllNodes, width: 72)
+             .AddButton("PlayMode Settings", () => viewModel.LocateGlobalSettings(), width: 120)
             .Build();
 
             ribbonRenderer = new RibbonRenderer(ribbonDefinition);
@@ -446,6 +443,7 @@ namespace RydenCam.Editor
             {
                 if (this != null)
                 {
+                    viewModel.OpenDefaultPanels();
                     FrameAllNodes();
                 }
             };

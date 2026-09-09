@@ -7,8 +7,8 @@ namespace RydenCam.Editor.Ribbon
     {
         private readonly RibbonDefinition definition;
 
-        private const float buttonWidth = 80f;
-        private const float buttonHeight = 25f;
+        private const float buttonWidth = 58f;
+        private const float buttonHeight = 24f;
         private const float dropdownOptionHeight = 20f;
 
         public RibbonDefinitionBuilder()

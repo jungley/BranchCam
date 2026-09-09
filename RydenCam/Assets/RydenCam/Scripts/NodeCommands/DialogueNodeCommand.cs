@@ -20,14 +20,13 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public override void AddSpeakingEntry(int index)
         {
-            if (!string.IsNullOrEmpty(node.InkSourceId)) return;
+            // Ink identity is retained for refresh; it does not prevent local dialogue edits.
             node.NodeConvodata.DialogTextList.Insert(index, string.Empty);
         }
 
         public override void RemoveSpeakingEntry(int index)
         {
-            if (!string.IsNullOrEmpty(node.InkSourceId)) return;
-           node.NodeConvodata.DialogTextList.RemoveAt(index);
+            node.NodeConvodata.DialogTextList.RemoveAt(index);
 
         }
 

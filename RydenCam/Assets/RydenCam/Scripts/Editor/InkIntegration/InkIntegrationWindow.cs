@@ -1,4 +1,5 @@
 using System;
+using RydenCam.Editor.Ribbon;
 using System.IO;
 using System.Linq;
 using RydenCam.BranchCamEditor.Managers;
@@ -21,6 +22,8 @@ namespace RydenCam.Editor.InkIntegration
         [SerializeField] string report = "Choose an .ink source file to generate a BranchCam conversation.";
         [SerializeField] bool failed;
         Vector2 scroll;
+        RibbonRenderer ribbonRenderer;
+        [SerializeField] bool documentInitialized;
         [SerializeField] string editingPath = "";
         [SerializeField] string sourceText = "";
         [SerializeField] string savedText = "";
@@ -44,6 +47,7 @@ namespace RydenCam.Editor.InkIntegration
             highlightedSource = null;
             titleContent = new GUIContent("Ink Integration");
             minSize = new Vector2(320, 300);
+            InitializeRibbon();
             UpdateUnsavedState();
         }
 
@@ -58,39 +62,39 @@ namespace RydenCam.Editor.InkIntegration
         {
             var start = NodeManager.Instance.StartNode;
             // The asset GUID survives file moves within the Unity project.
-            if (source == null && !string.IsNullOrEmpty(start?.InkSourceGuid))
+            if (!documentInitialized && source == null && !string.IsNullOrEmpty(start?.InkSourceGuid))
             {
                 source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GUIDToAssetPath(start.InkSourceGuid));
                 entry = start.InkEntryKnot;
             }
+            documentInitialized = true;
+            ribbonRenderer.Draw(position.width);
             scroll = EditorGUILayout.BeginScrollView(scroll);
             GUILayout.Label("Ink Integration", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("Write dialogue in Ink, then import or refresh the graph. Assign actor targets and cinematic shots in BranchCam.", MessageType.Info);
             var selectedSource = EditorGUILayout.ObjectField("Ink Source", source, typeof(UnityEngine.Object), false);
-            if (selectedSource != source && ConfirmSourceChange()) source = selectedSource;
-            if (GUILayout.Button("Select Blacksmith Sample"))
+            if (selectedSource != source && selectedSource != null)
+                SelectSource(AssetDatabase.GetAssetPath(selectedSource));
+            using (new EditorGUILayout.HorizontalScope())
             {
-                if (ConfirmSourceChange())
-                {
-                    source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/RydenCam/DialogueFiles/BlacksmithConversation.ink");
-                    entry = "";
-                }
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Blacksmith Sample", EditorStyles.miniButton, GUILayout.Width(125)))
+                    SelectSource("Assets/RydenCam/DialogueFiles/BlacksmithConversation.ink");
             }
             entry = EditorGUILayout.TextField(new GUIContent("Entry Knot", "Leave blank to use root content, or the first knot when there is no root content."), entry);
             string path = AssetDatabase.GetAssetPath(source);
             bool valid = path.EndsWith(".ink", StringComparison.OrdinalIgnoreCase) && File.Exists(path);
             if (valid && editingPath != path) LoadSource(path);
-            using (new EditorGUI.DisabledScope(!valid))
+            using (new EditorGUI.DisabledScope(!valid && string.IsNullOrWhiteSpace(sourceText)))
             {
-                bool refresh = start?.InkSourceGuid == AssetDatabase.AssetPathToGUID(path);
+                bool refresh = valid && start?.InkSourceGuid == AssetDatabase.AssetPathToGUID(path);
                 string importLabel = refresh ? "Refresh From Ink" : "Import Ink";
-                if (GUILayout.Button(SourceHasEdits ? "Save & " + importLabel : importLabel, GUILayout.Height(30)))
+                if (GUILayout.Button(SourceHasEdits || !valid ? "Save & " + importLabel : importLabel, GUILayout.Height(30)))
                 {
-                    if (!SourceHasEdits || SaveSource()) Import(path, refresh);
+                    if ((valid && !SourceHasEdits) || SaveSource()) Import(editingPath, refresh);
                 }
-                if (GUILayout.Button("Open Source")) AssetDatabase.OpenAsset(source);
             }
-            if (valid) DrawSourceEditor();
+            DrawSourceEditor();
             EditorGUILayout.HelpBox(report, failed ? MessageType.Error : MessageType.Info);
             
             
@@ -105,44 +109,91 @@ namespace RydenCam.Editor.InkIntegration
             EditorGUILayout.EndScrollView();
         }
 
+        private void InitializeRibbon()
+        {
+            var definition = new RibbonDefinitionBuilder()
+                .AddDropdown("File")
+                .AddDropdownOption("File", "New", NewSource)
+                .AddDropdownOption("File", "Open", OpenSource)
+                .AddDropdownOption("File", "Save", () => SaveSource())
+                .AddDropdownOption("File", "Save As", () => SaveSourceAs())
+                .AddButton("Open", OpenSource)
+                .AddButton("Save", () => SaveSource())
+                .Build();
+            ribbonRenderer = new RibbonRenderer(definition);
+        }
+
+        private void NewSource()
+        {
+            if (!ConfirmSourceChange()) return;
+            // Keep the untitled document independent of the graph's linked Ink file.
+            documentInitialized = true;
+            source = null;
+            editingPath = "";
+            sourceText = "";
+            savedText = "";
+            entry = "";
+            failed = false;
+            report = "Write an Ink script, then save and import it into BranchCam.";
+            UpdateUnsavedState();
+            GUI.FocusControl(null);
+        }
+
+        private void OpenSource()
+        {
+            string path = EditorUtility.OpenFilePanel("Open Ink Script", "Assets", "ink");
+            if (!string.IsNullOrEmpty(path)) SelectSource(path);
+        }
+
+        private void SelectSource(string path)
+        {
+            // Project assets provide stable GUIDs for the graph's source reference.
+            string assetPath = FileUtil.GetProjectRelativePath(Path.GetFullPath(path));
+            if (!assetPath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase) ||
+                !assetPath.EndsWith(".ink", StringComparison.OrdinalIgnoreCase))
+            {
+                failed = true;
+                report = "Choose an .ink file inside this project's Assets folder.";
+                return;
+            }
+            if (!ConfirmSourceChange()) return;
+            LoadSource(assetPath);
+            entry = "";
+        }
+
+        private bool SaveSourceAs()
+        {
+            string directory = string.IsNullOrEmpty(editingPath) ? "Assets" : Path.GetDirectoryName(editingPath);
+            string name = string.IsNullOrEmpty(editingPath) ? "NewConversation" : Path.GetFileNameWithoutExtension(editingPath);
+            string path = EditorUtility.SaveFilePanelInProject("Save Ink Script As", name, "ink",
+                "Choose a location for the Ink script.", directory);
+            if (string.IsNullOrEmpty(path)) return false;
+            return path == editingPath ? SaveSource() : WriteSource(path);
+        }
+
         private void DrawSourceEditor()
         {
             GUILayout.Space(8);
-            GUILayout.Label(SourceHasEdits ? "Ink Script *" : "Ink Script", EditorStyles.boldLabel);
+            string name = string.IsNullOrEmpty(editingPath) ? "Untitled.ink" : Path.GetFileName(editingPath);
+            GUILayout.Label(name + (SourceHasEdits ? " *" : ""), EditorStyles.boldLabel);
             using (new EditorGUILayout.HorizontalScope())
             {
-                using (new EditorGUI.DisabledScope(!SourceHasEdits))
+                using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(editingPath)))
                 {
-                    if (GUILayout.Button("Save Script")) SaveSource();
+                    if (GUILayout.Button("Reload From Disk") && (!SourceHasEdits ||
+                        EditorUtility.DisplayDialog("Reload Ink", "Discard your unsaved script edits?", "Reload", "Cancel")))
+                        LoadSource(editingPath);
+                    if (GUILayout.Button("Open in External Editor")) AssetDatabase.OpenAsset(source);
                 }
-                if (GUILayout.Button("Reload From Disk") && (!SourceHasEdits ||
-                    EditorUtility.DisplayDialog("Reload Ink", "Discard your unsaved script edits?", "Reload", "Cancel")))
-                    LoadSource(editingPath);
             }
 
-            if (inputStyle == null)
-            {
-                editorFont = Font.CreateDynamicFontFromOSFont("Consolas", 13);
-                inputStyle = new GUIStyle(EditorStyles.textArea)
-                {
-                    font = editorFont, fontSize = 13, wordWrap = false, richText = false
-                };
-                highlightStyle = new GUIStyle(inputStyle) { richText = true };
-                // The native text area owns selection and keyboard editing.
-                // A matching rich-text layer paints syntax without putting markup in the file.
-                foreach (var state in new[] { inputStyle.normal, inputStyle.hover, inputStyle.active, inputStyle.focused })
-                    state.textColor = Color.clear;
-                foreach (var state in new[] { highlightStyle.normal, highlightStyle.hover, highlightStyle.active, highlightStyle.focused })
-                {
-                    state.background = null;
-                    state.textColor = EditorGUIUtility.isProSkin ? new Color(0.88f, 0.88f, 0.88f) : new Color(0.12f, 0.12f, 0.12f);
-                }
-            }
+            EnsureEditorStyles();
 
             var currentEvent = Event.current;
             if (currentEvent.type == EventType.KeyDown && (currentEvent.control || currentEvent.command) && currentEvent.keyCode == KeyCode.S)
             {
-                SaveSource();
+                if (currentEvent.shift) SaveSourceAs();
+                else SaveSource();
                 currentEvent.Use();
             }
             editorScroll = EditorGUILayout.BeginScrollView(editorScroll, GUILayout.Height(Mathf.Max(230, position.height * 0.45f)));
@@ -166,6 +217,29 @@ namespace RydenCam.Editor.InkIntegration
                 DrawSourceCaret(textRect);
             }
             EditorGUILayout.EndScrollView();
+        }
+
+        private void EnsureEditorStyles()
+        {
+            if (inputStyle == null)
+            {
+                editorFont = Font.CreateDynamicFontFromOSFont("Consolas", 13);
+                inputStyle = new GUIStyle(EditorStyles.textArea)
+                {
+                    font = editorFont, fontSize = 13, wordWrap = false, richText = false
+                };
+                highlightStyle = new GUIStyle(inputStyle) { richText = true };
+                // The native text area owns selection and keyboard editing.
+                // A matching rich-text layer paints syntax without putting markup in the file.
+                foreach (var state in new[] { inputStyle.normal, inputStyle.hover, inputStyle.active, inputStyle.focused })
+                    state.textColor = Color.clear;
+                foreach (var state in new[] { highlightStyle.normal, highlightStyle.hover, highlightStyle.active, highlightStyle.focused })
+                {
+                    state.background = null;
+                    state.textColor = EditorGUIUtility.isProSkin ? new Color(0.88f, 0.88f, 0.88f) : new Color(0.12f, 0.12f, 0.12f);
+                }
+            }
+
         }
 
         private void DrawSourceCaret(Rect textRect)
@@ -192,6 +266,8 @@ namespace RydenCam.Editor.InkIntegration
                 sourceText = File.ReadAllText(path);
                 savedText = sourceText;
                 editingPath = path;
+                source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                documentInitialized = true;
                 highlightedSource = null;
                 GUI.FocusControl(null);
                 UpdateUnsavedState();
@@ -205,16 +281,34 @@ namespace RydenCam.Editor.InkIntegration
 
         private bool SaveSource()
         {
+            if (string.IsNullOrEmpty(editingPath)) return SaveSourceAs();
             try
             {
                 // Do not silently overwrite edits made in Inky or another editor.
                 if ((!File.Exists(editingPath) || File.ReadAllText(editingPath) != savedText) &&
                     !EditorUtility.DisplayDialog("Ink changed on disk", "The source file changed outside this editor. Replace it with your edits?", "Replace", "Cancel"))
                     return false;
-                File.WriteAllText(editingPath, sourceText);
+                return WriteSource(editingPath);
+            }
+            catch (Exception exception)
+            {
+                failed = true;
+                report = exception.Message;
+                return false;
+            }
+        }
+
+        private bool WriteSource(string path)
+        {
+            try
+            {
+                File.WriteAllText(path, sourceText);
+                AssetDatabase.ImportAsset(path);
+                // Only adopt the new file after saving succeeds.
+                editingPath = path;
+                source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
                 savedText = sourceText;
                 UpdateUnsavedState();
-                AssetDatabase.ImportAsset(editingPath);
                 failed = false;
                 report = "Saved Ink script. Refresh From Ink to update the graph.";
                 return true;

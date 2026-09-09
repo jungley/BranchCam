@@ -19,7 +19,7 @@ Troll: The bridge is gone. Take the old mill path. # id:warning
     Player: Thank you. I'll remember that. # id:thanks
     -> farewell
 * [Ask about supplies.]
-    Player: Can I buy supplies here? # id:supplies
+    Player: Can I buy here? # id:supplies
     Blacksmith: My sister runs the store next door. # id:store
     -> farewell
 

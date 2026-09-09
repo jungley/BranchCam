@@ -78,7 +78,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                     dialogueCommand.TextAreaRectIndex.Clear();
                     for (int i = 0; i < dialogueNode.NodeConvodata.DialogTextList.Count; i++)
                     {
-                        dialogueNode.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(dialogueCommand.WindowRect, dialogueCommand.TextAreaRectIndex, i, ref buffer, dialogueNode.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: dialogueNode.NodeWidth - 10, readOnly: !string.IsNullOrEmpty(dialogueNode.InkSourceId));
+                        dialogueNode.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(dialogueCommand.WindowRect, dialogueCommand.TextAreaRectIndex, i, ref buffer, dialogueNode.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: dialogueNode.NodeWidth - 10);
                         GUILayout.Space(5);
                     }
 
@@ -106,6 +106,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
         public override void DrawNodeInspector()
         {
             EditorGUILayout.LabelField("Dialogue Info", labelStyleHead_Panel);
+            if (!string.IsNullOrEmpty(dialogueNode.InkSourceId))
+                EditorGUILayout.HelpBox("Dialogue edits are saved with the BranchCam scene. Refresh From Ink replaces them with the script's dialogue.", MessageType.Info);
             EditorGUILayout.Space();
             GUILayout.Label("Actor (Camera Focus Target)", inspectorText, GUILayout.Width(150));
 

@@ -92,6 +92,17 @@ public class NodeGraphViewModel
         return null;
     }
 
+    public void OpenDefaultPanels()
+    {
+        // Preserve restored dock positions when Unity reloads scripts.
+        var shots = Resources.FindObjectsOfTypeAll<CameraShotEditor>().FirstOrDefault();
+        if (shots == null) OpenCameraShotEditor();
+        else shots.NodeGraphViewModel = this;
+
+        if (!Resources.FindObjectsOfTypeAll<RydenCam.Editor.InkIntegration.InkIntegrationWindow>().Any())
+            OpenInkIntegration();
+    }
+
     public void OpenCameraShotEditor()
     {
         CameraShotEditor camShotEditor = EditorWindow.GetWindow<CameraShotEditor>();

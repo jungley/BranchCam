@@ -52,12 +52,14 @@ namespace Assets.RydenCam.Scripts.NodeCommands
             menu.AddItem(new GUIContent("Add"), false, () =>
             {
                 AddSpeakingEntry(index + 1);
+                UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
             });
             if (SpeakingEntriesCount > 1)
             {
                 menu.AddItem(new GUIContent("Remove"), false, () =>
                 {
                     RemoveSpeakingEntry(index);
+                    UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
                 });
             }
             menu.ShowAsContext();

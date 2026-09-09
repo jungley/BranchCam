@@ -45,6 +45,35 @@ Blacksmith: Safe travels, stranger. # id:farewell # shot:frame_share # target:Pl
 -> END
 ";
 
+        private static void CheckDialogueEditing(Action<bool, string> check)
+        {
+            // Exercise the context menu commands without changing the open graph.
+            foreach (string sourceId in new[] { "", "id:imported" })
+            {
+                var node = new DialogueNode(Vector2.zero) { InkSourceId = sourceId };
+                node.NodeConvodata.DialogTextList.Clear();
+                node.NodeConvodata.DialogTextList.Add("First");
+                node.NodeConvodata.DialogTextList.Add("Last");
+                var command = new Assets.RydenCam.Scripts.NodeCommands.DialogueNodeCommand(node);
+                try
+                {
+                    command.AddSpeakingEntry(1);
+                    check(node.NodeConvodata.DialogTextList.SequenceEqual(new[] { "First", "", "Last" }),
+                        "Add inserts dialogue after the selected entry: " + sourceId);
+                    node.NodeConvodata.DialogTextList[1] = "New dialogue";
+                    var restored = JsonUtility.FromJson<DialogueNode>(JsonUtility.ToJson(node));
+                    check(restored.NodeConvodata.DialogTextList[1] == "New dialogue" && restored.InkSourceId == sourceId,
+                        "Added dialogue and Ink identity survive serialization: " + sourceId);
+                    command.RemoveSpeakingEntry(1);
+                    check(node.NodeConvodata.DialogTextList.SequenceEqual(new[] { "First", "Last" }),
+                        "Remove preserves neighboring dialogue: " + sourceId);
+                }
+                finally
+                {
+                    RydenCam.BranchCamEditor.Managers.NodeManager.Instance.NodeCommandLookup.RemoveByKey(node);
+                }
+            }
+        }
         [MenuItem("Tools/BranchCam/Run Ink Import Checks")]
         public static void Run()
         {
@@ -63,6 +92,7 @@ Blacksmith: Safe travels, stranger. # id:farewell # shot:frame_share # target:Pl
                 }
 
                 var sample = Import(TestConversation);
+                CheckDialogueEditing(Check);
                 
                 Check(sample.Nodes.Count == 15, "Sample has 13 dialogue nodes and 2 decisions (actual " + sample.Nodes.Count + ")");
                 Check(sample.Nodes.Values.Sum(n => n.Choices.Count) == 4, "All four choices imported");

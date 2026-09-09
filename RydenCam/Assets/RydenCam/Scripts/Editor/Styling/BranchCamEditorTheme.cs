@@ -46,9 +46,9 @@ namespace RydenCam.Editor.Styling
             style.fontSize = FontBody;
             style.fontStyle = FontStyle.Normal;
             style.alignment = TextAnchor.MiddleCenter;
-            style.padding = new RectOffset(12, 12, 6, 6);
-            style.margin = new RectOffset(4, 4, 4, 4);
-            style.fixedHeight = 32f;
+            style.padding = new RectOffset(8, 8, 2, 2);
+            style.margin = new RectOffset(2, 2, 0, 0);
+            style.fixedHeight = 0f;
             style.normal.background = GetSolidTexture(PanelBackgroundElevated);
             style.hover.background = GetSolidTexture(new Color(PanelBackgroundElevated.r + 0.04f, PanelBackgroundElevated.g + 0.04f, PanelBackgroundElevated.b + 0.04f, 1f));
             style.active.background = GetSolidTexture(Accent);
@@ -59,7 +59,7 @@ namespace RydenCam.Editor.Styling
         {
             GUIStyle style = new GUIStyle();
             style.normal.background = GetSolidTexture(ToolbarBackground);
-            style.padding = new RectOffset(8, 8, 6, 6);
+            style.padding = new RectOffset(4, 4, 3, 3);
             return style;
         }
     }
