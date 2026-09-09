@@ -20,11 +20,13 @@ namespace Assets.RydenCam.Scripts.NodeCommands
 
         public override void AddSpeakingEntry(int index)
         {
+            if (!string.IsNullOrEmpty(node.InkSourceId)) return;
             node.NodeConvodata.DialogTextList.Insert(index, string.Empty);
         }
 
         public override void RemoveSpeakingEntry(int index)
         {
+            if (!string.IsNullOrEmpty(node.InkSourceId)) return;
            node.NodeConvodata.DialogTextList.RemoveAt(index);
 
         }

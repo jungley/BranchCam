@@ -90,13 +90,15 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                      {
                          GUILayout.BeginHorizontal();
                          GUILayout.Label("" + (decisionIndex + 1), labelStyleHead_Node, GUILayout.Width(10));
-                         EditorGUI.BeginDisabledGroup(isConnectingLine);
                          float textWidth = decisionNode.NodeWidth - 25;
                          float textHeight = Mathf.Max(50f, EditorGUILayoutExtensions.GetTextAreaHeight(decisionNode.DecisionOptions[decisionIndex], textWidth) + 10f);
-                         decisionNode.DecisionOptions[decisionIndex] = EditorGUILayout.TextArea(
+                         if (isConnectingLine || !string.IsNullOrEmpty(decisionNode.InkSourceId))
+                             GUILayout.Label(decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode,
+                                 GUILayout.Width(textWidth), GUILayout.Height(textHeight));
+                         else
+                             decisionNode.DecisionOptions[decisionIndex] = EditorGUILayout.TextArea(
                              decisionNode.DecisionOptions[decisionIndex], textAreaStyleNode,
                              GUILayout.Width(textWidth), GUILayout.Height(textHeight));
-                         EditorGUI.EndDisabledGroup();
                          Rect localTextAreaRect = GUILayoutUtility.GetLastRect();
                          Rect globalTextAreaRect = new Rect(
                              Command.WindowRect.x + localTextAreaRect.x,

@@ -73,45 +73,51 @@ namespace RydenCam.Editor
         }
 
 
+        private int configurationWidth = 240;
+
         private void OnGUI()
         {
             if (ViewModel == null || ribbonRenderer == null)
                 InitializeWindowState();
 
-            //Draw the ribbon
             ribbonRenderer.Draw(position.width);
-
             if (CameraShotsManager.Instance.CameraShots.Count == 0) return;
 
             windowScrollPos = EditorGUILayout.BeginScrollView(windowScrollPos);
-            GUILayout.BeginVertical();
-
-            GUILayout.BeginHorizontal();
-
-            // Preview Section with fixed width
-            GUILayout.BeginVertical(GUILayout.Width(320));
-                DrawShotPreviewSection();
-            GUILayout.EndVertical();
-
-            // Configuration Section with fixed width
-            GUILayout.BeginVertical(GUILayout.Width(200));
-                DrawShotConfigurationSection();
-            GUILayout.EndVertical();
-
-            // List Section
-            GUILayout.BeginVertical(GUILayout.Width(230));
-                DrawCameraShotListSection();
-            GUILayout.EndVertical();
-
-            GUILayout.EndHorizontal();
-
-            EditorGUILayout.Space(12f);
-            DrawBottomConfigurationPanel();
-
-            GUILayout.EndVertical();
+            GUILayout.Space(8);
+            bool wideLayout = position.width >= 940;
+            configurationWidth = wideLayout ? Mathf.Max(240, (int)position.width - 600) : Mathf.Max(240, (int)position.width - 270);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Space(8);
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.Width(220)))
+                    DrawCameraShotListSection();
+                GUILayout.Space(8);
+                if (wideLayout)
+                {
+                    using (new EditorGUILayout.VerticalScope(GUILayout.Width(320)))
+                    {
+                        DrawShotPreviewSection();
+                        DrawBottomConfigurationPanel();
+                    }
+                    GUILayout.Space(8);
+                }
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MinWidth(240), GUILayout.ExpandWidth(true)))
+                    DrawShotConfigurationSection();
+                GUILayout.Space(8);
+            }
+            if (!wideLayout)
+            {
+                GUILayout.Space(8);
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    DrawShotPreviewSection();
+                    DrawBottomConfigurationPanel();
+                }
+            }
+            GUILayout.Space(8);
             EditorGUILayout.EndScrollView();
-        }   
-
+        }
         private void DrawShotPreviewSection()
         {
             GUIStyle largeBoldLabel = new GUIStyle(EditorStyles.boldLabel)
@@ -121,7 +127,7 @@ namespace RydenCam.Editor
                 alignment = TextAnchor.MiddleCenter
             };
 
-            GUILayout.Label("Shot Configuration Manager", largeBoldLabel);
+            GUILayout.Label("Shot Preview", largeBoldLabel);
 
             // Match the node preview's 200:120 aspect ratio and respect scrolling.
             Rect boxRect = GUILayoutUtility.GetRect(300f, 180f, GUILayout.Width(300f), GUILayout.Height(180f));
@@ -135,154 +141,45 @@ namespace RydenCam.Editor
         }
         private void DrawShotConfigurationSection()
         {
-            EditorGUILayout.Space(20f);
-
+            GUILayout.Label("Shot Settings", EditorStyles.boldLabel);
+            GUILayout.Space(8);
             var shot = ViewModel?.CurrentShot;
-            if (shot == null)
-                return;
+            if (shot == null) return;
 
             EditorGUILayout.LabelField("Shot Name");
-
-            // Assign a unique control name to the text field
             GUI.SetNextControlName("ShotNameField");
             using (new EditorGUI.DisabledScope(shot.IsDefault))
-                shot.ShotName = EditorGUILayout.TextField(shot.ShotName, GUILayout.Width(150));
+                shot.ShotName = EditorGUILayout.TextField(shot.ShotName, GUILayout.Height(24));
+            if (shot.IsDefault)
+                EditorGUILayout.LabelField("Built-in shot", EditorStyles.miniLabel);
+            GUILayout.Space(8);
 
-            // Handle focus loss on Enter or mouse click outside
-            Event e = Event.current;
-            if (GUI.GetNameOfFocusedControl() == "ShotNameField")
-            {
-                // Press Enter
-                if (e.type == EventType.KeyDown && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter))
-                {
-                    GUI.FocusControl(null);
-                    e.Use();
-                }
-                // Click outside
-                else if (e.type == EventType.MouseDown && e.button == 0)
-                {
-                    // Only unfocus if the click is outside the text field rect
-                    GUI.FocusControl(null);
-                }
-            }
+            EditorGUILayout.LabelField("Shot Type");
+            bool singleActor = NodeManager.Instance.ActorsInScene.Count == 1;
+            CameraGoal[] allowedGoals = { CameraGoal.Portrait, CameraGoal.Custom };
+            shot.GoalType = EnumPopupExtensions.EnumPopup(shot.GoalType, singleActor, configurationWidth, allowedGoals);
+            GUILayout.Space(8);
 
-            EditorGUILayout.LabelField("Type");
-            bool filteredEnabled = NodeManager.Instance.ActorsInScene.Count == 1;
-            CameraGoal[] allowedGoals = new CameraGoal[] { CameraGoal.Portrait, CameraGoal.Custom };
-            CameraGoal selected_goal = EnumPopupExtensions.EnumPopup(shot.GoalType, filteredEnabled, width: 150, allowedGoals);
-            if (shot.GoalType != selected_goal)
-                shot.GoalType = selected_goal;
-
-            if (selected_goal == CameraGoal.OverShoulder || selected_goal == CameraGoal.FrameShare)
-            {
-                EditorGUILayout.LabelField("Opp Actor");
-                /*
-                var actors = NodeManager.Instance.ActorsInScene
-                    .Where(x => x.ActorID != shot.Actor)
-                    .Select(x => x.ActorName)
-                    .ToList();
-                */
-                /*
-                var actors = NodeManager.Instance.ActorsInScene;
-
-                int OppActorIndex = actors.IndexOf(shot.OppositeActor);
-
-                if (OppActorIndex == -1) OppActorIndex = 0;
-
-                if (actors.Count > 0)
-                {
-                    OppActorIndex = EditorGUILayout.Popup(OppActorIndex, actors.ToArray(), GUILayout.Width(140));
-                    shot.OppositeActor = actors[OppActorIndex];
-                }
-                */
-            }
-
-            //Not Custom
-            if (selected_goal != CameraGoal.Custom)
-            {
-                EditorGUILayout.LabelField("Distance");
-                var options_Distance = Enum.GetNames(typeof(CameraDistance)).ToList();
-                int index_dist = Array.IndexOf(Enum.GetValues(typeof(CameraDistance)), shot.GoalDistance);
-                index_dist = EditorGUILayout.Popup(index_dist, options_Distance.ToArray(), GUILayout.Width(150));
-                if (index_dist == -1) index_dist = 0;
-                var newDist = (CameraDistance)Enum.GetValues(typeof(CameraDistance)).GetValue(index_dist);
-                if (shot.GoalDistance != newDist)
-                    shot.GoalDistance = newDist;
-
-                EditorGUILayout.LabelField("Height");
-                var options_Angle = Enum.GetNames(typeof(CameraAngle)).ToList();
-                int index_angle = Array.IndexOf(Enum.GetValues(typeof(CameraAngle)), shot.GoalAngle);
-                index_angle = EditorGUILayout.Popup(index_angle, options_Angle.ToArray(), GUILayout.Width(150));
-                if (index_angle == -1) index_angle = 0;
-                var newAngle = (CameraAngle)Enum.GetValues(typeof(CameraAngle)).GetValue(index_angle);
-                if (shot.GoalAngle != newAngle)
-                    shot.GoalAngle = newAngle;
-
-            }
-            //It is In Custom 
-            else
+            if (shot.GoalType == CameraGoal.Custom)
             {
                 DrawCustomShotConfiguration(shot);
-
-                /*
-                //If the camera is not set but position has been set, place it
-                if (CustomCameraCommand.CustomCameraObject == null &&  ViewModel.CurrentShot.IsCustomSet)
-                {
-                    //currentCommand.PlaceCustomCam(conversationData);
-                }
-
-                if (!CustomCameraCommand.IsCustomCameraActive)
-                {
-                    if (GUILayout.Button("Create Custom Camera", GUILayout.Width(170), GUILayout.Height(30)))
-                    {
-                        //currentCommand.PlaceCustomCam(conversationData);
-                    }
-                }
-                else
-                {
-                    if (GUILayout.Button("Clear Camera", GUILayout.Width(170), GUILayout.Height(30)))
-                    {
-                        //currentCommand.ClearCamera();
-                    }
-                }
-                */
-                //If Set Display the coordinates
-                if (false && ViewModel.CurrentShot.IsCustomSet)
-                {
-
-                    var positionData = ViewModel.CurrentShot?.GlobalCustomCamPos ?? Vector3.zero;
-                    var rotationData = ViewModel.CurrentShot?.GlobalCustomCamRot ?? Quaternion.identity;
-
-                    // Format the position components to two decimal places
-                    float posX = Mathf.Round(positionData.x * 100) / 100;
-                    float posY = Mathf.Round(positionData.y * 100) / 100;
-                    float posZ = Mathf.Round(positionData.z * 100) / 100;
-
-                    float rotX = Mathf.Round(rotationData.x * 100) / 100;
-                    float rotY = Mathf.Round(rotationData.y * 100) / 100;
-                    float rotZ = Mathf.Round(rotationData.z * 100) / 100;
-
-                    // Create a formatted string with the position data
-                    GUILayout.Space(10);
-                    GUILayout.Label($"Position Set ✓ X:{posX:0.00} Y:{posY:0.00} Z:{posZ:0.00}");
-                    GUILayout.Label($"Rotation Set ✓ X:{rotX:0.00} Y:{rotY:0.00} Z:{rotZ:0.00}");
-                    GUILayout.Space(5);
-
-                    ViewModel.CurrentShot.TogglePreviewRenderSceneView = GUILayout.Toggle(ViewModel.CurrentShot.TogglePreviewRenderSceneView, "Toggle Custom Scene View");
-                    
-                }
+                return;
             }
+            EditorGUILayout.LabelField("Camera Distance");
+            shot.GoalDistance = (CameraDistance)EditorGUILayout.EnumPopup(shot.GoalDistance, GUILayout.Height(24));
+            GUILayout.Space(8);
+            EditorGUILayout.LabelField("Camera Height");
+            shot.GoalAngle = (CameraAngle)EditorGUILayout.EnumPopup(shot.GoalAngle, GUILayout.Height(24));
         }
-
         private void DrawCustomShotConfiguration(CameraShotConfiguration shot)
         {
             EditorGUILayout.LabelField("Camera Position");
-            shot.GlobalCustomCamPos = EditorGUILayout.Vector3Field(GUIContent.none, shot.GlobalCustomCamPos, GUILayout.Width(170));
+            shot.GlobalCustomCamPos = EditorGUILayout.Vector3Field(GUIContent.none, shot.GlobalCustomCamPos, GUILayout.ExpandWidth(true));
             EditorGUILayout.LabelField("Camera Rotation");
-            Vector3 euler = EditorGUILayout.Vector3Field(GUIContent.none, shot.GlobalCustomCamRot.eulerAngles, GUILayout.Width(170));
+            Vector3 euler = EditorGUILayout.Vector3Field(GUIContent.none, shot.GlobalCustomCamRot.eulerAngles, GUILayout.ExpandWidth(true));
             shot.GlobalCustomCamRot = Quaternion.Euler(euler);
 
-            if (GUILayout.Button("Capture Scene View", GUILayout.Width(170), GUILayout.Height(28)))
+            if (GUILayout.Button("Capture Scene View", GUILayout.ExpandWidth(true), GUILayout.Height(28)))
             {
                 Camera sceneCamera = SceneView.lastActiveSceneView?.camera;
                 if (sceneCamera != null)
@@ -294,12 +191,12 @@ namespace RydenCam.Editor
                 }
             }
 
-            if (GUILayout.Button("Use Entered Pose", GUILayout.Width(170)))
+            if (GUILayout.Button("Use Entered Pose", GUILayout.ExpandWidth(true)))
                 shot.IsCustomSet = true;
 
             using (new EditorGUI.DisabledScope(!shot.IsCustomSet))
             {
-                if (GUILayout.Button("Clear Custom Pose", GUILayout.Width(170)))
+                if (GUILayout.Button("Clear Custom Pose", GUILayout.ExpandWidth(true)))
                 {
                     shot.GlobalCustomCamPos = Vector3.zero;
                     shot.GlobalCustomCamRot = Quaternion.identity;
@@ -307,7 +204,7 @@ namespace RydenCam.Editor
                 }
             }
 
-            shot.TogglePreviewRenderSceneView = EditorGUILayout.ToggleLeft("Preview in Scene View", shot.TogglePreviewRenderSceneView, GUILayout.Width(170));
+            shot.TogglePreviewRenderSceneView = EditorGUILayout.ToggleLeft("Preview in Scene View", shot.TogglePreviewRenderSceneView, GUILayout.ExpandWidth(true));
             EditorGUILayout.HelpBox(shot.IsCustomSet ? "Custom camera pose is set." : "Enter a pose or capture the active Scene view.", MessageType.Info);
         }
 
@@ -376,7 +273,7 @@ namespace RydenCam.Editor
 
         private void DrawCameraShotListSection()
         {
-            EditorGUILayout.Space(20f);
+            EditorGUILayout.Space(4f);
             GUIStyle sectionLabel = new GUIStyle(EditorStyles.boldLabel)
             {
                 fontSize = BranchCamEditorTheme.FontTitle,
@@ -385,13 +282,13 @@ namespace RydenCam.Editor
             };
             GUILayout.Label("Camera Shots", sectionLabel);
 
-            float scrollViewHeight = 120f;
+            float scrollViewHeight = Mathf.Clamp(position.height - 190f, 150f, 320f);
 
             // 🔹 Vertical-only scroll view (horizontal scrolling disabled)
             scrollPos = GUILayout.BeginScrollView(
                 scrollPos,
                 alwaysShowHorizontal: false,
-                alwaysShowVertical: true,
+                alwaysShowVertical: false,
                 GUILayout.Height(scrollViewHeight)
             );
 
@@ -408,14 +305,14 @@ namespace RydenCam.Editor
                     GUILayout.BeginHorizontal();
 
                     // Slightly reduced width to avoid layout overflow (prevents unwanted horizontal bar)
-                    if (GUILayout.Button(shot.ShotName, GUILayout.ExpandWidth(true)))
+                    if (GUILayout.Toggle(ViewModel.CurrentShot == shot, shot.ShotName, "Button", GUILayout.ExpandWidth(true), GUILayout.Height(28)))
                     {
                         ViewModel.CurrentShot = shot;
                     }
 
                     using (new EditorGUI.DisabledScope(!CameraShotsManager.Instance.CanRemoveShot(shot)))
                     {
-                        if (GUILayout.Button("X", GUILayout.Width(20)))
+                        if (GUILayout.Button(new GUIContent("X", "Delete this custom shot"), GUILayout.Width(28), GUILayout.Height(28)))
                             shotsToRemove.Add(shot);
                     }
 
@@ -426,7 +323,7 @@ namespace RydenCam.Editor
             GUILayout.EndScrollView();
 
             // Add button
-            if (GUILayout.Button("Add New Shot", GUILayout.Width(175)))
+            if (GUILayout.Button("+ Add New Shot", GUILayout.ExpandWidth(true), GUILayout.Height(30)))
             {
                 string newShotName = $"New Shot {shots.Count + 1}";
                 var newShot = new CameraShotConfiguration(shotName: newShotName);

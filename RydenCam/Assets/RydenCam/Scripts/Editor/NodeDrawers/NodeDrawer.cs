@@ -76,6 +76,8 @@ namespace Assets.RydenCam.Scripts.Editor
             textAreaStyleNode.wordWrap = true;
             textAreaStyleNode.alignment = TextAnchor.MiddleCenter;
             textAreaStyleNode.fontSize = BranchCamEditorTheme.FontBody;
+            foreach (var state in new[] { textAreaStyleNode.normal, textAreaStyleNode.hover, textAreaStyleNode.active, textAreaStyleNode.focused })
+                state.textColor = Color.white;
 
 
             //TextArea Inspector

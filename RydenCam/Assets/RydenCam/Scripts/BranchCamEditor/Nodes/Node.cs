@@ -24,6 +24,7 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         public ConnectionPoint PointIn;
         public List<ConnectionPoint> PointOut;
         public string NodeId;
+        public string InkSourceId;
 
         public Node(Vector2 position)
         {

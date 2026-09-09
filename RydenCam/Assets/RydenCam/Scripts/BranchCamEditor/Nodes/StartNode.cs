@@ -27,6 +27,8 @@ namespace Assets.RydenCam.Scripts.BranchCamCC
         //Scene Information
         public string UnitySceneName;
         public string SequenceName;
+        public string InkSourceGuid;
+        public string InkEntryKnot;
         public string CameraShotFilePath = BranchConstants.DefaultCameraShotFile;
         public Side CameraSide;
 

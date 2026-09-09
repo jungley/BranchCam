@@ -8,10 +8,14 @@ namespace Assets.RydenCam.Scripts.BranchCamEditor.Extensions
 {
     public static class EditorGUILayoutExtensions
     {
-        public static string SetTextAreaExpandable(Rect nodeWindow, TwoWayDictionary<int, Rect> textAreaRect, int index, ref int buffer, string dialogueText, GUIStyle style, float areaHeight = 0, float textWidth = 0)
+        public static string SetTextAreaExpandable(Rect nodeWindow, TwoWayDictionary<int, Rect> textAreaRect, int index, ref int buffer, string dialogueText, GUIStyle style, float areaHeight = 0, float textWidth = 0, bool readOnly = false)
         {
             float calculatedHeight = CalculateTextAreaHeight(dialogueText, textWidth, areaHeight);
-            dialogueText = DrawTextArea(dialogueText, style, textWidth, calculatedHeight);
+            // Imported dialogue is a label rather than a disabled field, so it stays legible.
+            if (readOnly)
+                GUILayout.Label(dialogueText, style, GUILayout.Width(textWidth), GUILayout.Height(calculatedHeight));
+            else
+                dialogueText = DrawTextArea(dialogueText, style, textWidth, calculatedHeight);
             UpdateTextAreaRect(nodeWindow, textAreaRect, index, ref buffer, textWidth, calculatedHeight);
 
             return dialogueText;

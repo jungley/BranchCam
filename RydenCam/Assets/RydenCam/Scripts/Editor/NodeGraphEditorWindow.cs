@@ -425,6 +425,7 @@ namespace RydenCam.Editor
              .AddButton("Frame All", FrameAllNodes, width: 90)
              .AddButton("Reset View", ResetView, width: 90)
              .AddButton("Shot Configuration", () => viewModel.OpenCameraShotEditor(), width:140)
+             .AddButton("Ink Integration", viewModel.OpenInkIntegration, width:120)
              .AddButton("PlayMode Settings", () => viewModel.LocateGlobalSettings(), width: 140)
             .Build();
 
@@ -629,6 +630,11 @@ namespace RydenCam.Editor
 
             bounds = Rect.MinMaxRect(minX, minY, maxX, maxY);
             return true;
+        }
+
+        public void FrameImportedGraph()
+        {
+            EditorApplication.delayCall += () => { if (this != null) { FrameAllNodes(); Repaint(); } };
         }
 
         private void FrameAllNodes()

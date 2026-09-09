@@ -119,7 +119,8 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                 {
                     using (var actorListingsScope = new GUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField("Actor " + (actorIndex + 1), labelStyleHead_Node);
+                        EditorGUILayout.LabelField(string.IsNullOrEmpty(startNode.ActorsInScene[actorIndex].InkSpeakerName)
+                            ? "Actor " + (actorIndex + 1) : startNode.ActorsInScene[actorIndex].InkSpeakerName, labelStyleHead_Node);
 
                         if (GUILayout.Button("X", GUILayout.Width(20), GUILayout.Height(20)))
                         {

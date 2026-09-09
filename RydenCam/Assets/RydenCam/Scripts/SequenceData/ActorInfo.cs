@@ -13,6 +13,7 @@ namespace RydenCam.SequenceData
     {
         public string ActorID;
         public string ActorName;
+        public string InkSpeakerName;
 
         public bool PreDefinedStartPositionEnabled;
         public Pose PreDefinedStartPosition;

@@ -21,12 +21,14 @@ namespace Assets.RydenCam.Scripts.NodeCommands
         }
         public override void AddSpeakingEntry(int index)
         {
+            if (!string.IsNullOrEmpty(node.InkSourceId)) return;
             node.DecisionOptions.Insert(index, "");
             node.PointOut.Add(new ConnectionPoint(node, ConnectionPointType.Out));
         }
 
         public override void RemoveSpeakingEntry(int index)
         {
+            if (!string.IsNullOrEmpty(node.InkSourceId)) return;
             //Remove Connection
             ConnectionManager.Instance.Remove(node.PointOut[index]);
 

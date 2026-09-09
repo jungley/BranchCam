@@ -108,6 +108,18 @@ public class NodeGraphViewModel
             camShotEditor.Focus();
         };
     }
+    public void OpenInkIntegration()
+    {
+        var panel = EditorWindow.GetWindow<RydenCam.Editor.InkIntegration.InkIntegrationWindow>();
+        panel.Show();
+        var graph = editorWindow;
+        EditorApplication.delayCall += () =>
+        {
+            if (graph == null || panel == null) return;
+            Docker.Dock(graph, panel, Docker.DockPosition.Right);
+            panel.Focus();
+        };
+    }
     public void LocateGlobalSettings()
     {
         GlobalSettingsData globalSetting = FindGlobalSetting();

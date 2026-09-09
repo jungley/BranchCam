@@ -78,7 +78,7 @@ namespace Assets.RydenCam.Scripts.Editor.NodeDrawers
                     dialogueCommand.TextAreaRectIndex.Clear();
                     for (int i = 0; i < dialogueNode.NodeConvodata.DialogTextList.Count; i++)
                     {
-                        dialogueNode.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(dialogueCommand.WindowRect, dialogueCommand.TextAreaRectIndex, i, ref buffer, dialogueNode.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: dialogueNode.NodeWidth - 10);
+                        dialogueNode.NodeConvodata.DialogTextList[i] = EditorGUILayoutExtensions.SetTextAreaExpandable(dialogueCommand.WindowRect, dialogueCommand.TextAreaRectIndex, i, ref buffer, dialogueNode.NodeConvodata.DialogTextList[i], textAreaStyleNode, areaHeight: 50, textWidth: dialogueNode.NodeWidth - 10, readOnly: !string.IsNullOrEmpty(dialogueNode.InkSourceId));
                         GUILayout.Space(5);
                     }
 
