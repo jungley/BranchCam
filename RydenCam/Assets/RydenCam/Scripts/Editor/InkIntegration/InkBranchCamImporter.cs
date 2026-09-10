@@ -8,8 +8,8 @@ using Ink.Runtime;
 namespace RydenCam.Editor.InkIntegration
 {
     /// <summary>
-    /// A conversation described without Unity scene objects. Keeping this separate
-    /// lets us validate an import before replacing the user's BranchCam graph.
+    /// A conversation without Unity scene objects. The entire import can be
+    /// validated before the caller replaces the graph the user is editing.
     /// </summary>
     public sealed class InkImportModel
     {
@@ -27,215 +27,82 @@ namespace RydenCam.Editor.InkIntegration
         public string Target;
         public string Shot;
         public readonly List<string> Choices = new List<string>();
-        // Dialogue has one successor; decisions have one per choice in Choices order.
-        // A null successor represents the end of a conversation.
+
+        // Dialogue has one successor. Decisions have one per choice, in the same
+        // order as Choices. A null successor ends that branch of the conversation.
         public readonly List<string> Next = new List<string>();
     }
 
-    // Ink owns parsing and execution. This adapter only accepts static narrative flow,
-    // then snapshots the runtime at each choice to visit every supported branch.
+    /// <summary>
+    /// Compiles Ink and reads its static conversation graph. Syntax checks and
+    /// runtime traversal are separate so each can be understood independently.
+    /// </summary>
     public sealed class InkBranchCamImporter
     {
-        private const int MaximumTraversalSteps = 1000;
-        private const double MaximumImportSeconds = 8;
-        private const float RuntimeTimeSliceMilliseconds = 5;
-        readonly Stopwatch timer = new Stopwatch();
-        InkImportModel model;
-        Ink.Runtime.Story story;
-        readonly HashSet<string> activeFlowPaths = new HashSet<string>();
-        readonly Dictionary<string, string> sourcePathByNodeId = new Dictionary<string, string>();
-        int traversalSteps;
-
         public InkImportModel Import(string source, string filename, string entry = "")
         {
-            model = new InkImportModel();
-            activeFlowPaths.Clear();
-            sourcePathByNodeId.Clear();
-            traversalSteps = 0;
-            timer.Restart();
-            var errors = new List<string>();
-            var compiler = new Compiler(source, new Compiler.Options {
-                sourceFilename = filename,
-                errorHandler = (message, type) => {
-                    if (type == ErrorType.Error) errors.Add(message); else model.Warnings.Add(message);
-                }
-            });
-            var parsed = compiler.Parse();
-            if (parsed == null || errors.Count > 0) throw new InvalidOperationException(string.Join("\n", errors));
-            // Reject dynamic constructs before running the story: the editor graph
-            // describes static branches, not every possible variable-dependent state.
-            ValidateSupportedSyntax(parsed);
-            story = parsed.ExportRuntime((message, type) => {
-                if (type == ErrorType.Error) errors.Add(message); else model.Warnings.Add(message);
-            });
-            if (story == null || errors.Count > 0) throw new InvalidOperationException(string.Join("\n", errors));
-            story.onError += (message, type) => { if (type == ErrorType.Error) throw new InvalidOperationException(message); };
-            // Support both root-level narrative and files containing only knots.
-            if (!string.IsNullOrWhiteSpace(entry)) story.ChoosePathString(entry.Trim());
-            else if (!story.canContinue || !HasRootNarrative(parsed))
-            {
-                entry = parsed.content.OfType<Ink.Parsed.Knot>().FirstOrDefault()?.name ?? "";
-                if (entry.Length > 0) story.ChoosePathString(entry);
-            }
-            model.Entry = entry;
-            model.First = VisitCurrentFlow();
-            if (model.First == null) throw new InvalidOperationException("The selected entry has no dialogue or choices.");
-            ValidateNoGraphCycles();
+            // Each call owns its state, including the time spent compiling. A failed
+            // import cannot leave runtime state behind for the next file.
+            var timer = Stopwatch.StartNew();
+            var model = new InkImportModel();
+            Story story = CompileStory(source, filename, model.Warnings, out var parsed);
+            model.Entry = SelectEntry(story, parsed, entry);
+
+            var reader = new InkFlowReader(story, model, timer);
+            reader.Read();
             return model;
         }
 
-        private void ValidateNoGraphCycles()
+        private static Story CompileStory(string source, string filename,
+            List<string> warnings, out Ink.Parsed.Story parsed)
         {
-            // Reaching a completed node is a valid merge. Reaching a node still on
-            // the current recursion stack means a branch loops back into itself.
-            var complete = new HashSet<string>();
-            var visiting = new HashSet<string>();
-            
-            void CheckCycles(string id)
+            var errors = new List<string>();
+            void RecordDiagnostic(string message, ErrorType type)
             {
-                if (id == null || complete.Contains(id))
-                {
-                    return;
-                }
-                if (!visiting.Add(id))
-                {
-                    throw new InvalidOperationException("Loops are not supported by the static Ink importer.");
-                }
-                
-                foreach (var next in model.Nodes[id].Next) CheckCycles(next);
-                visiting.Remove(id);
-                complete.Add(id);
+                if (type == ErrorType.Error) errors.Add(message);
+                else warnings.Add(message);
             }
 
-            CheckCycles(model.First);
+            var compiler = new Compiler(source, new Compiler.Options
+            {
+                sourceFilename = filename,
+                errorHandler = RecordDiagnostic
+            });
+            parsed = compiler.Parse();
+            if (parsed == null || errors.Count > 0)
+                throw new InvalidOperationException(string.Join("\n", errors));
+
+            // Reject dynamic constructs before executing any part of the story.
+            InkStaticSyntax.Validate(parsed);
+            Story story = parsed.ExportRuntime(RecordDiagnostic);
+            if (story == null || errors.Count > 0)
+                throw new InvalidOperationException(string.Join("\n", errors));
+
+            story.onError += ThrowRuntimeError;
+            return story;
         }
 
-
-
-        static bool HasRootNarrative(Ink.Parsed.Story parsed) => parsed.content
-            .Where(x => !(x is Ink.Parsed.Knot)).Any(HasNarrative);
-        static bool HasNarrative(Ink.Parsed.Object obj) => obj is Ink.Parsed.Choice ||
-            (obj is Ink.Parsed.Text t && !string.IsNullOrWhiteSpace(t.text)) ||
-            (obj is Ink.Parsed.Divert d && !d.isEnd && !d.isDone) ||
-            (obj.content != null && obj.content.Any(HasNarrative));
-
-        static void ValidateSupportedSyntax(Ink.Parsed.Object obj)
+        private static void ThrowRuntimeError(string message, ErrorType type)
         {
-            var allowed = new[] { "Story", "Knot", "Weave", "ContentList", "Text", "Choice", "Divert", "Gather", "Tag" };
-            bool unsupported = !allowed.Contains(obj.GetType().Name);
-            if (obj is Ink.Parsed.FlowBase flow) unsupported |= flow.isFunction || flow.hasParameters;
-            if (obj is Ink.Parsed.Choice choice) unsupported |= choice.condition != null || choice.isInvisibleDefault;
-            if (obj is Ink.Parsed.Divert divert) unsupported |= divert.isTunnel || divert.isThread || divert.isFunctionCall || (divert.arguments?.Count > 0);
-            if (unsupported) throw new InvalidOperationException($"Line {obj.debugMetadata?.startLineNumber}: unsupported Ink construct {obj.GetType().Name}. Use dialogue, knots, choices, static diverts, END and tags.");
-            if (obj.content != null) foreach (var child in obj.content) ValidateSupportedSyntax(child);
+            if (type == ErrorType.Error)
+                throw new InvalidOperationException(message);
         }
 
-        string VisitCurrentFlow()
+        private static string SelectEntry(Story story, Ink.Parsed.Story parsed, string entry)
         {
-            if (++traversalSteps > MaximumTraversalSteps || timer.Elapsed.TotalSeconds > MaximumImportSeconds)
-                throw new InvalidOperationException("Import exceeded the static graph limit (1,000 steps / 8 seconds). Loops and dynamic stories are not supported.");
-            
-            string stateKey = story.state.currentPathString ?? ("choices:" + string.Join(",", story.currentChoices.Select(c => c.sourcePath)));
-            
-            if (!activeFlowPaths.Add(stateKey))
+            if (!string.IsNullOrWhiteSpace(entry))
             {
-                throw new InvalidOperationException("A loop was found. This importer supports acyclic conversations only.");
+                story.ChoosePathString(entry.Trim());
             }
-            try
+            else if (!story.canContinue || !InkStaticSyntax.HasRootNarrative(parsed))
             {
-                while (story.canContinue)
-                {
-                    ContinueToNextLine();
+                // Files containing only knots start at the first knot. Root text
+                // or a root divert takes precedence when either is present.
+                entry = parsed.content.OfType<Ink.Parsed.Knot>().FirstOrDefault()?.name ?? "";
+                if (entry.Length > 0) story.ChoosePathString(entry);
+            }
 
-                    string text = story.currentText.Trim();
-                    if (text.Length == 0)
-                    {
-                        continue;
-                    }
-                    StringValue value = story.state.outputStream.OfType<Ink.Runtime.StringValue>().FirstOrDefault(v => !string.IsNullOrWhiteSpace(v.value));
-                    
-                    string id = "line:" + (value?.path.ToString() ?? stateKey);
-                    var node = new InkImportNode { Id = id, Text = text };
-                    ApplyTags(node, story.currentTags);
-                    int colon = text.IndexOf(':');
-                    if (colon > 0 && colon < 60 && !text.Substring(0, colon).Contains("\n"))
-                    {
-                        node.Actor = node.Actor ?? text.Substring(0, colon).Trim();
-                        node.Text = text.Substring(colon + 1).Trim();
-                    }
-                    // Reuse shared destinations. A repeated id is only an error
-                    // when two different source lines claim the same explicit tag.
-                    if (model.Nodes.ContainsKey(node.Id))
-                    {
-                        if (sourcePathByNodeId[node.Id] != id) throw new InvalidOperationException($"Duplicate Ink id tag '{node.Id}'. Give each dialogue line a unique id.");
-                        return node.Id;
-                    }
-                    sourcePathByNodeId[node.Id] = id;
-                    model.Nodes.Add(node.Id, node);
-                    node.Next.Add(VisitCurrentFlow());
-                    return node.Id;
-                }
-                return ImportCurrentChoices();
-            }
-            finally
-            {
-                activeFlowPaths.Remove(stateKey);
-            }
-        }
-
-        private void ContinueToNextLine()
-        {
-            // Continue() could hang on a loop that emits no text. Small execution
-            // slices let us check the deadline even when Ink never reaches a line.
-            do
-            {
-                story.ContinueAsync(RuntimeTimeSliceMilliseconds);
-                if (timer.Elapsed.TotalSeconds > MaximumImportSeconds)
-                    throw new InvalidOperationException("Ink execution did not finish. Check for loops.");
-            } while (!story.asyncContinueComplete);
-        }
-
-        private string ImportCurrentChoices()
-        {
-            var choices = story.currentChoices.ToList();
-            if (choices.Count == 0) return null;
-            string decisionId = "choice:" + choices[0].sourcePath;
-            if (model.Nodes.ContainsKey(decisionId)) return decisionId;
-            var decision = new InkImportNode { Id = decisionId };
-            model.Nodes.Add(decisionId, decision);
-            // Each branch starts from this same snapshot. Otherwise exploring
-            // one choice would consume story state needed by the next choice.
-            string snapshot = story.state.ToJson();
-            foreach (var choice in choices)
-            {
-                if (choice.tags != null && choice.tags.Any(t => t.StartsWith("actor:") || t.StartsWith("shot:") || t.StartsWith("target:")))
-                    model.Warnings.Add("Choice camera tags are not applied; put camera tags on the branch's dialogue line.");
-                decision.Choices.Add(choice.text.Trim());
-                story.state.LoadJson(snapshot);
-                story.ChooseChoiceIndex(choice.index);
-                decision.Next.Add(VisitCurrentFlow());
-            }
-            return decisionId;
-        }
-
-        static void ApplyTags(InkImportNode node, List<string> tags)
-        {
-            if (tags == null) return;
-            foreach (string tag in tags)
-            {
-                int split = tag.IndexOf(':');
-                if (split < 0) continue;
-                
-                string value = tag.Substring(split + 1).Trim();
-                
-                switch (tag.Substring(0, split).Trim().ToLowerInvariant())
-                {
-                    case "actor": node.Actor = value; break;
-                    case "target": node.Target = value; break;
-                    case "shot": node.Shot = value; break;
-                    case "id": node.Id = "id:" + value; break;
-                }
-            }
+            return entry;
         }
     }
 }

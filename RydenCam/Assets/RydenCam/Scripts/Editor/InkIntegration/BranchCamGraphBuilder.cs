@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.RydenCam.Scripts.BranchCamCC;
@@ -12,122 +12,196 @@ using UnityEngine;
 namespace RydenCam.Editor.InkIntegration
 {
     /// <summary>
-    /// Converts the validated Ink model into BranchCam nodes. Build prepares a
-    /// replacement without changing the open graph; Apply makes it visible.
+    /// Builds a replacement conversation from validated Ink. The live editor graph
+    /// changes only when the caller explicitly applies the completed result.
     /// </summary>
     public static class BranchCamGraphBuilder
     {
         public static List<Node> Build(InkImportModel model, string sourceGuid, string name, List<Node> previous)
         {
-            var previousStartNode = previous.OfType<StartNode>().FirstOrDefault();
-            bool isRefreshing = previousStartNode?.InkSourceGuid == sourceGuid;
-            // Source IDs identify the same narrative beat across refreshes. Only
-            // reuse authoring settings when refreshing the same Ink asset.
-            var previousNodesBySourceId = isRefreshing ? previous.Where(n => !string.IsNullOrEmpty(n.InkSourceId))
-                .GroupBy(n => n.InkSourceId).ToDictionary(g => g.Key, g => g.First()) : new Dictionary<string, Node>();
-            var start = new StartNode(new Vector2(400, 60)) {
+            var previousStart = previous.OfType<StartNode>().FirstOrDefault();
+            bool isRefreshing = previousStart?.InkSourceGuid == sourceGuid;
+            var previousNodes = IndexPreviousNodes(previous, isRefreshing);
+            var start = CreateStartNode(model, sourceGuid, name, previousStart, isRefreshing);
+            var positions = CalculateInitialPositions(model);
+            var nodes = new Dictionary<string, Node>();
+
+            foreach (var source in model.Nodes.Values)
+            {
+                Node node = CreateConversationNode(source, positions[source.Id]);
+                AssignDialogue(node, source, model, start);
+                RestoreNodeSettings(node, source, previousNodes);
+                ApplyShotTag(node, source);
+                UpdateConnectionOwners(node);
+                nodes.Add(source.Id, node);
+            }
+
+            ConnectNodes(model, start, nodes);
+            var result = new List<Node> { start };
+            result.AddRange(nodes.Values);
+            return result;
+        }
+
+        private static Dictionary<string, Node> IndexPreviousNodes(List<Node> previous, bool isRefreshing)
+        {
+            // Source IDs are meaningful only within the same Ink file. A new file
+            // must not inherit another conversation's node identities or actor bindings.
+            if (!isRefreshing) return new Dictionary<string, Node>();
+
+            return previous.Where(node => !string.IsNullOrEmpty(node.InkSourceId))
+                .GroupBy(node => node.InkSourceId)
+                .ToDictionary(group => group.Key, group => group.First());
+        }
+
+        private static StartNode CreateStartNode(InkImportModel model, string sourceGuid,
+            string name, StartNode previous, bool isRefreshing)
+        {
+            var start = new StartNode(new Vector2(400, 60))
+            {
                 SequenceName = name,
                 InkSourceGuid = sourceGuid,
                 InkEntryKnot = model.Entry,
                 InkSourceId = "start",
-                CameraShotFilePath = previousStartNode?.CameraShotFilePath ?? BranchConstants.DefaultCameraShotFile,
-                CameraSide = previousStartNode?.CameraSide ?? Side.Right
+                // Keep the current camera setup even when opening a different Ink file.
+                CameraShotFilePath = previous?.CameraShotFilePath ?? BranchConstants.DefaultCameraShotFile,
+                CameraSide = previous?.CameraSide ?? Side.Right
             };
-            if (isRefreshing)
+
+            if (isRefreshing) RestoreStartSettings(start, previous);
+            return start;
+        }
+
+        private static void RestoreStartSettings(StartNode start, StartNode previous)
+        {
+            // Reuse actor objects so their scene targets and starting poses survive.
+            foreach (var actor in previous.ActorsInScene) start.ActorsInScene.Add(actor);
+            start.StartPositionsEnabled = previous.StartPositionsEnabled;
+            start.OverrideRotation = previous.OverrideRotation;
+            start.ReturnToOriginalPositions = previous.ReturnToOriginalPositions;
+            start.UnitySceneName = previous.UnitySceneName;
+            start.NodeId = previous.NodeId;
+            start.EditorPosition = previous.EditorPosition;
+            start.PointOut[0].Node = start;
+        }
+
+        private static Node CreateConversationNode(InkImportNode source, Vector2 position)
+        {
+            Node node;
+            if (source.Choices.Count > 0)
             {
-                foreach (var actor in previousStartNode.ActorsInScene) start.ActorsInScene.Add(actor);
-                start.StartPositionsEnabled = previousStartNode.StartPositionsEnabled;
-                start.OverrideRotation = previousStartNode.OverrideRotation;
-                start.ReturnToOriginalPositions = previousStartNode.ReturnToOriginalPositions;
-                start.UnitySceneName = previousStartNode.UnitySceneName;
+                var decision = new DecisionNode(position) { DecisionOptions = source.Choices.ToList() };
+                decision.PointOut = source.Choices
+                    .Select(choice => new ConnectionPoint(decision, ConnectionPointType.Out)).ToList();
+                node = decision;
             }
-            if (isRefreshing)
+            else
             {
-                start.NodeId = previousStartNode.NodeId;
-                start.EditorPosition = previousStartNode.EditorPosition;
-                start.PointOut[0].Node = start;
+                node = new DialogueNode(position);
             }
-            // Speakers remain placeholders until the user picks scene actors.
-            ActorInfo GetOrCreateSpeaker(string speaker)
+
+            node.InkSourceId = source.Id;
+            return node;
+        }
+
+        private static void AssignDialogue(Node node, InkImportNode source, InkImportModel model, StartNode start)
+        {
+            var dialogue = ((ITalkable)node).NodeConvodata;
+            dialogue.Actor = GetOrCreateSpeaker(start, source.Actor);
+            if (node is DecisionNode && dialogue.Actor == null)
             {
-                if (string.IsNullOrEmpty(speaker)) return null;
-                var found = start.ActorsInScene.FirstOrDefault(a => a.InkSpeakerName == speaker || a.ActorName == speaker);
-                if (found != null) return found;
-                found = new ActorInfo { InkSpeakerName = speaker };
-                start.ActorsInScene.Add(found);
-                return found;
+                // Untagged choices belong to the preceding speaker when available.
+                // Preserve source order when several incoming lines name a speaker.
+                var precedingLine = model.Nodes.Values.FirstOrDefault(line =>
+                    line.Next.Contains(source.Id) && line.Actor != null);
+                dialogue.Actor = GetOrCreateSpeaker(start, precedingLine?.Actor)
+                    ?? start.ActorsInScene.FirstOrDefault();
             }
-            var nodes = new Dictionary<string, Node>();
-            var positions = CalculateInitialPositions(model);
-            foreach (var item in model.Nodes.Values)
-            {
-                Node node;
-                if (item.Choices.Count > 0)
-                {
-                    var decision = new DecisionNode(Vector2.zero) { DecisionOptions = item.Choices.ToList() };
-                    decision.PointOut = item.Choices.Select(_ => new ConnectionPoint(decision, ConnectionPointType.Out)).ToList();
-                    node = decision;
-                }
-                else node = new DialogueNode(Vector2.zero);
-                node.InkSourceId = item.Id;
-                node.EditorPosition = positions[item.Id];
-                var data = ((ITalkable)node).NodeConvodata;
-                data.Actor = GetOrCreateSpeaker(item.Actor);
-                if (node is DecisionNode && data.Actor == null)
-                    data.Actor = GetOrCreateSpeaker(model.Nodes.Values.FirstOrDefault(n => n.Next.Contains(item.Id) && n.Actor != null)?.Actor)
-                        ?? start.ActorsInScene.FirstOrDefault();
-                data.OppositeActor = GetOrCreateSpeaker(item.Target);
-                data.DialogTextList = new List<string> { item.Text ?? "" };
-                // Text and connections come from Ink. Camera choices and manual
-                // positioning survive when the source ID and node type still match.
-                if (previousNodesBySourceId.TryGetValue(item.Id, out Node previousNode) && previousNode.GetType() == node.GetType())
-                {
-                    node.NodeId = previousNode.NodeId;
-                    node.EditorPosition = previousNode.EditorPosition;
-                    var previousConversation = ((ITalkable)previousNode).NodeConvodata;
-                    data.ShotConfig = previousConversation.ShotConfig;
-                    if (item.Actor == null) data.Actor = previousConversation.Actor;
-                    if (item.Target == null) data.OppositeActor = previousConversation.OppositeActor;
-                }
-                // An explicit Ink shot tag takes precedence over a saved camera.
-                if (!string.IsNullOrEmpty(item.Shot))
-                {
-                    string Normalize(string s) => (s ?? "").Replace("_", "").Replace(" ", "").Replace("-", "").ToLowerInvariant();
-                    var shot = CameraShotsManager.Instance.CameraShots.FirstOrDefault(s => Normalize(s.ShotName) == Normalize(item.Shot) || s.ShotId == item.Shot);
-                    if (shot == null) throw new InvalidOperationException($"Unknown camera shot '{item.Shot}' at {item.Id}. Open its shot file or correct the tag.");
-                    data.ShotConfig = shot;
-                }
-                // Setting Node also updates the connection's serialized NodeId.
-                // This is necessary after restoring a previous node identity above.
-                node.PointIn.Node = node;
-                foreach (var point in node.PointOut) point.Node = node;
-                nodes.Add(item.Id, node);
-            }
-            // Wire after creating every node so forward diverts and shared branch
-            // destinations can resolve without depending on creation order.
+
+            dialogue.OppositeActor = GetOrCreateSpeaker(start, source.Target);
+            dialogue.DialogTextList = new List<string> { source.Text ?? "" };
+        }
+
+        private static ActorInfo GetOrCreateSpeaker(StartNode start, string speaker)
+        {
+            if (string.IsNullOrEmpty(speaker)) return null;
+            var actor = start.ActorsInScene.FirstOrDefault(candidate =>
+                candidate.InkSpeakerName == speaker || candidate.ActorName == speaker);
+            if (actor != null) return actor;
+
+            // A named placeholder can be bound to a scene GameObject after import.
+            actor = new ActorInfo { InkSpeakerName = speaker };
+            start.ActorsInScene.Add(actor);
+            return actor;
+        }
+
+        private static void RestoreNodeSettings(Node node, InkImportNode source,
+            Dictionary<string, Node> previousNodes)
+        {
+            if (!previousNodes.TryGetValue(source.Id, out Node previous) || previous.GetType() != node.GetType())
+                return;
+
+            // Ink owns text and edges. Matching IDs and node types retain manual
+            // positioning and camera choices; explicit source tags still take priority.
+            node.NodeId = previous.NodeId;
+            node.EditorPosition = previous.EditorPosition;
+            var dialogue = ((ITalkable)node).NodeConvodata;
+            var previousDialogue = ((ITalkable)previous).NodeConvodata;
+            dialogue.ShotConfig = previousDialogue.ShotConfig;
+            if (source.Actor == null) dialogue.Actor = previousDialogue.Actor;
+            if (source.Target == null) dialogue.OppositeActor = previousDialogue.OppositeActor;
+        }
+
+        private static void ApplyShotTag(Node node, InkImportNode source)
+        {
+            if (string.IsNullOrEmpty(source.Shot)) return;
+            string shotName = NormalizeShotName(source.Shot);
+            var shot = CameraShotsManager.Instance.CameraShots.FirstOrDefault(candidate =>
+                NormalizeShotName(candidate.ShotName) == shotName || candidate.ShotId == source.Shot);
+            if (shot == null)
+                throw new InvalidOperationException($"Unknown camera shot '{source.Shot}' at {source.Id}. Open its shot file or correct the tag.");
+
+            ((ITalkable)node).NodeConvodata.ShotConfig = shot;
+        }
+
+        private static string NormalizeShotName(string name)
+        {
+            return (name ?? "").Replace("_", "").Replace(" ", "").Replace("-", "").ToLowerInvariant();
+        }
+
+        private static void UpdateConnectionOwners(Node node)
+        {
+            // The setter updates each point's serialized NodeId. Do this after
+            // restoring the node identity so refreshed connections reference it correctly.
+            node.PointIn.Node = node;
+            foreach (var point in node.PointOut) point.Node = node;
+        }
+
+        private static void ConnectNodes(InkImportModel model, StartNode start, Dictionary<string, Node> nodes)
+        {
+            // All destinations must exist before wiring forward diverts or branch merges.
             start.PointOut[0].ConnectedNodeId = nodes[model.First].NodeId;
-            foreach (var item in model.Nodes.Values)
-                for (int i = 0; i < item.Next.Count; i++)
-                    nodes[item.Id].PointOut[i].ConnectedNodeId = item.Next[i] == null ? null : nodes[item.Next[i]].NodeId;
-            var result = new List<Node> { start };
-            result.AddRange(nodes.Values);
-            return result;
+            foreach (var source in model.Nodes.Values)
+            {
+                for (int index = 0; index < source.Next.Count; index++)
+                {
+                    string destination = source.Next[index];
+                    nodes[source.Id].PointOut[index].ConnectedNodeId =
+                        destination == null ? null : nodes[destination].NodeId;
+                }
+            }
         }
 
         private static Dictionary<string, Vector2> CalculateInitialPositions(InkImportModel model)
         {
             var depths = new Dictionary<string, int>();
 
-            // Use the deepest incoming route at a merge, so a shared destination
-            // appears below every branch that leads to it. The importer rejects cycles.
+            // Use the deepest incoming route at a merge, so shared destinations
+            // sit below every incoming branch. The importer has already rejected cycles.
             void AssignDepth(string id, int depth)
             {
-                if (id == null || (depths.TryGetValue(id, out int current) && current >= depth))
-                    return;
-
+                if (id == null || (depths.TryGetValue(id, out int current) && current >= depth)) return;
                 depths[id] = depth;
-                foreach (var next in model.Nodes[id].Next)
-                    AssignDepth(next, depth + 1);
+                foreach (string next in model.Nodes[id].Next) AssignDepth(next, depth + 1);
             }
 
             AssignDepth(model.First, 0);
@@ -143,6 +217,7 @@ namespace RydenCam.Editor.InkIntegration
                     positions[nodeDepth.Key] = new Vector2(x, y);
                 }
             }
+
             return positions;
         }
 
