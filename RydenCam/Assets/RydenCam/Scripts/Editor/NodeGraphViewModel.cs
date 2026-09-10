@@ -27,9 +27,11 @@ public class NodeGraphViewModel
 
     public ConnectionPoint SelectedConnectionPoint { get; set; }
 
-    public NodeGraphViewModel()
+    public NodeGraphViewModel(NodeGraphEditorWindow window)
     {
-        editorWindow = EditorWindow.GetWindow<NodeGraphEditorWindow>();
+        // The owning window is supplied explicitly; constructing a view model
+        // must never create or focus an editor window during a domain reload.
+        editorWindow = window;
     }
 
 
@@ -94,6 +96,7 @@ public class NodeGraphViewModel
 
     public void OpenDefaultPanels()
     {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
         // Preserve restored dock positions when Unity reloads scripts.
         var shots = Resources.FindObjectsOfTypeAll<CameraShotEditor>().FirstOrDefault();
         if (shots == null) OpenCameraShotEditor();

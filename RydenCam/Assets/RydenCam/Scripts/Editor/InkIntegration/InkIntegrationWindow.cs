@@ -148,7 +148,10 @@ namespace RydenCam.Editor.InkIntegration
         private void SelectSource(string path)
         {
             // Project assets provide stable GUIDs for the graph's source reference.
-            string assetPath = FileUtil.GetProjectRelativePath(Path.GetFullPath(path));
+            // Unity's asset APIs expect forward slashes, including on Windows.
+            // Path.GetFullPath otherwise makes even the bundled sample look external.
+            string fullPath = Path.GetFullPath(path).Replace('\\', '/');
+            string assetPath = FileUtil.GetProjectRelativePath(fullPath).Replace('\\', '/');
             if (!assetPath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase) ||
                 !assetPath.EndsWith(".ink", StringComparison.OrdinalIgnoreCase))
             {
@@ -269,6 +272,8 @@ namespace RydenCam.Editor.InkIntegration
                 source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
                 documentInitialized = true;
                 highlightedSource = null;
+                failed = false;
+                report = "Loaded Ink script. Import Ink to generate its conversation graph.";
                 GUI.FocusControl(null);
                 UpdateUnsavedState();
             }

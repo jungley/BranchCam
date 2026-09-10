@@ -340,13 +340,16 @@ namespace RydenCam.Editor
             window.CreateInitialNodeDrawers();
 
             window.Show();
+            // Companion panels belong to this explicit launch, not script reloads
+            // or Play mode transitions. Their helpers need a valid GUI skin.
+            window.openDefaultPanelsOnInitialize = true;
+            window.windowStateInitialized = false;
+            window.Repaint();
 
         }
 
         private static void InitializeStaticResources()
         {
-            Instance = EditorWindow.GetWindow<NodeGraphEditorWindow>();
-
             panelstyle_inspector = new GUIStyle();
             panelstyle_inspector.normal.background = BranchCamEditorTheme.GetSolidTexture(BranchCamEditorTheme.PanelBackground);
             panelstyle_inspector.padding = new RectOffset(10, 10, 12, 10);
@@ -386,12 +389,15 @@ namespace RydenCam.Editor
         // Called when the window is enabled or created
         private void OnEnable()
         {
+            Instance = this;
             titleContent = new GUIContent("BranchCam");
             // Node drawers construct EditorStyles and must be initialized inside
             // OnGUI, after Unity's GUI skin is available following a reload.
             windowStateInitialized = false;
             Repaint();
         }
+
+        private bool openDefaultPanelsOnInitialize;
 
         private void InitializeWindowState()
         {
@@ -401,7 +407,7 @@ namespace RydenCam.Editor
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
             //Handles events in the NodeGraphWindow
-            viewModel = new NodeGraphViewModel();
+            viewModel = new NodeGraphViewModel(this);
 
             // Static graph state is lost during a domain reload while the EditorWindow
             // itself survives. Restore the last saved graph before rebuilding drawers.
@@ -439,11 +445,13 @@ namespace RydenCam.Editor
             CreateInitialNodeDrawers();
             UpdateConnectionDrawers();
             windowStateInitialized = true;
+            bool openPanels = openDefaultPanelsOnInitialize;
+            openDefaultPanelsOnInitialize = false;
             EditorApplication.delayCall += () =>
             {
                 if (this != null)
                 {
-                    viewModel.OpenDefaultPanels();
+                    if (openPanels) viewModel.OpenDefaultPanels();
                     FrameAllNodes();
                 }
             };
@@ -452,6 +460,7 @@ namespace RydenCam.Editor
         // Called when the window is disabled or closed
         private void OnDisable()
         {
+            if (Instance == this) Instance = null;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             NodeManager.Instance.Nodes.CollectionChanged -= OnNodesChanged;
             NodeManager.Instance.PropertyChanged -= OnActiveNodeUpdated;
